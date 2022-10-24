@@ -27,12 +27,13 @@
         </table>
     </div>
 
+    <p>{{ df_week }}</p>
+
     <div class="row mb-4">
         <div class="col-lg-6">
             <div class="d-flex justify-content-between">
                 <h2>学習時間</h2>
                 <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-primary" id="dayBtn">日</button>
                     <button type="button" class="btn btn-primary" id="weekBtn">週</button>
                     <button type="button" class="btn btn-primary" id="monthBtn">月</button>
                     <button type="button" class="btn btn-primary" id="yearBtn">年</button>
@@ -87,76 +88,86 @@
 </div>
 
 <script>
-    let barChart = new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: ['(日)', '(月)', '(火)', '(水)', '(木)', '(金)', '(土)'],
-            datasets: [{
-                label: '教科1',
-                data: [9, 4, 2, 5, 4, 3, 7],
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                stack: 'stack-1',
-            }, {
-                label: '教科2',
-                data: [5, 2, 4, 3, 5, 5, 6],
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                stack: 'stack-1',
-            }],
-        },
-        options: {
-            plugins: {
-                legend: {
-                    position: 'bottom',
+    function drawBarChart() {
+        window.barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['(日)', '(月)', '(火)', '(水)', '(木)', '(金)', '(土)'],
+                datasets: [{
+                    label: '教科1',
+                    data: [9, 4, 2, 5, 4, 3, 7],
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    stack: 'stack-1',
+                }, {
+                    label: '教科2',
+                    data: [5, 2, 4, 3, 5, 5, 6],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    stack: 'stack-1',
+                }],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
                 },
             },
-        },
-    });
-
-    let pieChart = new Chart(document.getElementById('pieChart'), {
-        type: 'pie',
-        data: {
-            labels: [
-            {% for index, values in df_subject.iterrows %}
-            '{{ index }}',
-            {% endfor %}
-            ],
-            datasets: [{
-                data: [
-                    {% for index, values in df_subject.iterrows %}
-                        {% for value in values %}
-                            {{ value }},
-                        {% endfor %}
-                    {% endfor %}
-                ],
-            }],
-        },
-        options: {
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                },
-            },
-        },
-    });
-
-    function updateData(chart, label, data) {
-        chart.data.labels.pop();
-        chart.data.datasets.forEach((dataset) => {
-            dataset.data.pop();
         });
-        // chart.data.labels.push(label);
-        // chart.data.datasets.forEach((dataset) => {
-        //     dataset.data.push(data);
-        // });
-        // chart.update();
     }
 
-    document.getElementById('dayBtn').onclick = updateData(barChart);
+    function drawPieChart() {
+        window.pieChart = new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: [
+                {% for index, values in df_subject.iterrows %}
+                '{{ index }}',
+                {% endfor %}
+                ],
+                datasets: [{
+                    data: [
+                        {% for index, values in df_subject.iterrows %}
+                            {% for value in values %}
+                                {{ value }},
+                            {% endfor %}
+                        {% endfor %}
+                    ],
+                }],
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+            },
+        });
+    }
 
-    document.getElementById('weekBtn').onclick = updateData(barChart);
+    window.addEventListener('DOMContentLoaded', () => {
+        drawBarChart();
+        drawPieChart()
+    });
 
-    document.getElementById('monthBtn').onclick = updateData(barChart);
+    document.getElementById('weekBtn').onclick = () => {
+        if (barChart) {
+            barChart.destroy();
+        }
+        drawBarChart();
+    }
 
-    document.getElementById('yearBtn').onclick = updateData(barChart);
+    document.getElementById('monthBtn').onclick = () => {
+        if (barChart) {
+            barChart.destroy();
+        }
+        drawBarChart();
+    }
+
+    document.getElementById('yearBtn').onclick = () => {
+        if (barChart) {
+            barChart.destroy();
+        }
+        drawBarChart();
+    }
 </script>
 {% endblock %}

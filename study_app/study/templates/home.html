@@ -8,6 +8,7 @@
 
 {% block contents %}
 <div class="container-md col-md-9">
+    <h2>データ確認用</h2>
     <table class="table table-striped table-bordered table-hover">
         <tr>
             <td>index</td>
@@ -48,7 +49,7 @@
                         <div class="mb-4">
                             <label class="form-label" for="{{ form.subject.id_for_label }}">教科を選択</label>
                             {% render_field form.subject class='form-select mb-2' %}
-                            <a href="{% url 'study:subject-create' %}">
+                            <a href="{% url 'study:subject' %}">
                                 教科を作成する
                             </a>
                         </div>
@@ -95,6 +96,7 @@
         </div>
     </div>
 
+    <!-- 記録作成モーダル -->
     <div class="modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -178,6 +180,7 @@
     const endDatePicker = new tempusDominus.TempusDominus(endDateInput, datePickerOptions);
     const endTimePicker = new tempusDominus.TempusDominus(endTimeInput, timePickerOptions);
 
+    // 日付、時刻のフォームに初期値を設定する
     document.getElementById('creationBtn').addEventListener('click', () => {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -260,11 +263,11 @@
         initialView: 'listMonth',
         selectable: true,
         events: [
-            {% for study_time in study_time_list %}
+            {% for study_time in df_context.itertuples %}
                 {
                     title: '{{ study_time.subject }}',
-                    start: '{{ study_time.start_date | date:"Y-m-d" }}T{{ study_time.start_time | date:"H:i" }}',
-                    end: '{{ study_time.end_date | date:"Y-m-d" }}T{{ study_time.end_time | date:"H:i" }}',
+                    start: '{{ study_time.start | date:"Y-m-d H:i" }}',
+                    end: '{{ study_time.end | date:"Y-m-d H:i" }}',
                     backgroundColor: '',
                 },
             {% endfor %}

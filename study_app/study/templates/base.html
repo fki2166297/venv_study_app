@@ -36,6 +36,7 @@
 </head>
 
 <body style="padding-top: 5rem;">
+    <!-- ヘッダー -->
     <nav class="navbar navbar-expand-md navbar-light bg-light shadow-sm fixed-top">
         <div class="container-fluid px-5">
             {% if user.is_authenticated %}
@@ -74,9 +75,8 @@
                                     <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">メニュー1</a></li>
-                                    <li><a class="dropdown-item" href="#">メニュー2</a></li>
-                                    <li><a class="dropdown-item" href="#">メニュー3</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'study:my-page' user.id %}">マイページ</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'study:subject' %}">教科の一覧</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'account_logout' %}">ログアウト</a></li>
                                 </ul>

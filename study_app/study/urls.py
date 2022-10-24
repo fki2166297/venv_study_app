@@ -10,5 +10,6 @@ urlpatterns = [
     path('qa', views.QuestionAndAnswerView.as_view(), name='qa'),
     path('qa/question-detail/<int:pk>', views.QuestionDetailView.as_view(), name='question-detail'),
     path('qa/question-create', views.QuestionCreateView.as_view(), name='question-create'),
-    path('subject', views.SubjectCreateView.as_view(), name='subject-create'),
+    path('subject', views.SubjectView.as_view(), name='subject'),
+    path('/my-page/<int:pk>', views.MyPageView.as_view(), name='my-page'),
 ]

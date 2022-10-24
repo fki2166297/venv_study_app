@@ -42,7 +42,7 @@ class HomeView(LoginRequiredMixin, CreateView):
         context['df_context'] = df
         return context
 
-    # forms.py ログインユーザー
+    # forms.pyにログインユーザーIDを渡す
     def get_form_kwargs(self):
         kwargs = super(HomeView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
@@ -59,10 +59,31 @@ class ReportView(LoginRequiredMixin, TemplateView):
     template_name = 'report.html'
     model = StudyTime
 
+    def get_bar_chart_data(self, df, start, end):
+        data = {'labels': [], 'datasets': []}
+        df = df[(df['date'] >= start) & (df['date'] <= end)].sort_values(['subject', 'date'])
+        df2 = df.groupby(['subject', 'date'], as_index=False).sum()
+
+        date_diff = (end - start).days + 1
+        for i in range(date_diff):
+            data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
+        for i in range(len(df.groupby(['subject']))):
+            data['datasets'].append({
+                'label': '教科1',
+                'data': [
+                    len(df.groupby(['subject']))
+                ],
+                'backgroundColor': 'rgba(255, 99, 132, 0.5)',
+                'stack': 'stack-1',
+            })
+        return data
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         COLS = ['subject', 'start_date', 'start_time', 'end_date', 'end_time']
         df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
+
+        # 複数の日をまたぐデータを日付ごとに分割する
         df2 = df[(df['start_date']) == (df['end_date'])]
         df3 = df[(df['start_date']) < (df['end_date'])]
         for row in df3.itertuples():
@@ -97,9 +118,9 @@ class ReportView(LoginRequiredMixin, TemplateView):
         weekday = today.isoweekday() % 7
         week_start = today + dt.timedelta(days=-weekday)
         week_end = today + dt.timedelta(days=(6-weekday))
-        df_week = df2[(df2['date'] >= week_start) & (df2['date'] <= week_end)].sort_values(['subject', 'date'])
-        context['df_context'] = df_week
-        context['df_week'] = df_week.to_numpy().tolist()
+
+        data = self.get_bar_chart_data(df2, week_start, week_end)
+        context['df_week'] = data
         return context
 
 
@@ -135,8 +156,8 @@ class QuestionCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class SubjectCreateView(LoginRequiredMixin, CreateView):
-    template_name = 'subject-create.html'
+class SubjectView(LoginRequiredMixin, CreateView):
+    template_name = 'subject.html'
     model = Subject
     form_class = SubjectCreateForm
     success_url = reverse_lazy('study:home')
@@ -151,3 +172,6 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
         subject.user = self.request.user
         subject.save()
         return super().form_valid(form)
+
+class MyPageView(LoginRequiredMixin, TemplateView):
+    template_name = 'my-page.html'
