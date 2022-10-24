@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}Study App{% endblock %}
+
+{% block contents %}
+<div class="container-md col-md-6">
+    <div class="card mb-3">
+        <h5 class="card-header">
+            作成日時：{{ question_detail.created_at }}
+            更新日時：{{ question_detail.updated_at }}
+        </h5>
+        <div class="card-body">
+            <h4>{{ question_detail.title }}</h4>
+            <p class="card-text">
+                {{ question_detail.text }}
+            </p>
+            <button class="btn btn-primary shadow-sm col-1.5" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">回答する</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

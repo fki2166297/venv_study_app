@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}Q&ampA | Study App{% endblock %}
+
+{% block active_qa %}active{% endblock %}
+
+{% block contents %}
+<div class="container-md col-md-9">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="input-group mb-3" style="position: sticky; top: 5rem; z-index: 1000;">
+                <input type="search" class="form-control" placeholder="キーワードを入力">
+                <button type="button" class="btn btn-primary">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+            </div>
+            {% for question in question_list %}
+                <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            {{ question.title }}
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% if question.image %}
+                                    <div class="col-md-6">
+                                        <img class="col-12" src="/media/{{ question.image }}"/>
+                                    </div>
+                                {% endif %}
+                                <div class="col">
+                                    {{ question.text }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="col-md-4 d-none d-md-block">
+            <div style="position: sticky; top: 5rem;">
+                <a type="submit" class="btn btn-primary col-12 shadow-sm mb-3" href="{% url 'study:question-create' %}" role="button">投稿する</a>
+                <form>
+                    <label for="subjectSelect" class="form-label">教科の選択</label>
+                    <select class="form-select mb-3" id="subjectSelect">
+                        <option value="0" selected>全教科</option>
+                        <option value="1">国語</option>
+                        <option value="2">数学</option>
+                        <option value="3">科学</option>
+                        <option value="4">社会</option>
+                        <option value="5">英語</option>
+                    </select>
+                    <label for="selectAnswerStatus" class="form-label">回答状況の選択</label>
+                    <select class="form-select mb-3" id="selectAnswerStatus">
+                        <option value="0" selected>どちらでも</option>
+                        <option value="1">回答済み</option>
+                        <option value="2">未回答</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+    <a type="submit" class="btn btn-primary rounded-circle p-3 d-md-none" href="{% url 'study:question-create' %}" role="button" style="position: fixed; right: 20px; bottom: 20px;">
+        <span class="material-symbols-outlined">add</span>
+    </a>
+</div>
+{% endblock %}

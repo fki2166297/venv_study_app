@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}教科の作成 | Study App{% endblock %}
+
+{% block contents %}
+<div class="container-md col-md-5">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3 mb-3 align-items-center">
+            <div class="col-auto">
+                <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+            </div>
+            <div class="col-auto">
+                {% render_field form.subject class='form-control' %}
+            </div>
+            <div class="col-auto">
+                {% render_field form.color type='color' class='form-control form-control-color' value="#0d6efd" %}
+            </div>
+        </div>
+        <input type="submit" value="作成する" class="btn btn-primary">
+    </form>
+
+    <ul>
+        {% for subject in subject_list %}
+            <li>
+                {{ subject.subject }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
