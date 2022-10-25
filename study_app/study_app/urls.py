@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.staticfiles.urls import static
-from . import settings_common, settings_dev
+from . import settings
 
 
 urlpatterns = [
@@ -27,4 +27,4 @@ urlpatterns = [
 ]
 
 # 開発サーバーでメディアを配信できるようにする設定
-urlpatterns += static(settings_common.MEDIA_URL, document_root=settings_dev.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
