@@ -119,19 +119,9 @@
         window.pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
-                labels: [
-                {% for index, values in df_subject.iterrows %}
-                '{{ index }}',
-                {% endfor %}
-                ],
+                labels: ['教科1', '教科2'],
                 datasets: [{
-                    data: [
-                        {% for index, values in df_subject.iterrows %}
-                            {% for value in values %}
-                                {{ value }},
-                            {% endfor %}
-                        {% endfor %}
-                    ],
+                    data: [50, 60],
                 }],
             },
             options: {

@@ -59,6 +59,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
     template_name = 'report.html'
     model = StudyTime
 
+    # 棒グラフのデータを取得
     def get_bar_chart_data(self, df, start, end):
         data = {'labels': [], 'datasets': []}
         df = df[(df['date'] >= start) & (df['date'] <= end)].sort_values(['subject', 'date'])
@@ -76,6 +77,12 @@ class ReportView(LoginRequiredMixin, TemplateView):
                 'backgroundColor': 'rgba(255, 99, 132, 0.5)',
                 'stack': 'stack-1',
             })
+        return data
+
+    # 円グラフのデータを取得
+    def get_pie_chart_data(self, df):
+        data = {'labels': [], 'datasets': []}
+
         return data
 
     def get_context_data(self, **kwargs):
