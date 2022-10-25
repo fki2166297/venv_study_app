@@ -20,9 +20,8 @@ class HomeView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['subject', 'start_date', 'start_time', 'end_date', 'end_time']
-        df = read_frame(self.model.objects.filter(user=self.request.user).select_related(), fieldnames=COLS)
-
+        COLS = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time']
+        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
         for index, row in df.iterrows():
             start_dt = dt.datetime.combine(row['start_date'], row['start_time'])
             end_dt = dt.datetime.combine(row['end_date'], row['end_time'])
@@ -40,7 +39,6 @@ class HomeView(LoginRequiredMixin, CreateView):
                     df.at[index, 'study_time'] = str(study_hours) + '時間' + str(study_minutes) + '分'
         df = df.drop(columns=['start_date', 'start_time', 'end_date', 'end_time'])
         context['df_context'] = df
-        context['test'] = self.model.objects.filter(user=self.request.user).select_related()
         return context
 
     # forms.pyにログインユーザーIDを渡す
@@ -70,14 +68,15 @@ class ReportView(LoginRequiredMixin, TemplateView):
         # startからendの期間内のデータを取得
         df = df[(df['date'] >= start) & (df['date'] <= end)]
         # 教科, 日付ごとに学習時間を合計
-        df = df.groupby(['subject', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
+        df = df.groupby(['subject', 'subject__color', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
         subjects = list(df.groupby('subject').groups.keys())
         for subject in subjects:
-            dataset = {'label': subject, 'data': [], 'stack': 'stack-1'}
+            dataset = {'label': subject, 'data': [], 'backgroundColor': '', 'stack': 'stack-1'}
             for i in range(date_diff):
                 for row in df.itertuples():
                     if (subject == row.subject) and (start + dt.timedelta(days=i) == row.date):
                         dataset['data'].append(row.study_minutes)
+                        dataset['backgroundColor'] = row.subject__color # 仮
                         break
                 else:
                     dataset['data'].append(0)
@@ -92,7 +91,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['subject', 'start_date', 'start_time', 'end_date', 'end_time']
+        COLS = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time']
         df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
 
         # 複数の日をまたぐデータを日付ごとに分割する
@@ -131,6 +130,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         week_start = today + dt.timedelta(days=-weekday)
         week_end = today + dt.timedelta(days=(6-weekday))
 
+        context['test'] = df2
         context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
         return context
 
@@ -145,12 +145,11 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
 
 class QuestionDetailView(LoginRequiredMixin, CreateView):
     template_name = 'question-detail.html'
-    model = Question
     form_class = AnswerCreateForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['question_detail'] = self.model.objects.filter(id=self.kwargs['pk'])[0]
+        context['question_detail'] = Question.objects.filter(id=self.kwargs['pk'])[0]
         return context
 
 
