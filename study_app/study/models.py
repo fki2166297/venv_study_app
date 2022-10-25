@@ -36,7 +36,7 @@ class Question(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     is_answered = models.BooleanField(verbose_name='回答', default=False)
     subject = models.CharField(verbose_name='教科', max_length=30)
-    image = models.ImageField(verbose_name='写真', blank=True)
+    image = models.ImageField(verbose_name='写真', upload_to='question_img/', null=True)
     title = models.CharField(verbose_name='タイトル', max_length=40)
     text = models.TextField(verbose_name='質問文', blank=True, null=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
@@ -49,7 +49,7 @@ class Question(models.Model):
 class Answer(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='回答文', blank=True, null=True)
-    image = models.ImageField(verbose_name='写真', blank=True, null=True)
+    image = models.ImageField(verbose_name='写真', upload_to='answer_img/', null=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
