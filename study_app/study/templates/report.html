@@ -6,28 +6,7 @@
 
 {% block contents %}
 <div class="container-md">
-
-    <div>
-        <h3>データ確認用</h3>
-        <table class="table table-striped table-bordered table-hover">
-            <tr>
-                <td>index</td>
-                {% for column, item in df_context.iteritems %}
-                    <th>{{ column }}</th>
-                {% endfor %}
-            </tr>
-            {% for index, values in df_context.iterrows %}
-            <tr>
-                <th>{{ index }}</th>
-                {% for value in values %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-
-    <p>{{ df_week }}</p>
+    <p>{{ bar_chart_week|safe }}</p>
 
     <div class="row mb-4">
         <div class="col-lg-6">
@@ -88,24 +67,25 @@
 </div>
 
 <script>
-    function drawBarChart() {
+    function drawBarChart(data) {
         window.barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
-            data: {
-                labels: ['(日)', '(月)', '(火)', '(水)', '(木)', '(金)', '(土)'],
-                datasets: [{
-                    label: '教科1',
-                    data: [9, 4, 2, 5, 4, 3, 7],
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    stack: 'stack-1',
-                }, {
-                    label: '教科2',
-                    data: [5, 2, 4, 3, 5, 5, 6],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    stack: 'stack-1',
-                }],
-            },
+            data: data,
             options: {
+                scales: {
+                    yAxes: [{
+                        //ここで軸を時間を設定する
+                        type: 'time',
+                        time: {
+                            parser: 'mm:dd',
+                            unit: 'hour',
+                            stepSize: 1,
+                            displayFormats: {
+                                'hour': 'HH:mm'
+                            }
+                        },
+                    }],
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -115,15 +95,10 @@
         });
     }
 
-    function drawPieChart() {
+    function drawPieChart(data) {
         window.pieChart = new Chart(document.getElementById('pieChart'), {
             type: 'pie',
-            data: {
-                labels: ['教科1', '教科2'],
-                datasets: [{
-                    data: [50, 60],
-                }],
-            },
+            data: data,
             options: {
                 plugins: {
                     legend: {
@@ -135,15 +110,16 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-        drawBarChart();
-        drawPieChart()
+        drawBarChart({{ bar_chart_week|safe }});
+        drawPieChart({'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}],
+        })
     });
 
     document.getElementById('weekBtn').onclick = () => {
         if (barChart) {
             barChart.destroy();
         }
-        drawBarChart();
+        drawBarChart({{ bar_chart_week|safe }});
     }
 
     document.getElementById('monthBtn').onclick = () => {

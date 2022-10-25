@@ -26,6 +26,11 @@
         {% endfor %}
     </table>
 
+    <h2>test</h2>
+    {% for i in test %}
+        <p>{{ i.subject.color }}</p>
+    {% endfor %}
+
     <div class="row">
         <div class="col-md-9">
             <div id="calendar"></div>
@@ -265,10 +270,10 @@
         events: [
             {% for study_time in df_context.itertuples %}
                 {
-                    title: '{{ study_time.subject }}',
+                    title: '{{ study_time.subject }}   {{ study_time.study_time }}',
                     start: '{{ study_time.start | date:"Y-m-d H:i" }}',
                     end: '{{ study_time.end | date:"Y-m-d H:i" }}',
-                    backgroundColor: '',
+                    backgroundColor: '{{ study_time.subject.color }}',
                 },
             {% endfor %}
         ],

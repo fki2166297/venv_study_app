@@ -21,7 +21,7 @@ class HomeView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         COLS = ['subject', 'start_date', 'start_time', 'end_date', 'end_time']
-        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
+        df = read_frame(self.model.objects.filter(user=self.request.user).select_related(), fieldnames=COLS)
 
         for index, row in df.iterrows():
             start_dt = dt.datetime.combine(row['start_date'], row['start_time'])
@@ -40,6 +40,7 @@ class HomeView(LoginRequiredMixin, CreateView):
                     df.at[index, 'study_time'] = str(study_hours) + '時間' + str(study_minutes) + '分'
         df = df.drop(columns=['start_date', 'start_time', 'end_date', 'end_time'])
         context['df_context'] = df
+        context['test'] = self.model.objects.filter(user=self.request.user).select_related()
         return context
 
     # forms.pyにログインユーザーIDを渡す
@@ -62,21 +63,25 @@ class ReportView(LoginRequiredMixin, TemplateView):
     # 棒グラフのデータを取得
     def get_bar_chart_data(self, df, start, end):
         data = {'labels': [], 'datasets': []}
-        df = df[(df['date'] >= start) & (df['date'] <= end)].sort_values(['subject', 'date'])
-        df2 = df.groupby(['subject', 'date'], as_index=False).sum()
-
         date_diff = (end - start).days + 1
+        # startからendまでの日付をlabelsに格納
         for i in range(date_diff):
             data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
-        for i in range(len(df.groupby(['subject']))):
-            data['datasets'].append({
-                'label': '教科1',
-                'data': [
-                    len(df.groupby(['subject']))
-                ],
-                'backgroundColor': 'rgba(255, 99, 132, 0.5)',
-                'stack': 'stack-1',
-            })
+        # startからendの期間内のデータを取得
+        df = df[(df['date'] >= start) & (df['date'] <= end)]
+        # 教科, 日付ごとに学習時間を合計
+        df = df.groupby(['subject', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
+        subjects = list(df.groupby('subject').groups.keys())
+        for subject in subjects:
+            dataset = {'label': subject, 'data': [], 'stack': 'stack-1'}
+            for i in range(date_diff):
+                for row in df.itertuples():
+                    if (subject == row.subject) and (start + dt.timedelta(days=i) == row.date):
+                        dataset['data'].append(row.study_minutes)
+                        break
+                else:
+                    dataset['data'].append(0)
+            data['datasets'].append(dataset)
         return data
 
     # 円グラフのデータを取得
@@ -126,8 +131,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         week_start = today + dt.timedelta(days=-weekday)
         week_end = today + dt.timedelta(days=(6-weekday))
 
-        data = self.get_bar_chart_data(df2, week_start, week_end)
-        context['df_week'] = data
+        context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
         return context
 
 
@@ -179,6 +183,7 @@ class SubjectView(LoginRequiredMixin, CreateView):
         subject.user = self.request.user
         subject.save()
         return super().form_valid(form)
+
 
 class MyPageView(LoginRequiredMixin, TemplateView):
     template_name = 'my-page.html'
