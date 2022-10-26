@@ -37,7 +37,6 @@ class Question(models.Model):
     is_answered = models.BooleanField(verbose_name='回答', default=False)
     subject = models.CharField(verbose_name='教科', max_length=30)
     image = models.ImageField(verbose_name='写真', upload_to='question_img/', null=True)
-    title = models.CharField(verbose_name='タイトル', max_length=40)
     text = models.TextField(verbose_name='質問文', blank=True, null=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)

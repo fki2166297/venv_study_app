@@ -23,12 +23,12 @@ class SubjectCreateForm(forms.ModelForm):
 
 
 class SubjectChoices(TextChoices):
-    ALL_SUBJECTS = 'all_subjects', '全教科'
-    JAPANESE = 'japanese', '国語'
-    MATH = 'math', '数学'
-    SCIENCE = 'science', '科学'
-    SOCIETY = 'society', '社会'
-    ENGLISH = 'english', '英語'
+    ALL_SUBJECTS = '全教科', '全教科'
+    JAPANESE = '国語', '国語'
+    MATH = '数学', '数学'
+    SCIENCE = '科学', '科学'
+    SOCIETY = '社会', '社会'
+    ENGLISH = '英語', '英語'
 
 
 class QuestionCreateForm(forms.ModelForm):
@@ -36,7 +36,7 @@ class QuestionCreateForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ('subject', 'image', 'title', 'text')
+        fields = ('subject', 'text', 'image')
 
 
 class AnswerCreateForm(forms.ModelForm):

@@ -19,18 +19,21 @@
             {% for question in question_list %}
                 <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
                     <div class="card mb-3">
-                        <div class="card-header">
-                            {{ question.title }}
+                        <div class="card-header d-flex py-1">
+                            {{ question.subject }}
+                            <div class="ms-auto text-muted">
+                                {{ question.created_at }}
+                            </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body m-2">
                             <div class="row">
                                 {% if question.image %}
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <img class="col-12" src="/media/{{ question.image }}"/>
                                     </div>
                                 {% endif %}
-                                <div class="col">
-                                    {{ question.text }}
+                                <div class="col-md-8 text-wrap">
+                                    {{ question.text|truncatechars:200 }}
                                 </div>
                             </div>
                         </div>

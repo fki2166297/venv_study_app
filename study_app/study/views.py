@@ -147,19 +147,19 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
 
 class QuestionDetailView(LoginRequiredMixin, CreateView):
     template_name = 'question-detail.html'
-    model = Question
     form_class = AnswerCreateForm
     success_url = reverse_lazy('study:qa')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['question_detail'] = self.model.objects.filter(id=self.kwargs['pk'])[0]
+        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
+        context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
         return context
 
     def form_valid(self, form):
         answer = form.save(commit=False)
         answer.user = self.request.user
-        answer.question = self.model.objects.filter(id=self.kwargs['pk'])[0]
+        answer.question = self.model.objects.get(pk=self.kwargs['pk'])
         answer.save()
         return super().form_valid(form)
 
@@ -181,7 +181,7 @@ class SubjectView(LoginRequiredMixin, CreateView):
     template_name = 'subject.html'
     model = Subject
     form_class = SubjectCreateForm
-    success_url = reverse_lazy('study:home')
+    success_url = reverse_lazy('study:subject')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

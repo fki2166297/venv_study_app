@@ -5,39 +5,58 @@
 {% block title %}Study App{% endblock %}
 
 {% block contents %}
-<div class="container-md col-md-6">
+<div class="container-md col-md-7">
     <div class="card mb-3">
-        <h5 class="card-header">
-            作成日時：{{ question_detail.created_at }}
-            更新日時：{{ question_detail.updated_at }}
-            　　　　　　　　　　　　<button class="btn btn-primary shadow-sm col-1.5 " data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">編集</button>
-        </h5>
-        <div class="card-body">
-            <h4>{{ question_detail.title }}</h4>
-            <p class="card-text">
-                {{ question_detail.text }}
-            </p>
-            <p>
-                <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                    回答
-                </a>
-            </p>
-            <div class="collapse" id="collapseExample">
-                <div class="card card-body">
-                    回答フォーム
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                {% render_field field class='form-control' %}
-                            </div>
-                        {% endfor %}
-                        <input type="submit" class="btn btn-primary" value="回答する">
-                    </form>
-                </div>
+        <p class="card-header">
+            作成日時：{{ question.created_at }}
+            更新日時：{{ question.updated_at }}
+            <button class="btn btn-primary shadow-sm col-1.5">編集</button>
+        </p>
+        <div class="card-body m-2">
+            <div class="col-md-6 mx-auto">
+                <img class="col-12" src="/media/{{ question.image }}"/>
             </div>
+            <p class="card-text">
+                {{ question.text|linebreaksbr }}
+            </p>
+            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                回答する
+            </a>
         </div>
     </div>
+
+    <!-- 回答フォームのカード -->
+    <div class="collapse mb-3" id="collapseExample">
+        <div class="card card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% render_field field class='form-control' %}
+                    </div>
+                {% endfor %}
+                <input type="submit" class="btn btn-primary" value="送信">
+            </form>
+        </div>
+    </div>
+
+    <div class="col-11 mx-auto">
+        {% for answer in answer_list %}
+            <div class="card mb-3">
+                <p class="card-header">
+                    作成日時：{{ answer.created_at }}
+                    更新日時：{{ answer.updated_at }}
+                </p>
+                <div class="card-body">
+                    <h4>{{ answer.title }}</h4>
+                    <p class="card-text">
+                        {{ answer.text }}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div style="height: 80vh;"></div>
 </div>
 {% endblock %}
