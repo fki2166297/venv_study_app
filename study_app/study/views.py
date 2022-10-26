@@ -139,6 +139,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
 class QuestionAndAnswerView(LoginRequiredMixin, ListView):
     template_name = 'qa.html'
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Question.objects.filter(user=self.request.user).order_by('-created_at')

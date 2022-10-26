@@ -23,7 +23,6 @@ class SubjectCreateForm(forms.ModelForm):
 
 
 class SubjectChoices(TextChoices):
-    ALL_SUBJECTS = '全教科', '全教科'
     JAPANESE = '国語', '国語'
     MATH = '数学', '数学'
     SCIENCE = '科学', '科学'
