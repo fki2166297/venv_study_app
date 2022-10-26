@@ -85,6 +85,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     # 円グラフのデータを取得
     def get_pie_chart_data(self, df):
+        #      {'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}
         data = {'labels': [], 'datasets': []}
 
         return data
@@ -125,12 +126,13 @@ class ReportView(LoginRequiredMixin, TemplateView):
         df2 = df2.drop(columns=['start_time', 'end_date', 'end_time'])
         df2 = df2.rename(columns={'start_date': 'date'})
 
+        context['df2'] = df2
+
         today = dt.date.today()
         weekday = today.isoweekday() % 7
         week_start = today + dt.timedelta(days=-weekday)
         week_end = today + dt.timedelta(days=(6-weekday))
 
-        context['test'] = df2
         context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
         return context
 
@@ -145,12 +147,21 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
 
 class QuestionDetailView(LoginRequiredMixin, CreateView):
     template_name = 'question-detail.html'
+    model = Question
     form_class = AnswerCreateForm
+    success_url = reverse_lazy('study:qa')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['question_detail'] = Question.objects.filter(id=self.kwargs['pk'])[0]
+        context['question_detail'] = self.model.objects.filter(id=self.kwargs['pk'])[0]
         return context
+
+    def form_valid(self, form):
+        answer = form.save(commit=False)
+        answer.user = self.request.user
+        answer.question = self.model.objects.filter(id=self.kwargs['pk'])[0]
+        answer.save()
+        return super().form_valid(form)
 
 
 class QuestionCreateView(LoginRequiredMixin, CreateView):

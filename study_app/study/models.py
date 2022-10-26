@@ -49,6 +49,7 @@ class Question(models.Model):
 class Answer(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='回答文', blank=True, null=True)
+    question = models.ForeignKey(Question, verbose_name='質問', on_delete=models.CASCADE)
     image = models.ImageField(verbose_name='写真', upload_to='answer_img/', null=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
