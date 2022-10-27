@@ -9,6 +9,7 @@
 
     <h5>確認用</h5>
     <p>{{ bar_chart_week|safe }}</p>
+    <p>{{ pie_chart|safe }}</p>
 
     <div class="row mb-4">
         <div class="col-lg-6">
@@ -77,6 +78,21 @@
             type: 'bar',
             data: data,
             options: {
+                scales: {
+                    y: {
+                        ticks: {
+                            stepSize: 30,
+                            callback: function(value, index, ticks) {
+                                if (value >= 60) {
+                                    value = (value / 60) + '時間';
+                                } else if (value != 0) {
+                                    value = value + '分';
+                                }
+                                return value;
+                            },
+                        },
+                    },
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -102,8 +118,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         drawBarChart({{ bar_chart_week|safe }});
-        drawPieChart({'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}],
-        })
+        drawPieChart({{ pie_chart|safe }});
     });
 
     document.getElementById('weekBtn').onclick = () => {

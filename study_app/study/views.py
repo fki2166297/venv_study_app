@@ -20,7 +20,7 @@ class HomeView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time']
+        COLS = ['id', 'subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'created_at', 'updated_at']
         df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
         for index, row in df.iterrows():
             start_dt = dt.datetime.combine(row['start_date'], row['start_time'])
@@ -85,9 +85,14 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     # 円グラフのデータを取得
     def get_pie_chart_data(self, df):
-        #      {'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}
+        # data = {'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}]}
         data = {'labels': [], 'datasets': []}
-
+        dataset = {'data': []}
+        df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
+        data['labels'] = df['subject'].values.tolist()
+        dataset['data'] = df['study_minutes'].values.tolist()
+        dataset['backgroundColor'] = df['subject__color'].values.tolist()
+        data['datasets'].append(dataset)
         return data
 
     def get_context_data(self, **kwargs):
@@ -134,6 +139,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         week_end = today + dt.timedelta(days=(6-weekday))
 
         context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
+        context['pie_chart'] = self.get_pie_chart_data(df2)
         return context
 
 
@@ -160,6 +166,7 @@ class QuestionDetailView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         answer = form.save(commit=False)
         answer.user = self.request.user
+        # questionのIDを保存
         answer.question = self.model.objects.get(pk=self.kwargs['pk'])
         answer.save()
         return super().form_valid(form)
