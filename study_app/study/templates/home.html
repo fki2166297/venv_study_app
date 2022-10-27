@@ -60,14 +60,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="allDayCheck">
-                                    終日
-                                </label>
-                            </div>
-                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
@@ -85,6 +77,7 @@
                 <form method="POST">
                     {% csrf_token %}
                     <div class="modal-header">
+                        <form >
                         <a class="btn btn-primary text-nowrap" href="#" role="button">編集</a>
                         <a class="btn btn-primary text-nowrap" href="#" role="button">削除</a>
                     </div>
@@ -230,21 +223,6 @@
         }
     });
 
-    let allDayCheck = document.getElementById('allDayCheck');
-    allDayCheck.addEventListener('change', () => {
-        if (document.getElementById('allDayCheck').checked) {
-            startTimeInput.disabled = true;
-            endTimeInput.disabled = true;
-            startTimeInput.value = '';
-            endTimeInput.value = '';
-        } else {
-            startTimeInput.disabled = false;
-            endTimeInput.disabled = false;
-            startTimeInput.value = '';
-            endTimeInput.value = '';
-        }
-    })
-
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
         themeSystem: 'bootstrap5',
@@ -255,49 +233,31 @@
         },
         initialView: 'listMonth',
         height: 'auto',
-        selectable: true,
         events: [
             {% for study_time in df_context.itertuples %}
                 {
-                    title: '{{ study_time.subject.subject }}   {{ study_time.study_time }}',
+                    id: '{{ study_time.id }}',
+                    title: '{{ study_time.subject }} {{ study_time.study_time }}',
                     start: '{{ study_time.start|date:"Y-m-d H:i" }}',
                     end: '{{ study_time.end|date:"Y-m-d H:i" }}',
                     backgroundColor: '{{ study_time.subject__color }}',
+                    created_at: '{{ study_time.created_at|date:"Y/m/d H:i" }}',
+                    updated_at: '{{ study_time.updated_at|date:"Y/m/d H:i" }}'
                 },
             {% endfor %}
         ],
-        select: (info) => {
-            const myModal = new bootstrap.Modal('#creationModal', {
-                keyboard: false,
-            });
-            startTime = info.startStr.slice(0, -9).split('T')[1];
-            endTime = info.endStr.slice(0, -9).split('T')[1];
-
-            startDateInput.value = info.startStr.split('T')[0];
-            startTimeInput.value = startTime ? startTime : '';
-            endDateInput.value = info.endStr.split('T')[0];
-            endTimeInput.value = endTime ? endTime : '';
-
-            if (info.allDay) {
-                allDayCheck.checked = true;
-                startTimeInput.disabled = true;
-                endTimeInput.disabled = true;
-                startTimeInput.value = '';
-                endTimeInput.value = '';
-            }
-            myModal.toggle();
-        },
         eventClick: (info) => {
             const myModal = new bootstrap.Modal('#detailModal', {
                 keyboard: false,
             });
             document.getElementById('subject').textContent = info.event.title;
-            document.getElementById('start').textContent = info.event.startStr;
-            document.getElementById('end').textContent = info.event.endStr;
+            document.getElementById('start').textContent = info.event.startStr.slice(0, -9).replace('T', ' ').replace(/-/g, '/');
+            document.getElementById('end').textContent = info.event.endStr.slice(0, -9).replace('T', ' ').replace(/-/g, '/');
             myModal.toggle();
         },
         locale: 'ja',
-        allDayText: '終日',
+        // 終日スロットを非表示
+        allDaySlot: false,
         buttonText: {
             list: 'リスト',
         },
@@ -305,13 +265,20 @@
             info.dayNumberText = info.dayNumberText.replace('日', '');
         },
         views: {
+            timeGridDay: {
+                titleFormat: (info) => {
+                    const month = info.date.month;
+                    const day = info.date.day;
+                    return month + '月' + day + '日';
+                },
+            },
             timeGridWeek: {
                 titleFormat: (info) => {
                     const startMonth = info.start.month + 1;
                     const endMonth = info.end.month + 1;
-
                     if (startMonth === endMonth) {
                         return startMonth + '月';
+                    // 月をまたぐ場合
                     } else {
                         return startMonth + '月 - ' + endMonth + '月';
                     }
@@ -320,7 +287,6 @@
                     const day = info.date.day;
                     const weekNum = info.date.marker.getDay();
                     const week = ['(日)', '(月)', '(火)', '(水)', '(木)', '(金)', '(土)'][weekNum];
-
                     return day + ' ' + week;
                 },
             }

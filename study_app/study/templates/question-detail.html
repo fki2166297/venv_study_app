@@ -5,7 +5,7 @@
 {% block title %}Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md col-md-7">
+<main class="container-md col-md-6">
     <div class="card mb-3">
         <p class="card-header">
             作成日時：{{ question.created_at }}
@@ -13,12 +13,12 @@
             <button class="btn btn-primary shadow-sm col-1.5">編集</button>
         </p>
         <div class="card-body m-2">
-            <div class="col-md-6 mx-auto">
+            <div class="card-text mb-4">
+                {{ question.text|linebreaksbr }}
+            </div>
+            <div class="col-md-7 mx-auto">
                 <img class="col-12" src="/media/{{ question.image }}"/>
             </div>
-            <p class="card-text">
-                {{ question.text|linebreaksbr }}
-            </p>
             <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                 回答する
             </a>
