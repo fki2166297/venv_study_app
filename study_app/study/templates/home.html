@@ -7,14 +7,17 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md mb-5">
+<main class="container-md">
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-8">
             <div id="calendar"></div>
         </div>
-        <div class="col-md-3 d-none d-md-block">
-            <div style="position: sticky; top: 5rem;">
-                <button class="btn btn-primary shadow-sm col-12" id="creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+        <div class="col-md-4 d-none d-md-block">
+            <div class="vstack gap-3" style="position: sticky; top: 5rem;">
+                <button class="btn btn-primary col-12 gap-3" id="creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+                <div class="card card-body hstack py-2">
+                    <img src="" alt="mdo" width="32" height="32" class="rounded-circle">　●教科1　1時間20分
+                </div>
             </div>
         </div>
     </div>
@@ -22,11 +25,15 @@
         <span class="material-symbols-outlined">add</span>
     </button>
 
+    <!-- 記録作成モーダル -->
     <div class="modal" id="creationModal" tabindex="-1" aria-labelledby="creationModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form method="POST">
                     {% csrf_token %}
+                    <h5 class="modal-header">
+                        記録の作成
+                    </h5>
                     <div class="modal-body">
                         <div class="mb-4">
                             <label class="form-label" for="{{ form.subject.id_for_label }}">教科を選択</label>
@@ -35,30 +42,15 @@
                                 教科を作成する
                             </a>
                         </div>
-                        <div class="mb-3">
-                            <div class="row">
-                                <p class="form-label">開始</p>
-                                <div class="col-auto">
-                                    {% render_field form.start_date class='form-control' id='startDateInput' %}
-                                </div>
-                                <div class="col-auto">
-                                    {% render_field form.start_time class='form-control' id='startTimeInput' %}
-                                </div>
-                            </div>
+                        <p class="form-label">開始日時</p>
+                        <div class="hstack gap-3 mb-3">
+                            {% render_field form.start_date class='form-control' id='startDateInput' %}
+                            {% render_field form.start_time class='form-control' id='startTimeInput' %}
                         </div>
-                        <div class="mb-3">
-                            {% render_field form.study_minutes type='range' class='form-range' min='0' max='12' step='0.25' value='1' %}
-                        </div>
-                        <div class="mb-3">
-                            <p class="form-label">終了</p>
-                            <div class="row">
-                                <div class="col-auto">
-                                    {% render_field form.end_date class='form-control' id='endDateInput' %}
-                                </div>
-                                <div class="col-auto">
-                                    {% render_field form.end_time class='form-control' id='endTimeInput' %}
-                                </div>
-                            </div>
+                        <p class="form-label">終了日時</p>
+                        <div class="hstack gap-3 mb-3">
+                            {% render_field form.end_date class='form-control' id='endDateInput' %}
+                            {% render_field form.end_time class='form-control' id='endTimeInput' %}
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -70,7 +62,7 @@
         </div>
     </div>
 
-    <!-- 記録作成モーダル -->
+    <!-- 記録詳細モーダル -->
     <div class="modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -145,6 +137,8 @@
             theme: 'light',
         },
         stepping: 5,
+        useCurrent: false,
+        defaultDate: undefined,
         localization: {
             clear: 'クリア',
             incrementHour: '1時間増やす',
@@ -166,16 +160,19 @@
     const endDatePicker = new tempusDominus.TempusDominus(endDateInput, datePickerOptions);
     const endTimePicker = new tempusDominus.TempusDominus(endTimeInput, timePickerOptions);
 
-    // 日付、時刻のフォームに初期値を設定する
+    // 日付、時刻フォームに現在の日時を設定する
     document.getElementById('creationBtn').addEventListener('click', () => {
         const now = new Date();
+        now.setMinutes(Math.round(now.getMinutes() / 5) * 5);
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        nowDateTime = now.toISOString().slice(0, -8).split('T');
+        nowDateTime1 = now.toISOString().slice(0, -8).split('T');
+        now.setMinutes(now.getMinutes() + 5);
+        nowDateTime2 = now.toISOString().slice(0, -8).split('T');
 
-        startDateInput.value = nowDateTime[0];
-        startTimeInput.value = nowDateTime[1];
-        endDateInput.value = nowDateTime[0];
-        endTimeInput.value = nowDateTime[1];
+        startDateInput.value = nowDateTime1[0];
+        startTimeInput.value = nowDateTime1[1];
+        endDateInput.value = nowDateTime2[0];
+        endTimeInput.value = nowDateTime2[1];
     });
 
     startDateInput.addEventListener('change', () => {
@@ -184,41 +181,42 @@
         if (startDate.getTime() > endDate.getTime()) {
             endDateInput.value = startDateInput.value;
             endDatePicker.updateOptions({
-                defaultDate: endDateInput.value,
+                defaultDate: startDate,
             });
         }
     });
 
-    endDateInput.addEventListener('click', () => {
-        endDatePicker.updateOptions({
-            restrictions: {
-                minDate: startDateInput.value,
-            },
-            defaultDate: document.getElementById('endDateInput').value,
-        });
-    });
-
-    startTimeInput.addEventListener('change', () => {
-        if ((startDateInput !== '') && (startDateInput.value === endDateInput.value)) {
-            const startHour = parseInt(startTimeInput.value.split(':')[0]);
-            const endHour = parseInt(endTimeInput.value.split(':')[0]);
-            if (startHour > endHour) {
-                endTimeInput.value = startTimeInput.value;
-                // 終了時刻が更新された際にデフォルト値を更新
-                // endTimePicker.updateOptions({
-                //     defaultDate: endDateInput.value + ' ' + endTimeInput.value,
-                // });
-            }
+    endDateInput.addEventListener('change', () => {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        if (startDate.getTime() > endDate.getTime()) {
+            startDateInput.value = endDateInput.value;
+            startDatePicker.updateOptions({
+                defaultDate: endDate,
+            });
         }
     });
 
-    endTimeInput.addEventListener('click', () => {
-        if ((startDateInput !== '') && (startDateInput.value === endDateInput.value)) {
-            const startHour = parseInt(startTimeInput.value.split(':')[0]);
+    startTimeInput.addEventListener('change', () => {
+        const startDateTime = new Date(startDateInput.value + ' ' + startTimeInput.value);
+        const endDateTime = new Date(endDateInput.value + ' ' + endTimeInput.value);
+        if (startDateTime.getTime() >= endDateTime.getTime()) {
+            startDateTime.setMinutes(startDateTime.getMinutes() + 5);
+            endTimeInput.value = ('0' + startDateTime.getHours()).slice(-2) + ':' + ('0' + startDateTime.getMinutes()).slice(-2);
             endTimePicker.updateOptions({
-                restrictions: {
-                    disabledHours: Array.from(Array(startHour).keys()),
-                },
+                defaultDate: startDateTime,
+            });
+        }
+    });
+
+    endTimeInput.addEventListener('change', () => {
+        const startDateTime = new Date(startDateInput.value + ' ' + startTimeInput.value);
+        const endDateTime = new Date(endDateInput.value + ' ' + endTimeInput.value);
+        if (startDateTime.getTime() >= endDateTime.getTime()) {
+            endDateTime.setMinutes(endDateTime.getMinutes() - 5);
+            startTimeInput.value = ('0' + endDateTime.getHours()).slice(-2) + ':' + ('0' + endDateTime.getMinutes()).slice(-2);
+            startTimePicker.updateOptions({
+                defaultDate: endDateTime,
             });
         }
     });

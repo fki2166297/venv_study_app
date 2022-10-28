@@ -13,7 +13,7 @@ class StudyTimeForm(forms.ModelForm):
 
     class Meta:
         model = StudyTime
-        fields = ('subject', 'start_date', 'study_minutes', 'start_time', 'end_date', 'end_time')
+        fields = ('subject', 'start_date', 'start_time', 'end_date', 'end_time', 'study_minutes')
 
 
 class SubjectCreateForm(forms.ModelForm):

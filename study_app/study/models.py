@@ -20,11 +20,11 @@ class Subject(models.Model):
 class StudyTime(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, verbose_name="教科", on_delete=models.CASCADE)
-    start_date = models.DateField(verbose_name='開始日')
-    start_time = models.TimeField(verbose_name='開始時刻')
-    study_minutes = models.IntegerField(verbose_name='学習時間', default=0, validators=[MinValueValidator(0)])
-    end_date = models.DateField(verbose_name='終了日')
-    end_time = models.TimeField(verbose_name='終了時刻')
+    start_date = models.DateField(verbose_name='開始日', null=False)
+    start_time = models.TimeField(verbose_name='開始日', null=False)
+    end_date = models.DateField(verbose_name='終了日', null=False)
+    end_time = models.TimeField(verbose_name='終了日', null=False)
+    study_minutes = models.IntegerField(verbose_name='学習時間', default=0)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
@@ -35,9 +35,9 @@ class StudyTime(models.Model):
 class Question(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     is_answered = models.BooleanField(verbose_name='回答', default=False)
-    subject = models.CharField(verbose_name='教科', max_length=30)
+    subject = models.CharField(verbose_name='教科', max_length=15)
     image = models.ImageField(verbose_name='画像', upload_to='question_img/', null=True, blank=True, default='')
-    text = models.TextField(verbose_name='質問文', blank=True, null=True)
+    text = models.TextField(verbose_name='質問文', blank=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
@@ -47,8 +47,8 @@ class Question(models.Model):
 
 class Answer(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    text = models.TextField(verbose_name='回答文', blank=True, null=True)
     question = models.ForeignKey(Question, verbose_name='質問', on_delete=models.CASCADE)
+    text = models.TextField(verbose_name='回答文', blank=True)
     image = models.ImageField(verbose_name='画像', upload_to='answer_img/', null=True, blank=True, default='')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)

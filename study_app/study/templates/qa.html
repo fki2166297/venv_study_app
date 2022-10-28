@@ -13,21 +13,21 @@
             <div class="input-group">
                 <input type="search" class="form-control" placeholder="キーワードを入力">
                 <button type="button" class="btn btn-primary">
-                    <span class="material-symbols-outlined">search</span>
+                    <i class="material-symbols-outlined">search</i>
                 </button>
             </div>
         </div>
         <div class="col-md-4">
-            <a type="submit" class="btn btn-primary col-12 shadow-sm" href="{% url 'study:question-create' %}" role="button">投稿する</a>
+            <a type="submit" class="btn btn-primary col-12" href="{% url 'study:question-create' %}" role="button">投稿する</a>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8 mb-5">
+        <div class="col-md-8 vstack gap-3">
             {% for question in question_list %}
                 <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
-                    <div class="card mb-4">
+                    <div class="card">
                         <div class="card-header d-flex py-1">
-                            {{ question.subject }}
+                            <div class="badge rounded-pill bg-white text-dark border">{{ question.subject }}</div>
                             <div class="ms-auto text-muted">
                                 {{ question.created_at|date:'n/j G:i' }}
                             </div>

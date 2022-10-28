@@ -20,23 +20,18 @@ class HomeView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['id', 'subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'created_at', 'updated_at']
+        COLS = ['id', 'subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'study_minutes', 'created_at', 'updated_at']
         df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
         for index, row in df.iterrows():
-            start_dt = dt.datetime.combine(row['start_date'], row['start_time'])
-            end_dt = dt.datetime.combine(row['end_date'], row['end_time'])
-            df.at[index, 'start'] = start_dt
-            df.at[index, 'end'] = end_dt
-            dt_diff = end_dt - start_dt
-            study_minutes = int(dt_diff.days * 60 * 24 + dt_diff.seconds / 60)
-            if study_minutes < 60:
-                df.at[index, 'study_time'] = str(study_minutes) + '分'
+            if row.study_minutes < 60:
+                df.at[index, 'study_minutes'] = str(row.study_minutes) + '分'
             else:
-                study_hours, study_minutes = divmod(study_minutes, 60)
+                study_hours, study_minutes = divmod(row.study_minutes, 60)
                 if study_minutes == 0:
-                    df.at[index, 'study_time'] = str(study_hours) + '時間'
+                    df.at[index, 'study_minutes'] = str(study_hours) + '時間'
                 else:
-                    df.at[index, 'study_time'] = str(study_hours) + '時間' + str(study_minutes) + '分'
+                    df.at[index, 'study_minutes'] = str(study_hours) + '時間' + str(study_minutes) + '分'
+        df = df.rename(columns={'study_minutes': 'study_time'})
         df = df.drop(columns=['start_date', 'start_time', 'end_date', 'end_time'])
         context['df_context'] = df
         return context
@@ -50,6 +45,10 @@ class HomeView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         study_time = form.save(commit=False)
         study_time.user = self.request.user
+        start_dt = dt.datetime.combine(study_time.start_date, study_time.start_time)
+        end_dt = dt.datetime.combine(study_time.end_date, study_time.end_time)
+        dt_diff = end_dt - start_dt
+        study_time.study_minutes = int(dt_diff.days * 60 * 24 + dt_diff.seconds / 60)
         study_time.save()
         return super().form_valid(form)
 
@@ -61,38 +60,39 @@ class ReportView(LoginRequiredMixin, TemplateView):
     # 棒グラフのデータを取得
     def get_bar_chart_data(self, df, start, end):
         data = {'labels': [], 'datasets': []}
-        date_diff = (end - start).days + 1
-        # startからendまでの日付をlabelsに格納
-        for i in range(date_diff):
-            data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
-        # startからendの期間内のデータを取得
-        df = df[(df['date'] >= start) & (df['date'] <= end)]
-        # 教科, 日付ごとに学習時間を合計
-        df = df.groupby(['subject', 'subject__color', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
-        subjects = list(df.groupby('subject').groups.keys())
-        for subject in subjects:
-            dataset = {'label': subject, 'data': [], 'backgroundColor': '', 'stack': 'stack-1'}
+        if not df.empty:
+            date_diff = (end - start).days + 1
+            # startからendまでの日付をlabelsに格納
             for i in range(date_diff):
-                for row in df.itertuples():
-                    if (subject == row.subject) and (start + dt.timedelta(days=i) == row.date):
-                        dataset['data'].append(row.study_minutes)
-                        dataset['backgroundColor'] = row.subject__color # 仮
-                        break
-                else:
-                    dataset['data'].append(0)
-            data['datasets'].append(dataset)
+                data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
+            # startからendの期間内のデータを取得
+            df = df[(df['date'] >= start) & (df['date'] <= end)]
+            # 教科, 日付ごとに学習時間を合計
+            df = df.groupby(['subject', 'subject__color', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
+            subjects = list(df.groupby('subject').groups.keys())
+            for subject in subjects:
+                dataset = {'label': subject, 'data': [], 'backgroundColor': '', 'stack': 'stack-1'}
+                for i in range(date_diff):
+                    for row in df.itertuples():
+                        if (subject == row.subject) and (start + dt.timedelta(days=i) == row.date):
+                            dataset['data'].append(row.study_minutes)
+                            dataset['backgroundColor'] = row.subject__color # 仮
+                            break
+                    else:
+                        dataset['data'].append(0)
+                data['datasets'].append(dataset)
         return data
 
     # 円グラフのデータを取得
     def get_pie_chart_data(self, df):
-        # data = {'labels': ['教科1', '教科2'], 'datasets': [{data: [50, 60]}]}
         data = {'labels': [], 'datasets': []}
         dataset = {'data': []}
-        df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
-        data['labels'] = df['subject'].values.tolist()
-        dataset['data'] = df['study_minutes'].values.tolist()
-        dataset['backgroundColor'] = df['subject__color'].values.tolist()
-        data['datasets'].append(dataset)
+        if not df.empty:
+            df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
+            data['labels'] = df['subject'].values.tolist()
+            dataset['data'] = df['study_minutes'].values.tolist()
+            dataset['backgroundColor'] = df['subject__color'].values.tolist()
+            data['datasets'].append(dataset)
         return data
 
     def get_context_data(self, **kwargs):
@@ -148,7 +148,7 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Question.objects.filter(user=self.request.user).order_by('-created_at')
+        queryset = Question.objects.order_by('-created_at')
         return queryset
 
 
@@ -167,7 +167,7 @@ class QuestionDetailView(LoginRequiredMixin, CreateView):
         answer = form.save(commit=False)
         answer.user = self.request.user
         # questionのIDを保存
-        answer.question = self.model.objects.get(pk=self.kwargs['pk'])
+        answer.question = Question.objects.get(pk=self.kwargs['pk'])
         answer.save()
         return super().form_valid(form)
 
