@@ -232,15 +232,15 @@
         initialView: 'listMonth',
         height: 'auto',
         events: [
-            {% for study_time in df_context.itertuples %}
+            {% for study_time in df_study_time.itertuples %}
                 {
                     id: '{{ study_time.id }}',
                     title: '{{ study_time.subject }} {{ study_time.study_time }}',
-                    start: '{{ study_time.start|date:"Y-m-d H:i" }}',
-                    end: '{{ study_time.end|date:"Y-m-d H:i" }}',
+                    start: '{{ study_time.start_date|date:"Y-m-d" }} {{ study_time.start_time|date:"H:i" }}',
+                    end: '{{ study_time.end_date|date:"Y-m-d" }} {{ study_time.end_time|date:"H:i" }}',
                     backgroundColor: '{{ study_time.subject__color }}',
                     created_at: '{{ study_time.created_at|date:"Y/m/d H:i" }}',
-                    updated_at: '{{ study_time.updated_at|date:"Y/m/d H:i" }}'
+                    updated_at: '{{ study_time.updated_at|date:"Y/m/d H:i" }}',
                 },
             {% endfor %}
         ],

@@ -32,8 +32,7 @@ class HomeView(LoginRequiredMixin, CreateView):
                 else:
                     df.at[index, 'study_minutes'] = str(study_hours) + '時間' + str(study_minutes) + '分'
         df = df.rename(columns={'study_minutes': 'study_time'})
-        df = df.drop(columns=['start_date', 'start_time', 'end_date', 'end_time'])
-        context['df_context'] = df
+        context['df_study_time'] = df
         return context
 
     # forms.pyにログインユーザーIDを渡す
