@@ -1,6 +1,5 @@
 from django.db import models
 from accounts.models import CustomUser
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 class Subject(models.Model):
@@ -34,9 +33,9 @@ class StudyTime(models.Model):
 
 class Question(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    is_answered = models.BooleanField(verbose_name='回答', default=False)
+    is_answered = models.BooleanField(verbose_name='回答済み', default=False)
     subject = models.CharField(verbose_name='教科', max_length=15)
-    image = models.ImageField(verbose_name='画像', upload_to='question_img/', null=True, blank=True, default='')
+    image = models.ImageField(verbose_name='画像', upload_to='question_images/', null=True, blank=True, default='')
     text = models.TextField(verbose_name='質問文', blank=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
@@ -49,7 +48,7 @@ class Answer(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, verbose_name='質問', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='回答文', blank=True)
-    image = models.ImageField(verbose_name='画像', upload_to='answer_img/', null=True, blank=True, default='')
+    image = models.ImageField(verbose_name='画像', upload_to='answer_images/', null=True, blank=True, default='')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

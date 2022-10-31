@@ -1,9 +1,11 @@
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, ListView
 from .models import StudyTime, Subject, Question, Answer
+from accounts.models import CustomUser
 from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime as dt
+import calendar
 import pandas as pd
 from django_pandas.io import read_frame
 
@@ -96,39 +98,30 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time']
-        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
+        cols = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'study_minutes']
+        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=cols)
 
         # 複数の日をまたぐデータを日付ごとに分割する
-        df2 = df[(df['start_date']) == (df['end_date'])]
-        df3 = df[(df['start_date']) < (df['end_date'])]
-        for row in df3.itertuples():
-            date_diff = row.end_date - row.start_date
-            for i in range(date_diff.days + 1):
-                if i == 0:
-                    df4 = pd.DataFrame(
-                        [[row.subject, row.start_date, row.start_time, row.start_date + dt.timedelta(days=(i+1)), dt.time(00, 00, 00)]],
-                        columns=COLS
-                    )
-                elif i == (date_diff.days):
-                    df4 = pd.DataFrame(
-                        [[row.subject, row.end_date, dt.time(00, 00, 00), row.end_date, row.end_time]],
-                        columns=COLS
-                    )
-                else:
-                    df4 = pd.DataFrame(
-                        [[row.subject, row.start_date + dt.timedelta(days=i), dt.time(00, 00, 00), row.start_date + dt.timedelta(days=(i+1)), dt.time(00, 00, 00)]],
-                        columns=COLS
-                    )
-                df2 = pd.concat([df2, df4], axis=0, ignore_index=True)
-        for index, row in df2.iterrows():
-            start_dt = dt.datetime.combine(row['start_date'], row['start_time'])
-            end_dt = dt.datetime.combine(row['end_date'], row['end_time'])
-            dt_diff = end_dt - start_dt
-            df2.at[index, 'study_minutes'] = dt_diff.days * 60 * 24 + dt_diff.seconds / 60
-        df2 = df2.sort_values(['start_date', 'start_time'], ignore_index=True)
-        df2 = df2.drop(columns=['start_time', 'end_date', 'end_time'])
-        df2 = df2.rename(columns={'start_date': 'date'})
+        cols = ['subject', 'subject__color', 'date', 'study_minutes']
+        df2 = pd.DataFrame(columns=cols)
+        for row in df.itertuples():
+            if row.start_date == row.end_date:
+                df3 = pd.DataFrame([[row.subject, row.subject__color, row.start_date, row.study_minutes]], columns=cols)
+                df2 = pd.concat([df2, df3], axis=0, ignore_index=True)
+            else:
+                date_diff = row.end_date - row.start_date
+                for i in range(date_diff.days + 1):
+                    if i == 0:
+                        date = row.start_date
+                        study_minutes = 60 * 24 - (row.start_time.hour * 60 + row.start_time.minute)
+                    elif i < (date_diff.days):
+                        date = row.start_date + dt.timedelta(days=i)
+                        study_minutes = 60 * 24
+                    else:
+                        date = row.end_date
+                        study_minutes = row.end_time.hour * 60 + row.end_time.minute
+                    df3 = pd.DataFrame([[row.subject, row.subject__color, date, study_minutes]], columns=cols)
+                    df2 = pd.concat([df2, df3], axis=0, ignore_index=True)
 
         context['df2'] = df2
 
@@ -137,7 +130,11 @@ class ReportView(LoginRequiredMixin, TemplateView):
         week_start = today + dt.timedelta(days=-weekday)
         week_end = today + dt.timedelta(days=(6-weekday))
 
+        month_start = today.replace(day=1)
+        month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
         context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
+        context['bar_chart_month'] = self.get_bar_chart_data(df2, month_start, month_end)
         context['pie_chart'] = self.get_pie_chart_data(df2)
         return context
 
@@ -154,7 +151,9 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
 class QuestionDetailView(LoginRequiredMixin, CreateView):
     template_name = 'question-detail.html'
     form_class = AnswerCreateForm
-    success_url = reverse_lazy('study:qa')
+
+    def get_success_url(self):
+        return reverse_lazy('study:question-detail', kwargs={'pk': self.kwargs['pk']})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

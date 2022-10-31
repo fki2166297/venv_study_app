@@ -19,9 +19,11 @@
             <div class="card-text mb-4">
                 {{ question.text|linebreaksbr }}
             </div>
-            <div class="col-md-7 mx-auto">
-                <img class="col-12" src="/media/{{ question.image }}"/>
-            </div>
+            {% if question.image %}
+                <div class="col-md-7 mx-auto">
+                    <img class="col-12" src="/media/{{ question.image }}"/>
+                </div>
+            {% endif %}
             <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                 回答する
             </a>
@@ -62,6 +64,7 @@
     {% else %}
         <p>回答がありません</p>
     {% endif %}
+
     <div style="height: 80vh;"></div>
 </main>
 {% endblock %}
