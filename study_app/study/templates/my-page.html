@@ -5,7 +5,8 @@
 {% block title %}{{ user.get_username }} | Study App{% endblock %}
 
 {% block contents %}
-<main class="container">
+<main class="container col-8">
     <p>マイページ</p>
+    <img src="/media/{{ user.icon }}" alt="{{ user.username }}" width="64" height="64" class="rounded-circle">
 </main>
 {% endblock %}

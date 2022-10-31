@@ -8,8 +8,8 @@
 
 {% block contents %}
 <main class="container col-md-8">
-    <div class="row mb-4" style="position: sticky; top: 5rem; z-index: 1000;">
-        <div class="col-md-8">
+    <div class="row" style="position: sticky; top: 5rem; z-index: 1000;">
+        <div class="col-md-8 mb-3">
             <div class="input-group">
                 <input type="search" class="form-control" placeholder="キーワードを入力">
                 <button type="button" class="btn btn-primary">
@@ -17,7 +17,7 @@
                 </button>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 mb-4">
             <a type="submit" class="btn btn-primary col-12" href="{% url 'study:question-create' %}" role="button">投稿する</a>
         </div>
     </div>
