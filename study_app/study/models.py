@@ -31,10 +31,19 @@ class StudyTime(models.Model):
         verbose_name_plural = 'StudyTime'
 
 
+class SubjectChoices(models.TextChoices):
+    NONE = '', '---------'
+    JAPANESE = 'japanese', '国語'
+    MATH = 'math', '数学'
+    SCIENCE = 'science', '科学'
+    SOCIETY = 'society', '社会'
+    ENGLISH = 'english', '英語'
+
+
 class Question(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     is_answered = models.BooleanField(verbose_name='回答済み', default=False)
-    subject = models.CharField(verbose_name='教科', max_length=15)
+    subject = models.CharField(verbose_name='教科', choices=SubjectChoices.choices, max_length=15)
     image = models.ImageField(verbose_name='画像', upload_to='question_images/', null=True, blank=True, default='')
     text = models.TextField(verbose_name='質問文', blank=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)

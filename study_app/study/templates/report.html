@@ -6,30 +6,12 @@
 
 {% block contents %}
 <main class="container-md">
-    <table class="table table-bordered mb-4">
-        <thead class="table-light">
-            <tr>
-                <th class="text-center" scope="col">今日</th>
-                <th class="text-center" scope="col">今週</th>
-                <th class="text-center" scope="col">今月</th>
-                <th class="text-center" scope="col">総計</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="text-center">時間</td>
-                <td class="text-center">時間</td>
-                <td class="text-center">時間</td>
-                <td class="text-center">時間</td>
-            </tr>
-        </tbody>
-    </table>
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
                 <h2>学習時間</h2>
                 <div class="btn-group ms-auto" role="group" aria-label="ボタングループ">
-                    <button type="button" class="btn btn-primary" id="weekBtn">週</button>
+                    <button type="button" class="btn btn-primary active" id="weekBtn">週</button>
                     <button type="button" class="btn btn-primary" id="monthBtn">月</button>
                     <button type="button" class="btn btn-primary" id="yearBtn">年</button>
                 </div>
@@ -44,7 +26,25 @@
         </div>
     </div>
     <div class="col-md-10 mx-auto">
-        <h2>一覧</h2>
+        <table class="table table-bordered mb-4">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-center" scope="col">今日</th>
+                    <th class="text-center" scope="col">今週</th>
+                    <th class="text-center" scope="col">今月</th>
+                    <th class="text-center" scope="col">総計</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">時間</td>
+                    <td class="text-center">時間</td>
+                    <td class="text-center">時間</td>
+                    <td class="text-center">時間</td>
+                </tr>
+            </tbody>
+        </table>
+        {% comment %} <h2>一覧</h2>
         <div class="col-md-10 mx-auto">
             <table style="border: 1px solid black; margin:30px 0px; border-collapse: separate; border-radius: 7px;">
                 <tr>
@@ -60,7 +60,7 @@
                     <td style="text-align: center;" width="200" height="55">%</td>
                 </tr>
             </table>
-        </div>
+        </div> {% endcomment %}
     </div>
 </main>
 
@@ -133,34 +133,36 @@
         });
     }
 
+    function setActive(elem, ...elems) {
+        elem.classList.add('active');
+        elems.forEach((el) => {
+            el.classList.remove('active');
+        });
+    }
+
     const weekBtn = document.getElementById('weekBtn');
     const monthBtn = document.getElementById('monthBtn');
     const yearBtn = document.getElementById('yearBtn');
 
-    window.addEventListener('DOMContentLoaded', () => {
-        drawBarChart({{ bar_chart_week|safe }});
-        drawPieChart({{ pie_chart|safe }});
-    });
+    drawBarChart({{ bar_chart_week|safe }});
+    drawPieChart({{ pie_chart|safe }});
 
     weekBtn.onclick = () => {
-        if (barChart) {
-            barChart.destroy();
-        }
+        if (barChart) barChart.destroy();
         drawBarChart({{ bar_chart_week|safe }});
+        setActive(weekBtn, monthBtn, yearBtn);
     }
 
     monthBtn.onclick = () => {
-        if (barChart) {
-            barChart.destroy();
-        }
+        if (barChart) barChart.destroy();
         drawBarChart({{ bar_chart_month|safe }});
+        setActive(monthBtn, weekBtn, yearBtn);
     }
 
     yearBtn.onclick = () => {
-        if (barChart) {
-            barChart.destroy();
-        }
+        if (barChart) barChart.destroy();
         drawBarChart();
+        setActive(yearBtn, weekBtn, monthBtn);
     }
 </script>
 {% endblock %}

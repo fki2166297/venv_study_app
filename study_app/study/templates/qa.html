@@ -27,7 +27,7 @@
                 <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
                     <div class="card">
                         <div class="card-header d-flex py-1">
-                            <div class="badge rounded-pill bg-white text-dark border">{{ question.subject }}</div>
+                            <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
                             <div class="ms-auto text-muted">
                                 {{ question.created_at|date:'n/j G:i' }}
                             </div>
@@ -81,24 +81,46 @@
         <div class="col-md-4 d-none d-md-block">
             <div style="position: sticky; top: 5rem;">
                 <form>
-                    <label for="subjectSelect" class="form-label">教科の選択</label>
-                    <select class="form-select mb-3" id="subjectSelect">
-                        <option value="0" selected>全教科</option>
-                        <option value="1">国語</option>
-                        <option value="2">数学</option>
-                        <option value="3">科学</option>
-                        <option value="4">社会</option>
-                        <option value="5">英語</option>
-                    </select>
+                    <label class="form-label" for="{{ subject_select_form.subject.id_for_label }}">{{ subject_select_form.subject.label }}</label>
+                    {% render_field subject_select_form.subject class='form-select mb-3' %}
                     <label for="selectAnswerStatus" class="form-label">回答状況の選択</label>
-                    <select class="form-select mb-3" id="selectAnswerStatus">
-                        <option value="0" selected>どちらでも</option>
+                    <select class="form-select mb-3" id="id_status">
+                        <option value="" selected>---------</option>
                         <option value="1">回答済み</option>
-                        <option value="2">未回答</option>
+                        <option value="0">未回答</option>
                     </select>
                 </form>
             </div>
         </div>
     </div>
 </main>
+
+<script>
+    // urlパラメータから指定したキーの値を取得する
+    function getParam(name, url) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        let results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+    function getOptionElement(select, value) {
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === value) return select.options[i];
+        }
+        return null;
+    }
+
+    const select = document.getElementById('id_subject');
+
+    subject = getOptionElement(select, getParam('subject', window.location.href));
+    if (subject) subject.selected = true;
+
+    select.onchange = () => {
+        if (select.value) window.location.href = '?subject=' + select.value;
+        else  window.location.href = 'qa';
+    };
+</script>
 {% endblock %}

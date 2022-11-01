@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, ListView
 from .models import StudyTime, Subject, Question, Answer
 from accounts.models import CustomUser
-from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm
+from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime as dt
 import calendar
@@ -144,8 +144,17 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Question.objects.order_by('-created_at')
+        subject = self.request.GET.get('subject')
+        if subject:
+            queryset = Question.objects.filter(subject=subject).order_by('-created_at')
+        else:
+            queryset = Question.objects.order_by('-created_at')
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subject_select_form'] = SubjectSelectForm
+        return context
 
 
 class QuestionDetailView(LoginRequiredMixin, CreateView):

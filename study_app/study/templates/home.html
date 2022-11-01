@@ -246,9 +246,7 @@
             {% endfor %}
         ],
         eventClick: (info) => {
-            const myModal = new bootstrap.Modal('#detailModal', {
-                keyboard: false,
-            });
+            const myModal = new bootstrap.Modal('#detailModal', { keyboard: false });
             document.getElementById('subject').textContent = info.event.title;
             document.getElementById('start').textContent = info.event.startStr.slice(0, -9).replace('T', ' ').replace(/-/g, '/');
             document.getElementById('end').textContent = info.event.endStr.slice(0, -9).replace('T', ' ').replace(/-/g, '/');
