@@ -8,8 +8,6 @@
 <main class="container-md col-md-6">
     <form method="post">
         {% csrf_token %}
-        <h5>教科の作成</h5>
-        <hr>
         <div class="hstack gap-3 mb-5 align-items-center col-11 mx-auto">
             {% render_field form.subject class='form-control me-auto' placeholder='教科名を入力してください' %}
             {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' value='#0d6efd' %}
@@ -17,8 +15,6 @@
             <input type="submit" value="作成する" class="btn btn-primary flex-shrink-0">
         </div>
     </form>
-    <h5>教科の一覧</h5>
-    <hr>
     {% for subject in subject_list %}
         <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
             <i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.subject }}

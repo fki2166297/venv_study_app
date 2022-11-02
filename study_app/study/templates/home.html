@@ -22,7 +22,7 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-primary rounded-circle p-3 d-md-none" id="creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px;">
+    <button class="btn btn-primary rounded-circle p-3 d-md-none" id="creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
         <span class="material-symbols-outlined">add</span>
     </button>
 
@@ -236,7 +236,7 @@
             {% for study_time in df_study_time.itertuples %}
                 {
                     id: '{{ study_time.id }}',
-                    title: '{{ study_time.subject }} {{ study_time.study_time }}',
+                    title: '{{ study_time.subject }} : {{ study_time.study_time }}',
                     start: '{{ study_time.start_date|date:"Y-m-d" }} {{ study_time.start_time|date:"H:i" }}',
                     end: '{{ study_time.end_date|date:"Y-m-d" }} {{ study_time.end_time|date:"H:i" }}',
                     backgroundColor: '{{ study_time.subject__color }}',
