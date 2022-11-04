@@ -6,6 +6,22 @@
 
 {% block contents %}
 <main class="container-md">
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <td>index</td>
+            {% for column, item in df2.iteritems %}
+                <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+        {% for index, values in df2.iterrows %}
+            <tr>
+                <th>{{ index }}</th>
+                {% for value in values %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -13,7 +29,7 @@
                 <div class="btn-group ms-auto" role="group" aria-label="ボタングループ">
                     <button type="button" class="btn btn-primary active" id="weekBtn">週</button>
                     <button type="button" class="btn btn-primary" id="monthBtn">月</button>
-                    <button type="button" class="btn btn-primary" id="yearBtn">年</button>
+                    {% comment %} <button type="button" class="btn btn-primary" id="yearBtn">年</button> {% endcomment %}
                 </div>
             </div>
             <canvas id="barChart"></canvas>
@@ -26,7 +42,7 @@
         </div>
     </div>
     <div class="col-md-10 mx-auto">
-        <table class="table table-bordered mb-4">
+        {% comment %} <table class="table table-bordered mb-4">
             <thead class="table-light">
                 <tr>
                     <th class="text-center" scope="col">今日</th>
@@ -43,24 +59,7 @@
                     <td class="text-center">時間</td>
                 </tr>
             </tbody>
-        </table>
-        {% comment %} <h2>一覧</h2>
-        <div class="col-md-10 mx-auto">
-            <table style="border: 1px solid black; margin:30px 0px; border-collapse: separate; border-radius: 7px;">
-                <tr>
-                    <td style="text-align: left;" width="250" height="55">○</td>
-                    <td style="text-align: left;" width="250" height="55">○</td>
-                    <td style="text-align: center;" width="200" height="55">%</td>
-                </tr>
-            </table>
-            <table style="border: 1px solid black; margin:30px 0px; border-collapse: separate; border-radius: 7px;">
-                <tr>
-                    <td style="text-align: left;" width="250" height="55">○</td>
-                    <td style="text-align: left;" width="250" height="55">○</td>
-                    <td style="text-align: center;" width="200" height="55">%</td>
-                </tr>
-            </table>
-        </div> {% endcomment %}
+        </table> {% endcomment %}
     </div>
 </main>
 
@@ -160,10 +159,10 @@
         setActive(monthBtn, weekBtn, yearBtn);
     }
 
-    yearBtn.onclick = () => {
+    {% comment %} yearBtn.onclick = () => {
         if (barChart) barChart.destroy();
         drawBarChart();
         setActive(yearBtn, weekBtn, monthBtn);
-    }
+    } {% endcomment %}
 </script>
 {% endblock %}
