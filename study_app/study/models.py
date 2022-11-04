@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import CustomUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 class Subject(models.Model):
@@ -19,11 +20,8 @@ class Subject(models.Model):
 class StudyTime(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, verbose_name="教科", on_delete=models.CASCADE)
-    start_date = models.DateField(verbose_name='開始日', null=False)
-    start_time = models.TimeField(verbose_name='開始日', null=False)
-    end_date = models.DateField(verbose_name='終了日', null=False)
-    end_time = models.TimeField(verbose_name='終了日', null=False)
-    study_minutes = models.IntegerField(verbose_name='学習時間', default=0)
+    studied_at = models.DateTimeField(verbose_name='日時', null=False)
+    study_minutes = models.IntegerField(verbose_name='学習時間', default=30, validators=[MinValueValidator(5), MaxValueValidator(1440)])
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

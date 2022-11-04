@@ -1,7 +1,9 @@
+from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, CreateView, ListView
+from django.views import generic
 from .models import StudyTime, Subject, Question, Answer
 from accounts.models import CustomUser
+from accounts.forms import CustomUserForm
 from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 import datetime as dt
@@ -10,11 +12,11 @@ import pandas as pd
 from django_pandas.io import read_frame
 
 # Create your views here.
-class IndexView(TemplateView):
+class IndexView(generic.TemplateView):
     template_name = 'index.html'
 
 
-class HomeView(LoginRequiredMixin, CreateView):
+class HomeView(LoginRequiredMixin, generic.CreateView):
     template_name = 'home.html'
     model = StudyTime
     form_class = StudyTimeForm
@@ -22,19 +24,7 @@ class HomeView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['id', 'subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'study_minutes', 'created_at', 'updated_at']
-        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=COLS)
-        for index, row in df.iterrows():
-            if row.study_minutes < 60:
-                df.at[index, 'study_minutes'] = str(row.study_minutes) + '分'
-            else:
-                study_hours, study_minutes = divmod(row.study_minutes, 60)
-                if study_minutes == 0:
-                    df.at[index, 'study_minutes'] = str(study_hours) + '時間'
-                else:
-                    df.at[index, 'study_minutes'] = str(study_hours) + '時間' + str(study_minutes) + '分'
-        df = df.rename(columns={'study_minutes': 'study_time'})
-        context['df_study_time'] = df
+        context['study_time_list'] = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
         return context
 
     # forms.pyにログインユーザーIDを渡す
@@ -46,15 +36,22 @@ class HomeView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         study_time = form.save(commit=False)
         study_time.user = self.request.user
-        start_dt = dt.datetime.combine(study_time.start_date, study_time.start_time)
-        end_dt = dt.datetime.combine(study_time.end_date, study_time.end_time)
-        dt_diff = end_dt - start_dt
-        study_time.study_minutes = int(dt_diff.days * 60 * 24 + dt_diff.seconds / 60)
         study_time.save()
         return super().form_valid(form)
 
 
-class ReportView(LoginRequiredMixin, TemplateView):
+class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'study-time-update.html'
+    model = StudyTime
+    success_url = reverse_lazy('study:home')
+
+
+class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
+    model = StudyTime
+    success_url = reverse_lazy('study:home')
+
+
+class ReportView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'report.html'
     model = StudyTime
 
@@ -67,15 +64,15 @@ class ReportView(LoginRequiredMixin, TemplateView):
             for i in range(date_diff):
                 data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
             # startからendの期間内のデータを取得
-            df = df[(df['date'] >= start) & (df['date'] <= end)]
+            df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
             # 教科, 日付ごとに学習時間を合計
-            df = df.groupby(['subject', 'subject__color', 'date'], as_index=False).sum().sort_values(['subject', 'date'])
+            df = df.groupby(['subject', 'subject__color', 'studied_at'], as_index=False).sum().sort_values(['subject', 'studied_at'])
             subjects = list(df.groupby('subject').groups.keys())
             for subject in subjects:
                 dataset = {'label': subject, 'data': [], 'backgroundColor': '', 'stack': 'stack-1'}
                 for i in range(date_diff):
                     for row in df.itertuples():
-                        if (subject == row.subject) and (start + dt.timedelta(days=i) == row.date):
+                        if (subject == row.subject) and (start + dt.timedelta(days=i) == row.studied_at):
                             dataset['data'].append(row.study_minutes)
                             dataset['backgroundColor'] = row.subject__color # 仮
                             break
@@ -98,32 +95,12 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        cols = ['subject', 'subject__color', 'start_date', 'start_time', 'end_date', 'end_time', 'study_minutes']
-        df = read_frame(self.model.objects.filter(user=self.request.user), fieldnames=cols)
+        cols = ['subject', 'subject__color', 'studied_at', 'study_minutes']
+        df = read_frame(self.model.objects.filter(user=self.request.user).order_by('-studied_at'), fieldnames=cols)
+        # studied_atカラムをdatetime型からdate型に変換
+        df['studied_at'] = df['studied_at'].dt.date
 
-        # 複数の日をまたぐデータを日付ごとに分割する
-        cols = ['subject', 'subject__color', 'date', 'study_minutes']
-        df2 = pd.DataFrame(columns=cols)
-        for row in df.itertuples():
-            if row.start_date == row.end_date:
-                df3 = pd.DataFrame([[row.subject, row.subject__color, row.start_date, row.study_minutes]], columns=cols)
-                df2 = pd.concat([df2, df3], axis=0, ignore_index=True)
-            else:
-                date_diff = row.end_date - row.start_date
-                for i in range(date_diff.days + 1):
-                    if i == 0:
-                        date = row.start_date
-                        study_minutes = 60 * 24 - (row.start_time.hour * 60 + row.start_time.minute)
-                    elif i < (date_diff.days):
-                        date = row.start_date + dt.timedelta(days=i)
-                        study_minutes = 60 * 24
-                    else:
-                        date = row.end_date
-                        study_minutes = row.end_time.hour * 60 + row.end_time.minute
-                    df3 = pd.DataFrame([[row.subject, row.subject__color, date, study_minutes]], columns=cols)
-                    df2 = pd.concat([df2, df3], axis=0, ignore_index=True)
-
-        context['df2'] = df2
+        context['df2'] = df
 
         today = dt.date.today()
         weekday = today.isoweekday() % 7
@@ -133,18 +110,17 @@ class ReportView(LoginRequiredMixin, TemplateView):
         month_start = today.replace(day=1)
         month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
 
-        context['bar_chart_week'] = self.get_bar_chart_data(df2, week_start, week_end)
-        context['bar_chart_month'] = self.get_bar_chart_data(df2, month_start, month_end)
-        context['pie_chart'] = self.get_pie_chart_data(df2)
+        context['bar_chart_week'] = self.get_bar_chart_data(df, week_start, week_end)
+        context['bar_chart_month'] = self.get_bar_chart_data(df, month_start, month_end)
+        context['pie_chart'] = self.get_pie_chart_data(df)
         return context
 
 
-class QuestionAndAnswerView(LoginRequiredMixin, ListView):
+class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     template_name = 'qa.html'
     paginate_by = 10
 
     def get_queryset(self):
-        # search =
         subject = self.request.GET.get('subject')
         if subject:
             queryset = Question.objects.filter(subject=subject).order_by('-created_at')
@@ -158,7 +134,7 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
         return context
 
 
-class QuestionDetailView(LoginRequiredMixin, CreateView):
+class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     template_name = 'question-detail.html'
     form_class = AnswerCreateForm
 
@@ -180,7 +156,7 @@ class QuestionDetailView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class QuestionCreateView(LoginRequiredMixin, CreateView):
+class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'question-create.html'
     model = Question
     form_class = QuestionCreateForm
@@ -193,7 +169,7 @@ class QuestionCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class SubjectView(LoginRequiredMixin, CreateView):
+class SubjectView(LoginRequiredMixin, generic.CreateView):
     template_name = 'subject.html'
     model = Subject
     form_class = SubjectCreateForm
@@ -211,5 +187,16 @@ class SubjectView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MyPageView(LoginRequiredMixin, TemplateView):
+class MyPageView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'my-page.html'
+    model = CustomUser
+    form_class = CustomUserForm
+    success_url = reverse_lazy('study:my-page')
+
+    def get_success_url(self):
+        return reverse_lazy('study:my-page', kwargs={'pk': self.kwargs['pk']})
+
+    # def form_valid(self, form):
+    #     account = form.save(commit=False)
+    #     account.save()
+    #     return super().form_valid(form)
