@@ -144,6 +144,7 @@ class QuestionAndAnswerView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        # search =
         subject = self.request.GET.get('subject')
         if subject:
             queryset = Question.objects.filter(subject=subject).order_by('-created_at')

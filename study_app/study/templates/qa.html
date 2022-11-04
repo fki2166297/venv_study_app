@@ -7,46 +7,53 @@
 {% block active_qa %}active{% endblock %}
 
 {% block contents %}
-<main class="container col-md-8">
+<main class="container col-md-9">
     <div class="row" style="position: sticky; top: 5rem; z-index: 1000;">
         <div class="col-md-8 mb-3">
-            <div class="input-group">
-                <input type="search" class="form-control" placeholder="キーワードを入力">
-                <button type="button" class="btn btn-primary">
-                    <i class="material-symbols-outlined">search</i>
-                </button>
-            </div>
+            <form method="get">
+                <div class="input-group">
+                    <input type="search" class="form-control" name="search" placeholder="キーワードを入力">
+                    <button class="btn btn-primary">
+                        <i class="material-symbols-outlined">search</i>
+                    </button>
+                </div>
+            </form>
         </div>
         <div class="col-md-4 mb-4">
             <a type="submit" class="btn btn-primary col-12" href="{% url 'study:question-create' %}" role="button">投稿する</a>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8 vstack gap-3">
-            {% for question in question_list %}
-                <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
-                    <div class="card">
-                        <div class="card-header d-flex py-1">
-                            <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
-                            <div class="ms-auto text-muted">
-                                {{ question.created_at|date:'n/j G:i' }}
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    {{ question.text|truncatechars:200 }}
-                                </div>
-                                {% if question.image %}
-                                    <div class="col-3">
-                                        <img class="col-12" src="/media/{{ question.image }}" style="max-height: 100px; object-fit: cover;"/>
+        <div class="col-md-8">
+            <ul class="nav nav-tabs">
+                <li class="nav-item"><a href="?tab=all" class="nav-link active" aria-current="page">すべて</a></li>
+                <li class="nav-item"><a href="?tab=wanted-answer" class="nav-link">回答募集中</a></li>
+                <li class="nav-item"><a href="?tab=answered" class="nav-link">回答済み</a></li>
+            </ul>
+            {% if question_list %}
+                <ul class="list-group list-group-flush border-bottom">
+                    {% for question in question_list %}
+                        <li class="list-group-item" style="min-height: 90px;">
+                            <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
+                                <div class="hstack gap-3">
+                                    <div class="vstack gap-2">
+                                        <div class="hstack gap-3">
+                                            <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
+                                            <div class="text-muted">{{ question.created_at|date:'n/j G:i' }}</div>
+                                        </div>
+                                        <div class="text-break">{{ question.text|truncatechars:80 }}</div>
                                     </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            {% endfor %}
+                                    {% if question.image %}
+                                        <img src="/media/{{ question.image }}" style="width: 120px; height: 90px; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center" style="height: 100vh;">Q&ampAが見つかりませんでした。</div>
+            {% endif %}
 
             <!-- ページネーション -->
             {% if is_paginated %}
@@ -83,12 +90,6 @@
                 <form>
                     <label class="form-label" for="{{ subject_select_form.subject.id_for_label }}">{{ subject_select_form.subject.label }}</label>
                     {% render_field subject_select_form.subject class='form-select mb-3' %}
-                    <label for="selectAnswerStatus" class="form-label">回答状況の選択</label>
-                    <select class="form-select mb-3" id="id_status">
-                        <option value="" selected>---------</option>
-                        <option value="1">回答済み</option>
-                        <option value="0">未回答</option>
-                    </select>
                 </form>
             </div>
         </div>
