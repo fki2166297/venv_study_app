@@ -10,18 +10,19 @@
 <main class="container-md col-md-10">
     <div class="row">
         <div class="col-md-8">
+            <!-- タブ -->
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a href="?tab=all" class="nav-link active" aria-current="page">すべて</a>
+                    <a href="?tab=all" class="nav-link {% if tab == 'all' %}active{% endif %}" aria-current="page">すべて</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?tab=my-record" class="nav-link">自分の記録</a>
+                    <a href="?tab=my-record" class="nav-link {% if tab == 'my-record' %}active{% endif %}">自分の記録</a>
                 </li>
             </ul>
             {% if study_time_list %}
                 <ul class="list-group list-group-flush border-bottom">
                     {% for study_time in study_time_list %}
-                        <li class="list-group-item">
+                        <li class="list-group-item py-3">
                             <div class="hstack gap-3">
                                 <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
                                 <div>{{ study_time.user.username }}</div>
@@ -31,12 +32,12 @@
                                 <div class="study_minutes">{{ study_time.study_minutes }}</div>
                                 <div class="dropdown ms-auto">
                                     <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <a class="dropdown-item" href="#">編集</a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal">削除</a>
+                                            <a class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ study_time.id }}">削除</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -45,7 +46,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <div class="text-center" style="height: 100vh;">aa</div>
+                <div class="text-center mt-5">記録がありません</div>
             {% endif %}
         </div>
         <div class="col-md-4 d-none d-md-block">
@@ -66,13 +67,13 @@
                     <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
                 </div>
                 <div class="modal-body">
-                    <p>モーダルのコンテンツ文。</p>
+                    <p>この記録を削除しますか？</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                    <form method="post" action="{% url 'study:study-time-delete' 2 %}">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form method="post" action="#" id="deletionForm">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger" name="button_delete_study_time">削除</button>
+                        <button type="submit" class="btn btn-danger">削除する</button>
                     </form>
                 </div>
             </div>
@@ -105,7 +106,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                        <input type="submit" class="btn btn-primary" value="記録する" name="button_create_study_time"></input>
+                        <input type="submit" class="btn btn-primary" value="記録する"></input>
                     </div>
                 </form>
             </div>
@@ -121,6 +122,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
 
 <script>
+    function getParam(name, url) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        let results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
     tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
 
     new tempusDominus.TempusDominus(document.getElementById('dateTimePicker'), {
@@ -157,7 +167,7 @@
         },
     });
 
-    // 日付、時刻フォームに現在の日時を設定する
+    // 日付、時刻フォームに現在の日時を設定
     document.querySelectorAll('.creation-btn').forEach(element => {
         element.addEventListener('click', () => {
             const now = new Date();
@@ -167,11 +177,20 @@
         });
     });
 
+    // 勉強時間の表示形式を変更
     document.querySelectorAll('.study_minutes').forEach(element => {
         time = parseInt(element.innerHTML);
         if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
         else time = time % 60 + '分';
         element.innerHTML = time;
     });
+
+    // 記録削除モーダルが持つフォームのactionを設定
+    document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
+        console.log(event.relatedTarget);
+        const id = event.relatedTarget.dataset.id;
+        console.log(id);
+        document.getElementById('deletionForm').action = 'study-time-delete/' + id;
+    })
 </script>
 {% endblock %}

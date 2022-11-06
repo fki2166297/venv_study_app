@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 from .models import StudyTime, Subject, Question, Answer
@@ -12,10 +11,6 @@ import pandas as pd
 from django_pandas.io import read_frame
 
 # Create your views here.
-class IndexView(generic.TemplateView):
-    template_name = 'index.html'
-
-
 class HomeView(LoginRequiredMixin, generic.CreateView):
     template_name = 'home.html'
     model = StudyTime
@@ -24,7 +19,16 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['study_time_list'] = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
+        query = self.model.objects.order_by('-studied_at')
+        tab = 'all'
+        if 'tab' in self.request.GET:
+            tab = self.request.GET['tab']
+            if tab == 'all':
+                query = self.model.objects.order_by('-studied_at')
+            elif tab == 'my-record':
+                query = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
+        context['tab'] = tab
+        context['study_time_list'] = query
         return context
 
     # forms.pyにログインユーザーIDを渡す
@@ -98,7 +102,8 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         cols = ['subject', 'subject__color', 'studied_at', 'study_minutes']
         df = read_frame(self.model.objects.filter(user=self.request.user).order_by('-studied_at'), fieldnames=cols)
         # studied_atカラムをdatetime型からdate型に変換
-        df['studied_at'] = df['studied_at'].dt.date
+        if not df.empty: # 仮
+            df['studied_at'] = df['studied_at'].dt.date
 
         context['df2'] = df
 

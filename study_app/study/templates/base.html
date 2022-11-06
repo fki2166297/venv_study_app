@@ -19,11 +19,7 @@
 <body style="padding-top: 5rem;">
     <header class="navbar navbar-expand-md navbar-light bg-light shadow-sm fixed-top">
         <div class="container-fluid px-5">
-            {% if user.is_authenticated %}
-                <a class="navbar-brand fw-bold" href="{% url 'study:home' %}">Study App</a>
-            {% else %}
-                <a class="navbar-brand fw-bold" href="{% url 'study:index' %}">Study App</a>
-            {% endif %}
+            <a class="navbar-brand fw-bold" href="{% url 'study:home' %}">Study App</a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
