@@ -6,22 +6,7 @@
 
 {% block contents %}
 <main class="container-md">
-    {% comment %} <table class="table table-striped table-bordered table-hover">
-        <tr>
-            <td>index</td>
-            {% for column, item in df2.iteritems %}
-                <th>{{ column }}</th>
-            {% endfor %}
-        </tr>
-        {% for index, values in df2.iterrows %}
-            <tr>
-                <th>{{ index }}</th>
-                {% for value in values %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </table> {% endcomment %}
+    {{ aaa }}
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -72,33 +57,16 @@
             type: 'bar',
             data: data,
             options: {
-                scales: {
-                    y: {
-                        ticks: {
-                            stepSize: 30,
-                            callback: (value, index, ticks) => {
-                                if (value >= 60) {
-                                    value = (value / 60) + '時間';
-                                } else if (value != 0) {
-                                    value = value + '分';
-                                }
-                                return value;
-                            },
-                        },
-                    },
-                },
                 plugins: {
                     tooltip: {
                         callbacks: {
                             label: (context) => {
                                 let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
+                                if (label) label += ': ';
                                 if (context.parsed.y !== null) {
                                     if (context.parsed.y >= 60) {
                                         if (context.parsed.y % 60) {
-                                            label += Math.floor(context.parsed.y / 60) + '時間' + (context.parsed.y % 60) + '分';
+                                            label += ~~(context.parsed.y / 60) + '時間' + (context.parsed.y % 60) + '分';
                                         } else {
                                             label += context.parsed.y / 60 + '時間'
                                         }
@@ -114,6 +82,29 @@
                         position: 'bottom',
                     },
                 },
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true,
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        ticks: {
+                            stepSize: 30,
+                            callback: (value, index, ticks) => {
+                                if (value >= 60) value = (value / 60) + '時間';
+                                else if (value != 0)  value = value + '分';
+                                return value;
+                            },
+                        },
+                    },
+                },
             },
         });
     }
@@ -123,6 +114,7 @@
             type: 'pie',
             data: data,
             options: {
+                responsive: true,
                 plugins: {
                     legend: {
                         position: 'bottom',

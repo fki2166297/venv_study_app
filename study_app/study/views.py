@@ -31,7 +31,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         context['study_time_list'] = query
         return context
 
-    # forms.pyにログインユーザーIDを渡す
+    # StudyTimeFormにログインユーザーIDを渡す
     def get_form_kwargs(self):
         kwargs = super(HomeView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
@@ -56,8 +56,8 @@ class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
 
 
 class ReportView(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'report.html'
     model = StudyTime
+    template_name = 'report.html'
 
     # 棒グラフのデータを取得
     def get_bar_chart_data(self, df, start, end):
@@ -65,15 +65,17 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         if not df.empty:
             date_diff = (end - start).days + 1
             # startからendまでの日付をlabelsに格納
+            WEEKDAY = ['日', '月', '火', '水', '木', '金', '土']
             for i in range(date_diff):
-                data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d'))
+                date = start + dt.timedelta(days=i)
+                data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d') + ' (' + WEEKDAY[date.isoweekday() % 7] + ')')
             # startからendの期間内のデータを取得
             df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
             # 教科, 日付ごとに学習時間を合計
             df = df.groupby(['subject', 'subject__color', 'studied_at'], as_index=False).sum().sort_values(['subject', 'studied_at'])
             subjects = list(df.groupby('subject').groups.keys())
             for subject in subjects:
-                dataset = {'label': subject, 'data': [], 'backgroundColor': '', 'stack': 'stack-1'}
+                dataset = {'label': subject, 'data': [], 'backgroundColor': ''}
                 for i in range(date_diff):
                     for row in df.itertuples():
                         if (subject == row.subject) and (start + dt.timedelta(days=i) == row.studied_at):
@@ -88,8 +90,8 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
     # 円グラフのデータを取得
     def get_pie_chart_data(self, df):
         data = {'labels': [], 'datasets': []}
-        dataset = {'data': []}
         if not df.empty:
+            dataset = {'data': []}
             df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
             data['labels'] = df['subject'].values.tolist()
             dataset['data'] = df['study_minutes'].values.tolist()
@@ -99,13 +101,12 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        cols = ['subject', 'subject__color', 'studied_at', 'study_minutes']
-        df = read_frame(self.model.objects.filter(user=self.request.user).order_by('-studied_at'), fieldnames=cols)
-        # studied_atカラムをdatetime型からdate型に変換
-        if not df.empty: # 仮
-            df['studied_at'] = df['studied_at'].dt.date
+        COLS = ['subject', 'subject__color', 'studied_at', 'study_minutes']
+        df = read_frame(self.model.objects.filter(user=self.request.user).order_by('-studied_at'), fieldnames=COLS)
 
-        context['df2'] = df
+        # studied_atカラムをdatetime型からdate型に変換
+        if not df.empty:
+            df['studied_at'] = df['studied_at'].dt.date
 
         today = dt.date.today()
         weekday = today.isoweekday() % 7
@@ -115,6 +116,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         month_start = today.replace(day=1)
         month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
 
+        context['aaa'] = df
         context['bar_chart_week'] = self.get_bar_chart_data(df, week_start, week_end)
         context['bar_chart_month'] = self.get_bar_chart_data(df, month_start, month_end)
         context['pie_chart'] = self.get_pie_chart_data(df)
