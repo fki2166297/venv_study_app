@@ -7,7 +7,7 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md col-md-10">
+<main class="container-md" style="max-width: 960px;">
     <div class="row">
         <div class="col-md-8">
             <!-- タブ -->
@@ -18,41 +18,44 @@
                 <li class="nav-item">
                     <a href="?tab=my-record" class="nav-link {% if tab == 'my-record' %}active{% endif %}">自分の記録</a>
                 </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">フォロー</a>
+                </li>
             </ul>
             {% if study_time_list %}
                 <ul class="list-group list-group-flush border-bottom">
                     {% for study_time in study_time_list %}
-                        {% comment %} <a href="#" class="text-reset text-decoration-none"> {% endcomment %}
-                            <li class="list-group-item py-3">
-                                <div class="hstack gap-3">
-                                    <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
-                                    <div>{{ study_time.user.username }}</div>
-                                    <div>{{ study_time.studied_at|date:'n/j G:i' }}</div>
-                                    <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
-                                    <div>{{ study_time.subject }}</div>
-                                    <div class="study_minutes">{{ study_time.study_minutes }}</div>
-                                    <div class="dropdown ms-auto">
-                                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="#">編集</a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
-                                                    data-id="{{ study_time.id }}"
-                                                    data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
-                                                    data-subject-color="{{ study_time.subject.color }}"
-                                                    data-subject="{{ study_time.subject }}"
-                                                    data-study-minutes="{{ study_time.study_minutes }}">
-                                                    削除
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
-                        {% comment %} </a> {% endcomment %}
+                        <li class="list-group-item py-3">
+                            <div class="hstack gap-3 mb-3">
+                                <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                <div>{{ study_time.user.username }}</div>
+                                <div class="ms-auto fw-light">{{ study_time.studied_at|date:'n/j G:i' }}</div>
+                            </div>
+                            <div class="card card-body hstack gap-3">
+                                <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
+                                {{ study_time.subject }}
+                                <div class="study_minutes">{{ study_time.study_minutes }}</div>
+                                {% comment %} <div class="dropdown ms-auto">
+                                    <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="#">編集</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
+                                                data-id="{{ study_time.id }}"
+                                                data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
+                                                data-subject-color="{{ study_time.subject.color }}"
+                                                data-subject="{{ study_time.subject }}"
+                                                data-study-minutes="{{ study_time.study_minutes }}">
+                                                削除
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div> {% endcomment %}
+                            </div>
+                        </li>
                     {% endfor %}
                 </ul>
             {% else %}
@@ -77,7 +80,7 @@
                     <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
                 </div>
                 <div class="modal-body">
-                    <div class="hstack gap-3 mb-3">
+                    <div class="card card-body hstack gap-3 mb-3">
                         <div id="datetime"></div>
                         <i class="bi bi-circle-fill" id="subjectColor"></i>
                         <div id="subject"></div>
