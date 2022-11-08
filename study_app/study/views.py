@@ -24,19 +24,16 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        tab = 'all'
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
         query = self.model.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at')
-        tab = 'all'
         if 'tab' in self.request.GET:
             tab = self.request.GET['tab']
-            if tab == 'all':
-                pass
-            elif tab == 'my-record':
+            if tab == 'my-record':
                 query = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
             elif tab == 'following':
                 query = self.model.objects.filter(user__in=following).order_by('-studied_at')
-        context['following'] = following
         context['tab'] = tab
         context['study_time_list'] = query
         return context

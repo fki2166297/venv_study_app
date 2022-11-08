@@ -14,7 +14,6 @@
             {{ message }}
         </div>
     {% endfor %}
-    {{ following }}
     <div class="row">
         <div class="col-md-8">
             <!-- タブ -->
@@ -44,25 +43,6 @@
                                 <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
                                 {{ study_time.subject }}
                                 <div class="study_minutes">{{ study_time.study_minutes }}</div>
-                                {% comment %} <div class="dropdown ms-auto">
-                                    <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="#">編集</a>
-                                        </li>
-                                        <li>
-                                            <a
-                                                class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
-                                                data-id="{{ study_time.id }}"
-                                                data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
-                                                data-subject-color="{{ study_time.subject.color }}"
-                                                data-subject="{{ study_time.subject }}"
-                                                data-study-minutes="{{ study_time.study_minutes }}">
-                                                削除
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div> {% endcomment %}
                             </div>
                         </li>
                     {% endfor %}
@@ -149,21 +129,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
 
 <script>
-    function getParam(name, url) {
-        name = name.replace(/[\[\]]/g, '\\$&');
-        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-        let results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
-    }
-
-    function changeTimeFormat(time) {
-        if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
-        else time = time % 60 + '分';
-        return time;
-    }
-
     tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
     new tempusDominus.TempusDominus(document.getElementById('dateTimePicker'), {
         display: {
@@ -211,22 +176,10 @@
 
     // 勉強時間の表示形式を変更
     document.querySelectorAll('.study_minutes').forEach(element => {
-        element.innerHTML = changeTimeFormat(parseInt(element.innerHTML));
+        let time = parseInt(element.innerHTML);
+        if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
+        else time = time % 60 + '分';
+        element.innerHTML = time;
     });
-
-    document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
-        targetEl = event.relatedTarget
-        const id = targetEl.dataset.id;
-        const datetime = targetEl.dataset.datetime;
-        const subjectColor = targetEl.dataset.subjectColor;
-        const subject = targetEl.dataset.subject;
-        const studyMinutes = changeTimeFormat(targetEl.dataset.studyMinutes);
-
-        document.getElementById('deletionForm').action = 'study-time-delete/' + id;
-        document.getElementById('datetime').innerHTML = datetime;
-        document.getElementById('subjectColor').style.color = subjectColor;
-        document.getElementById('subject').innerHTML = subject;
-        document.getElementById('studyMinutes').innerHTML = studyMinutes;
-    })
 </script>
 {% endblock %}

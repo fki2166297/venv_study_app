@@ -67,7 +67,8 @@
                                     if (context.parsed.y >= 60) {
                                         if (context.parsed.y % 60) {
                                             label += ~~(context.parsed.y / 60) + '時間' + (context.parsed.y % 60) + '分';
-                                        } else {
+                                        }
+                                        else {
                                             label += context.parsed.y / 60 + '時間'
                                         }
                                     } else if (context.parsed.y != 0) {
@@ -86,12 +87,6 @@
                 scales: {
                     x: {
                         stacked: true,
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day'
-                            }
-                        }
                     },
                     y: {
                         stacked: true,
