@@ -7,3 +7,13 @@ class CustomUser(AbstractUser):
 
     class Meta:
         verbose_name_plural = 'CustomUser'
+
+#フォローモデル
+class Connection(models.Model):
+    follower = models.ForeignKey(CustomUser, related_name='follower', on_delete=models.CASCADE)
+    following = models.ForeignKey(CustomUser, related_name='following', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.follower.username} : {self.following.username}'
