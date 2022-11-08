@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}{{ user.get_username }} | Study App{% endblock %}
+
+{% block contents %}
+<main class="container col-md-8">
+    {% comment %} <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.icon.id_for_label }}" class="form-label">{{ form.icon.label }}</label>
+            {% render_field form.icon class='form-control' %}
+        </div>
+        <input type="submit" class="btn btn-primary" value="投稿する">
+    </form> {% endcomment %}
+
+    {% for message in messages %}
+        <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="row mt-4">
+        <div class="col-lg-4">
+            <div class="card card-body d-flex justify-content-center text-center">
+                <a href="#">
+                    <img src="/media/{{ user.icon }}" alt="{{ user.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
+                </a>
+                <h6 class="mb-3">{{ username }}</h6>
+                {% if user.username == username %}
+                    {% comment %} <a href="{% url 'study:account_update' username %}" class="btn btn-info">プロフィール編集</a> {% endcomment %}
+                    <p>aaa</p>
+                {% elif connected %}
+                    <a href="{% url 'study:unfollow' username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
+                {% else %}
+                    <a href="{% url 'study:follow' username %}" class="btn btn-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー</a>
+                {% endif %}
+                <div class="hstack gap-3 mx-auto">
+                    <div class="fw-light" style="font-size: 0.9rem;">フォロー : {{ following }}</div>
+                    <div class="fw-light" style="font-size: 0.9rem;">フォロワー : {{ follower }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card card-body">
+                <h5>学習時間</h5>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -20,14 +20,14 @@
             </form>
         </div>
         <div class="col-md-4 mb-4">
-            <a type="submit" class="btn btn-primary col-12" href="{% url 'study:question-create' %}" role="button">投稿する</a>
+            <a type="submit" class="btn btn-primary col-12" href="{% url 'study:question_create' %}" role="button">投稿する</a>
         </div>
     </div>
     <div class="row">
         <div class="col-md-8">
             {% if question_list %}
                 {% for question in question_list %}
-                    <a href="{% url 'study:question-detail' question.id %}" class="text-reset text-decoration-none">
+                    <a href="{% url 'study:question_detail' question.id %}" class="text-reset text-decoration-none">
                         <div class="card mb-3">
                             <div class="card-header d-flex py-1">
                                 <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>

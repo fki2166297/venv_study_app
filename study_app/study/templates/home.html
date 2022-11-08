@@ -7,7 +7,14 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 960px;">
+<main class="container-md col-md-7">
+    {% for message in messages %}
+        <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+            {{ message }}
+        </div>
+    {% endfor %}
+    {{ following }}
     <div class="row">
         <div class="col-md-8">
             <!-- タブ -->
@@ -19,7 +26,7 @@
                     <a href="?tab=my-record" class="nav-link {% if tab == 'my-record' %}active{% endif %}">自分の記録</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">フォロー</a>
+                    <a href="?tab=following" class="nav-link {% if tab == 'following' %}active{% endif %}">フォロー</a>
                 </li>
             </ul>
             {% if study_time_list %}
@@ -27,8 +34,10 @@
                     {% for study_time in study_time_list %}
                         <li class="list-group-item py-3">
                             <div class="hstack gap-2 mb-3">
-                                <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
-                                <div>{{ study_time.user.username }}</div>
+                                <a href="{% url 'study:account_detail' study_time.user.username %}">
+                                    <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                </a>
+                                <a class="text-decoration-none" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
                                 <div class="ms-auto fw-light">{{ study_time.studied_at|date:'n/j G:i' }}</div>
                             </div>
                             <div class="card card-body hstack gap-3">

@@ -8,6 +8,7 @@ from .models import StudyTime, Subject, Question, Answer
 from accounts.models import CustomUser, Connection
 from accounts.forms import CustomUserForm
 from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
+from django.db.models import Q
 import datetime as dt
 import calendar
 import pandas as pd
@@ -23,14 +24,19 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        query = self.model.objects.order_by('-studied_at')
+        # ログインユーザーがフォローしているユーザーのIDをすべて取得
+        following = Connection.objects.filter(follower=self.request.user).values_list('following')
+        query = self.model.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at')
         tab = 'all'
         if 'tab' in self.request.GET:
             tab = self.request.GET['tab']
             if tab == 'all':
-                query = self.model.objects.order_by('-studied_at')
+                pass
             elif tab == 'my-record':
                 query = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
+            elif tab == 'following':
+                query = self.model.objects.filter(user__in=following).order_by('-studied_at')
+        context['following'] = following
         context['tab'] = tab
         context['study_time_list'] = query
         return context
@@ -45,11 +51,16 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         study_time = form.save(commit=False)
         study_time.user = self.request.user
         study_time.save()
+        messages.success(self.request, '記録を作成しました。')
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "記録の作成に失敗しました。")
+        return super().form_invalid(form)
 
 
 class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'study-time-update.html'
+    template_name = 'study_time_update.html'
     model = StudyTime
     success_url = reverse_lazy('study:home')
 
@@ -121,6 +132,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
 
         context['aaa'] = df
+
         context['bar_chart_week'] = self.get_bar_chart_data(df, week_start, week_end)
         context['bar_chart_month'] = self.get_bar_chart_data(df, month_start, month_end)
         context['pie_chart'] = self.get_pie_chart_data(df)
@@ -146,11 +158,11 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
 
 
 class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question-detail.html'
+    template_name = 'question_detail.html'
     form_class = AnswerCreateForm
 
     def get_success_url(self):
-        return reverse_lazy('study:question-detail', kwargs={'pk': self.kwargs['pk']})
+        return reverse_lazy('study:question_detail', kwargs={'pk': self.kwargs['pk']})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -168,7 +180,7 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
 
 
 class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question-create.html'
+    template_name = 'question_create.html'
     model = Question
     form_class = QuestionCreateForm
     success_url = reverse_lazy('study:qa')
@@ -197,21 +209,6 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
         subject.save()
         return super().form_valid(form)
 
-
-class MyPageView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'my-page.html'
-    model = CustomUser
-    form_class = CustomUserForm
-    success_url = reverse_lazy('study:my-page')
-
-    def get_success_url(self):
-        return reverse_lazy('study:my-page', kwargs={'pk': self.kwargs['pk']})
-
-    # def form_valid(self, form):
-    #     account = form.save(commit=False)
-    #     account.save()
-    #     return super().form_valid(form)
-
 # フォロー
 @login_required
 def follow_view(request, *args, **kwargs):
@@ -220,29 +217,29 @@ def follow_view(request, *args, **kwargs):
         follower = CustomUser.objects.get(username=request.user.username)
         #kwargs['username'] = フォロー対象のユーザー名を渡す。
         following = CustomUser.objects.get(username=kwargs['username'])
-    # 例外処理：もしフォロー対象が存在しない場合、警告文を表示させる。
+    # フォロー対象が存在しない場合
     except CustomUser.DoesNotExist:
-        messages.warning(request, '{}は存在しません'.format(kwargs['username'])) #（※1）（※2）
-        return HttpResponseRedirect(reverse_lazy('pento_app:index'))
-    # フォローしようとしている対象が自分の場合、警告文を表示させる。
+        messages.warning(request, f'{kwargs["username"]}は存在しません')
+        return HttpResponseRedirect(reverse_lazy('study:home'))
+    # フォローしようとしている対象が自分の場合
     if follower == following:
         messages.warning(request, '自分自身はフォローできません')
     else:
         # フォロー対象をまだフォローしていなければ、DBにフォロワー(自分)×フォロー(相手)という組み合わせで登録する。
         # createdにはTrueが入る
-        _, created = Connection.objects.get_or_create(follower=follower, following=following) #（※3）
+        _, created = Connection.objects.get_or_create(follower=follower, following=following)
 
         # もしcreatedがTrueの場合、フォロー完了のメッセージを表示させる。
         if (created):
-            messages.success(request, '{}をフォローしました'.format(following.username))
+            messages.success(request, f'{following.username}をフォローしました')
         # 既にフォロー相手をフォローしていた場合、createdにはFalseが入る。
         # フォロー済みのメッセージを表示させる。
         else:
-            messages.warning(request, 'あなたはすでに{}をフォローしています'.format(following.username))
+            messages.warning(request, f'あなたはすでに{following.username}をフォローしています')
 
-    return HttpResponseRedirect(reverse_lazy('pento_app:detail', kwargs={'username': following.username}))
+    return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
-"""フォロー解除"""
+# フォロー解除
 @login_required
 def unfollow_view(request, *args, **kwargs):
     try:
@@ -254,30 +251,30 @@ def unfollow_view(request, *args, **kwargs):
             unfollow = Connection.objects.get(follower=follower, following=following)
             # フォロワー(自分)×フォロー(相手)という組み合わせを削除する。
             unfollow.delete()
-            messages.success(request, 'あなたは{}のフォローを外しました'.format(following.username))
+            messages.success(request, f'あなたは{following.username}のフォローを解除しました')
     except CustomUser.DoesNotExist:
-        messages.warning(request, '{}は存在しません'.format(kwargs['username']))
-        return HttpResponseRedirect(reverse_lazy('pento_app:index'))
+        messages.warning(request, f'{kwargs["username"]}は存在しません')
+        return HttpResponseRedirect(reverse_lazy('study:home'))
     except Connection.DoesNotExist:
-        messages.warning(request, 'あなたは{0}をフォローしませんでした'.format(following.username))
+        messages.warning(request, f'あなたは{following.username}をフォローしませんでした')
 
-    return HttpResponseRedirect(reverse_lazy('pento_app:detail', kwargs={'username': following.username}))
+    return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
 # プロフィール画面
-class ProifileDetail(LoginRequiredMixin, generic.DetailView):
+class AccountDetailView(LoginRequiredMixin, generic.DetailView):
     model = CustomUser
-    template_name = 'detail.html'
+    template_name = 'account_detail.html'
 
     #slug_field = urls.pyに渡すモデルのフィールド名
     slug_field = 'username'
     # urls.pyでのキーワードの名前
     slug_url_kwarg = 'username'
 
-    def get_context_data(self, **kwargs): # ※(1)
-        context = super(ProifileDetail, self).get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         username = self.kwargs['username']
         context['username'] = username
-        context['user'] = get_current_user(self.request) # ※(2)
+        context['user'] = get_current_user(self.request)
         context['following'] = Connection.objects.filter(follower__username=username).count()
         context['follower'] = Connection.objects.filter(following__username=username).count()
 
