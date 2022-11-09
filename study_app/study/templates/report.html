@@ -6,17 +6,24 @@
 
 {% block contents %}
 <main class="container-md">
-    {% for item in query %}
-        {{ item.id|safe }}
-        {{ item.subject.subject|safe }}
-        {{ item.subject.color|safe }}
-        {{ item.studied_at|safe }}
-        {{ item.study_minutes|safe }}
-        <br>
-    {% endfor %}
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <td>index</td>
+            {% for column, item in df.iteritems %}
+                <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+        {% for index, values in df.iterrows %}
+            <tr>
+                <th>{{ index }}</th>
+                {% for value in values %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
     {{ subject }}
-    <br>
-    {{ dict }}
+    {{ data|safe }}
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -141,12 +148,12 @@
     const monthBtn = document.getElementById('monthBtn');
     const yearBtn = document.getElementById('yearBtn');
 
-    drawBarChart({{ bar_chart_week|safe }});
+    drawBarChart({{ data|safe }});
     drawPieChart({{ pie_chart|safe }});
 
     weekBtn.onclick = () => {
         if (barChart) barChart.destroy();
-        drawBarChart({{ bar_chart_week|safe }});
+        drawBarChart({{ data|safe }});
         setActive(weekBtn, monthBtn, yearBtn);
     }
 

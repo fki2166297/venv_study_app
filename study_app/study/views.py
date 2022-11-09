@@ -13,7 +13,7 @@ import datetime as dt
 import calendar
 import pandas as pd
 from django_pandas.io import read_frame
-from .helpers import get_current_user
+from .helpers import get_current_user, get_bar_chart_week
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, generic.CreateView):
@@ -74,33 +74,46 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         query = self.model.objects.filter(user=self.request.user).order_by('studied_at').select_related()
-        subjects = [i[0] for i in Subject.objects.filter(user=self.request.user).order_by('created_at').values_list('id')]
+        df = read_frame(query, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
 
-        for item in query:
-            item.studied_at = item.studied_at.date()
+        # studied_atカラムをdatetime型からdate型に変換
+        if not df.empty:
+            df['studied_at'] = df['studied_at'].dt.date
 
         today = dt.date.today()
         weekday = today.isoweekday() % 7
         start = today + dt.timedelta(days=-weekday)
         end = today + dt.timedelta(days=(6-weekday))
 
+        # 棒グラフのデータ
         data = {'labels': [], 'datasets': []}
+
         for i in range(7):
             date = start + dt.timedelta(days=i)
             data['labels'].append(date.strftime('%m/%d') + ' (' + ['日', '月', '火', '水', '木', '金', '土'][date.isoweekday() % 7] + ')')
 
-        dict = {subject: {} for subject in subjects}
+        # startからendの期間内のデータを取得
+        df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
+
+        # 教科名と教科の色をタプルのリストで取得
+        subjects = df.groupby(['subject', 'subject__color']).groups.keys()
+
         for subject in subjects:
+            dataset = {'label': subject[0], 'data': [], 'backgroundColor': subject[1]}
+            df2 = df.groupby('subject').get_group(subject[0])
+            df2 = df2.groupby('studied_at', as_index=False).sum().reset_index(drop=True)
+            for i in range(7):
+                for row in df2.itertuples():
+                    if row.studied_at == (start + dt.timedelta(days=i)):
+                        dataset['data'].append(row.study_minutes)
+                        break
+                else:
+                    dataset['data'].append(0)
+            data['datasets'].append(dataset)
 
-            list = []
-            for item in query:
-                if item.subject.id == subject:
-                    list.append(item)
-                dict[subject][item.studied_at] = list
-
-        context['query'] = query
+        context['df'] = df2
+        context['data'] = get_bar_chart_week(df)
         context['subject'] = subjects
-        context['dict'] = dict
 
         return context
 
