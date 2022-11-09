@@ -99,13 +99,15 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-4">
-                            <label class="form-label" for="{{ form.subject.id_for_label }}">教科を選択</label>
+                            <div class="hstack mb-2">
+                                <label for="{{ form.subject.id_for_label }}">教科を選択</label>
+                                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
+                            </div>
                             {% render_field form.subject class='form-select mb-2' %}
-                            <a href="{% url 'study:subject' %}">教科を作成する</a>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="{{ form.studied_at.id_for_label }}">{{ form.studied_at.label }}</label>
-                            {% render_field form.studied_at class='form-control' id='dateTimePicker' %}
+                            {% render_field form.studied_at class='form-control js-dateTimePicker' %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="{{ form.study_minutes.id_for_label }}">{{ form.study_minutes.label }}</label>
@@ -130,7 +132,9 @@
 
 <script>
     tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
-    new tempusDominus.TempusDominus(document.getElementById('dateTimePicker'), {
+
+    const dateTimePickerEl = document.querySelector('.js-dateTimePicker');
+    new tempusDominus.TempusDominus(dateTimePickerEl, {
         display: {
             buttons: {
                 today: true,
@@ -170,7 +174,7 @@
             const now = new Date();
             now.setMinutes(Math.round(now.getMinutes() / 5) * 5);
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            dateTimePicker.value = now.toISOString().slice(0, -8).replace('T', ' ');
+            dateTimePickerEl.value = now.toISOString().slice(0, -8).replace('T', ' ');
         });
     });
 

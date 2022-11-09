@@ -27,13 +27,13 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         tab = 'all'
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
-        query = self.model.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at')
+        query = self.model.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
         if 'tab' in self.request.GET:
             tab = self.request.GET['tab']
             if tab == 'my-record':
-                query = self.model.objects.filter(user=self.request.user).order_by('-studied_at')
+                query = self.model.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
             elif tab == 'following':
-                query = self.model.objects.filter(user__in=following).order_by('-studied_at')
+                query = self.model.objects.filter(user__in=following).order_by('-studied_at').select_related()
         context['tab'] = tab
         context['study_time_list'] = query
         return context
@@ -71,68 +71,37 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
     model = StudyTime
     template_name = 'report.html'
 
-    # 棒グラフのデータを取得
-    def get_bar_chart_data(self, df, start, end):
-        data = {'labels': [], 'datasets': []}
-        if not df.empty:
-            date_diff = (end - start).days + 1
-            # startからendまでの日付をlabelsに格納
-            WEEKDAY = ['日', '月', '火', '水', '木', '金', '土']
-            for i in range(date_diff):
-                date = start + dt.timedelta(days=i)
-                data['labels'].append((start + dt.timedelta(days=i)).strftime('%m/%d') + ' (' + WEEKDAY[date.isoweekday() % 7] + ')')
-            # startからendの期間内のデータを取得
-            df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
-            # 教科, 日付ごとに学習時間を合計
-            df = df.groupby(['subject', 'subject__color', 'studied_at'], as_index=False).sum().sort_values(['subject', 'studied_at'])
-            subjects = list(df.groupby('subject').groups.keys())
-            for subject in subjects:
-                dataset = {'label': subject, 'data': [], 'backgroundColor': ''}
-                for i in range(date_diff):
-                    for row in df.itertuples():
-                        if (subject == row.subject) and (start + dt.timedelta(days=i) == row.studied_at):
-                            dataset['data'].append(row.study_minutes)
-                            dataset['backgroundColor'] = row.subject__color # 仮
-                            break
-                    else:
-                        dataset['data'].append(0)
-                data['datasets'].append(dataset)
-        return data
-
-    # 円グラフのデータを取得
-    def get_pie_chart_data(self, df):
-        data = {'labels': [], 'datasets': []}
-        if not df.empty:
-            dataset = {'data': []}
-            df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
-            data['labels'] = df['subject'].values.tolist()
-            dataset['data'] = df['study_minutes'].values.tolist()
-            dataset['backgroundColor'] = df['subject__color'].values.tolist()
-            data['datasets'].append(dataset)
-        return data
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        COLS = ['subject', 'subject__color', 'studied_at', 'study_minutes']
-        df = read_frame(self.model.objects.filter(user=self.request.user).order_by('-studied_at'), fieldnames=COLS)
+        query = self.model.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        subjects = [i[0] for i in Subject.objects.filter(user=self.request.user).order_by('created_at').values_list('id')]
 
-        # studied_atカラムをdatetime型からdate型に変換
-        if not df.empty:
-            df['studied_at'] = df['studied_at'].dt.date
+        for item in query:
+            item.studied_at = item.studied_at.date()
 
         today = dt.date.today()
         weekday = today.isoweekday() % 7
-        week_start = today + dt.timedelta(days=-weekday)
-        week_end = today + dt.timedelta(days=(6-weekday))
+        start = today + dt.timedelta(days=-weekday)
+        end = today + dt.timedelta(days=(6-weekday))
 
-        month_start = today.replace(day=1)
-        month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+        data = {'labels': [], 'datasets': []}
+        for i in range(7):
+            date = start + dt.timedelta(days=i)
+            data['labels'].append(date.strftime('%m/%d') + ' (' + ['日', '月', '火', '水', '木', '金', '土'][date.isoweekday() % 7] + ')')
 
-        context['aaa'] = df
+        dict = {subject: {} for subject in subjects}
+        for subject in subjects:
 
-        context['bar_chart_week'] = self.get_bar_chart_data(df, week_start, week_end)
-        context['bar_chart_month'] = self.get_bar_chart_data(df, month_start, month_end)
-        context['pie_chart'] = self.get_pie_chart_data(df)
+            list = []
+            for item in query:
+                if item.subject.id == subject:
+                    list.append(item)
+                dict[subject][item.studied_at] = list
+
+        context['query'] = query
+        context['subject'] = subjects
+        context['dict'] = dict
+
         return context
 
 
