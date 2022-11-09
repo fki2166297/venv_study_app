@@ -148,12 +148,12 @@
     const monthBtn = document.getElementById('monthBtn');
     const yearBtn = document.getElementById('yearBtn');
 
-    drawBarChart({{ data|safe }});
+    drawBarChart({{ bar_chart_week|safe }});
     drawPieChart({{ pie_chart|safe }});
 
     weekBtn.onclick = () => {
         if (barChart) barChart.destroy();
-        drawBarChart({{ data|safe }});
+        drawBarChart({{ bar_chart_week|safe }});
         setActive(weekBtn, monthBtn, yearBtn);
     }
 
