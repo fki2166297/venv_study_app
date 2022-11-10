@@ -8,6 +8,7 @@
 
 {% block contents %}
 <main class="container-md col-md-8">
+    <!-- メッセージフレームワーク -->
     {% for message in messages %}
         <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
@@ -60,33 +61,6 @@
     <button class="btn btn-primary rounded-circle p-3 d-md-none creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
         <span class="material-symbols-outlined">add</span>
     </button>
-
-    <!-- 記録削除モーダル -->
-    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
-                </div>
-                <div class="modal-body">
-                    <div class="card card-body hstack gap-3 mb-3">
-                        <div id="datetime"></div>
-                        <i class="bi bi-circle-fill" id="subjectColor"></i>
-                        <div id="subject"></div>
-                        <div id="studyMinutes"></div>
-                    </div>
-                    <p>この記録を削除しますか？</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <form method="post" action="#" id="deletionForm">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">削除する</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- 記録作成モーダル -->
     <div class="modal fade" id="creationModal" tabindex="-1" aria-labelledby="creationModalLabel">
@@ -181,7 +155,7 @@
     // 勉強時間の表示形式を変更
     document.querySelectorAll('.study_minutes').forEach(element => {
         let time = parseInt(element.innerHTML);
-        if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
+        if (time >= 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
         else time = time % 60 + '分';
         element.innerHTML = time;
     });

@@ -6,18 +6,16 @@ from django.http import HttpResponseRedirect
 from django.views import generic
 from .models import StudyTime, Subject, Question, Answer
 from accounts.models import CustomUser, Connection
-from accounts.forms import CustomUserForm
 from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
 from django.db.models import Q
 import datetime as dt
 import pandas as pd
 from django_pandas.io import read_frame
-from .helpers import get_current_user, get_bar_chart_week, get_bar_chart_month
+from .helpers import get_current_user, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, generic.CreateView):
     template_name = 'home.html'
-    model = StudyTime
     form_class = StudyTimeForm
     success_url = reverse_lazy('study:home')
 
@@ -26,13 +24,15 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         tab = 'all'
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
-        query = self.model.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
+        # ログインユーザー、フォローユーザーのデータを取得
+        query = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
         if 'tab' in self.request.GET:
+            # GETパラメータのtabを取得
             tab = self.request.GET['tab']
             if tab == 'my-record':
-                query = self.model.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
+                query = StudyTime.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
             elif tab == 'following':
-                query = self.model.objects.filter(user__in=following).order_by('-studied_at').select_related()
+                query = StudyTime.objects.filter(user__in=following).order_by('-studied_at').select_related()
         context['tab'] = tab
         context['study_time_list'] = query
         return context
@@ -45,6 +45,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         study_time = form.save(commit=False)
+        # ログインユーザーのIDを保存
         study_time.user = self.request.user
         study_time.save()
         messages.success(self.request, '記録を作成しました。')
@@ -55,30 +56,19 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
-class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'study_time_update.html'
-    model = StudyTime
-    success_url = reverse_lazy('study:home')
-
-
-class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
-    model = StudyTime
-    success_url = reverse_lazy('study:home')
-
-
 class ReportView(LoginRequiredMixin, generic.TemplateView):
-    model = StudyTime
     template_name = 'report.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        query = self.model.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        query = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         df = read_frame(query, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
 
         today = dt.date.today()
-        context['df'] = df
+        context['df'] = df # 確認用
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
+        context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
         return context
 
 
@@ -100,6 +90,19 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
         return context
 
 
+class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'question_create.html'
+    form_class = QuestionCreateForm
+    success_url = reverse_lazy('study:qa')
+
+    def form_valid(self, form):
+        question = form.save(commit=False)
+        # ログインユーザーのIDを保存
+        question.user = self.request.user
+        question.save()
+        return super().form_valid(form)
+
+
 class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     template_name = 'question_detail.html'
     form_class = AnswerCreateForm
@@ -115,6 +118,7 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         answer = form.save(commit=False)
+        # ログインユーザーのIDを保存
         answer.user = self.request.user
         # questionのIDを保存
         answer.question = Question.objects.get(pk=self.kwargs['pk'])
@@ -122,32 +126,19 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
 
 
-class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question_create.html'
-    model = Question
-    form_class = QuestionCreateForm
-    success_url = reverse_lazy('study:qa')
-
-    def form_valid(self, form):
-        question = form.save(commit=False)
-        question.user = self.request.user
-        question.save()
-        return super().form_valid(form)
-
-
 class SubjectView(LoginRequiredMixin, generic.CreateView):
     template_name = 'subject.html'
-    model = Subject
     form_class = SubjectCreateForm
     success_url = reverse_lazy('study:subject')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subject_list'] = self.model.objects.filter(user=self.request.user).order_by('created_at')
+        context['subject_list'] = Subject.objects.filter(user=self.request.user).order_by('created_at')
         return context
 
     def form_valid(self, form):
         subject = form.save(commit=False)
+        # ログインユーザーのIDを保存
         subject.user = self.request.user
         subject.save()
         return super().form_valid(form)
@@ -156,27 +147,17 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
 @login_required
 def follow_view(request, *args, **kwargs):
     try:
-        # request.user.username = ログインユーザーのユーザー名を渡す。
         follower = CustomUser.objects.get(username=request.user.username)
-        #kwargs['username'] = フォロー対象のユーザー名を渡す。
         following = CustomUser.objects.get(username=kwargs['username'])
-    # フォロー対象が存在しない場合
     except CustomUser.DoesNotExist:
         messages.warning(request, f'{kwargs["username"]}は存在しません')
         return HttpResponseRedirect(reverse_lazy('study:home'))
-    # フォローしようとしている対象が自分の場合
     if follower == following:
         messages.warning(request, '自分自身はフォローできません')
     else:
-        # フォロー対象をまだフォローしていなければ、DBにフォロワー(自分)×フォロー(相手)という組み合わせで登録する。
-        # createdにはTrueが入る
         _, created = Connection.objects.get_or_create(follower=follower, following=following)
-
-        # もしcreatedがTrueの場合、フォロー完了のメッセージを表示させる。
         if (created):
             messages.success(request, f'{following.username}をフォローしました')
-        # 既にフォロー相手をフォローしていた場合、createdにはFalseが入る。
-        # フォロー済みのメッセージを表示させる。
         else:
             messages.warning(request, f'あなたはすでに{following.username}をフォローしています')
 
@@ -192,7 +173,6 @@ def unfollow_view(request, *args, **kwargs):
             messages.warning(request, '自分自身のフォローを外せません')
         else:
             unfollow = Connection.objects.get(follower=follower, following=following)
-            # フォロワー(自分)×フォロー(相手)という組み合わせを削除する。
             unfollow.delete()
             messages.success(request, f'あなたは{following.username}のフォローを解除しました')
     except CustomUser.DoesNotExist:
@@ -205,12 +185,9 @@ def unfollow_view(request, *args, **kwargs):
 
 # プロフィール画面
 class AccountDetailView(LoginRequiredMixin, generic.DetailView):
-    model = CustomUser
     template_name = 'account_detail.html'
-
-    #slug_field = urls.pyに渡すモデルのフィールド名
+    model = CustomUser
     slug_field = 'username'
-    # urls.pyでのキーワードの名前
     slug_url_kwarg = 'username'
 
     def get_context_data(self, **kwargs):

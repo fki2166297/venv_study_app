@@ -24,6 +24,7 @@
     </table>
     {{ subject }}
     {{ data|safe }}
+
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -34,11 +35,13 @@
                     <button type="button" class="btn btn-primary" id="yearBtn">年</button>
                 </div>
             </div>
+            <!-- 棒グラフ -->
             <canvas id="barChart"></canvas>
         </div>
         <div class="col-lg-6 mb-4">
             <h2>割合</h2>
             <div class="col-lg-8 mx-auto">
+                <!-- 円グラフ -->
                 <canvas id="pieChart"></canvas>
             </div>
         </div>
@@ -77,6 +80,7 @@
                 plugins: {
                     tooltip: {
                         callbacks: {
+                            // ラベルに表示する勉強時間の形式を変更
                             label: (context) => {
                                 let label = context.dataset.label || '';
                                 if (label) label += ': ';
@@ -109,6 +113,7 @@
                         stacked: true,
                         ticks: {
                             stepSize: 30,
+                            // 目盛りの勉強時間の表示形式を変更
                             callback: (value, index, ticks) => {
                                 if (value >= 60) value = (value / 60) + '時間';
                                 else if (value != 0)  value = value + '分';
@@ -165,7 +170,7 @@
 
     yearBtn.onclick = () => {
         if (barChart) barChart.destroy();
-        drawBarChart();
+        drawBarChart({{ bar_chart_year|safe }});
         setActive(yearBtn, weekBtn, monthBtn);
     }
 </script>
