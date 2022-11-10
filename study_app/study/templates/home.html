@@ -7,7 +7,7 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md col-md-8">
+<main class="container-md">
     <!-- メッセージフレームワーク -->
     {% for message in messages %}
         <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -16,7 +16,7 @@
         </div>
     {% endfor %}
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <!-- タブ -->
             <ul class="nav nav-tabs">
                 <li class="nav-item">
@@ -33,18 +33,39 @@
                 <ul class="list-group list-group-flush border-bottom">
                     {% for study_time in study_time_list %}
                         <li class="list-group-item py-3">
-                            <div class="hstack gap-2 mb-3">
-                                <a href="{% url 'study:account_detail' study_time.user.username %}">
-                                    <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
-                                </a>
-                                <a class="text-decoration-none" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
-                                <div class="ms-auto fw-light">{{ study_time.studied_at|date:'n/j G:i' }}</div>
-                            </div>
-                            <div class="card card-body hstack gap-3">
-                                <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
-                                {{ study_time.subject }}
-                                <div class="study_minutes">{{ study_time.study_minutes }}</div>
-                            </div>
+                            <a href="/report">
+                                <div class="hstack gap-2 mb-3">
+                                    <a href="{% url 'study:account_detail' study_time.user.username %}">
+                                        <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                    </a>
+                                    <a class="text-decoration-none me-3" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
+                                    <div class="dropdown ms-auto">
+                                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" role="button" href="{% url 'study:study_time_update' study_time.id %}">編集</a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
+                                                    data-id="{{ study_time.id }}"
+                                                    data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
+                                                    data-subject-color="{{ study_time.subject.color }}"
+                                                    data-subject="{{ study_time.subject }}"
+                                                    data-study-minutes="{{ study_time.study_minutes }}">
+                                                    削除
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card card-body hstack gap-3">
+                                    <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
+                                    {{ study_time.subject }}
+                                    <div class="study_minutes">{{ study_time.study_minutes }}</div>
+                                    <div class="fw-light ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
+                                </div>
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -52,15 +73,44 @@
                 <div class="text-center mt-5">記録がありません</div>
             {% endif %}
         </div>
-        <div class="col-md-4 d-none d-md-block">
+        <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-3" style="position: sticky; top: 5rem;">
                 <button class="btn btn-primary col-12 gap-3 creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+                <div class="card card-body">
+                </div>
             </div>
         </div>
     </div>
-    <button class="btn btn-primary rounded-circle p-3 d-md-none creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
+    <button class="btn btn-primary rounded-circle p-3 d-lg-none creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
         <span class="material-symbols-outlined">add</span>
     </button>
+
+    <!-- 記録削除モーダル -->
+    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
+                </div>
+                <div class="modal-body">
+                    <p>この記録を削除しますか？</p>
+                    <div class="card card-body hstack gap-3 mb-3">
+                        <i class="bi bi-circle-fill" id="subjectColor"></i>
+                        <div id="subject"></div>
+                        <div class="study_minutes" id="studyMinutes"></div>
+                        <div class="fw-light ms-auto" id="datetime"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form method="post" action="#" id="deletionForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 記録作成モーダル -->
     <div class="modal fade" id="creationModal" tabindex="-1" aria-labelledby="creationModalLabel">
@@ -105,6 +155,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
 
 <script>
+    function changeTimeFormat(time) {
+        if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
+        else time = time % 60 + '分';
+        return time;
+    }
+
     tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
 
     const dateTimePickerEl = document.querySelector('.js-dateTimePicker');
@@ -158,6 +214,21 @@
         if (time >= 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
         else time = time % 60 + '分';
         element.innerHTML = time;
+    });
+
+    document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
+        targetEl = event.relatedTarget
+        const id = targetEl.dataset.id;
+        const datetime = targetEl.dataset.datetime;
+        const subjectColor = targetEl.dataset.subjectColor;
+        const subject = targetEl.dataset.subject;
+        const studyMinutes = changeTimeFormat(targetEl.dataset.studyMinutes);
+
+        document.getElementById('deletionForm').action = 'study-time-delete/' + id;
+        document.getElementById('datetime').innerHTML = datetime;
+        document.getElementById('subjectColor').style.color = subjectColor;
+        document.getElementById('subject').innerHTML = subject;
+        document.getElementById('studyMinutes').innerHTML = studyMinutes;
     });
 </script>
 {% endblock %}

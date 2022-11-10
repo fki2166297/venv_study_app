@@ -56,6 +56,22 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
+class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
+    model = StudyTime
+    success_url = reverse_lazy('study:home')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, '記録を削除しました。')
+        return super().delete(request, *args, **kwargs)
+
+
+class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'study_time_update.html'
+    model = StudyTime
+    fields = ['subject', 'studied_at', 'study_minutes']
+    success_url = reverse_lazy('study:home')
+
+
 class ReportView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'report.html'
 
@@ -65,7 +81,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         df = read_frame(query, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
 
         today = dt.date.today()
-        context['df'] = df # 確認用
+        context['df'] = df
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
@@ -203,3 +219,14 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
             context['connected'] = True if result else False
 
         return context
+
+
+class AccountUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'account_update.html'
+    model = CustomUser
+    fields = ['icon']
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+
+    def get_success_url(self):
+        return reverse_lazy('study:account_detail', kwargs={'username': self.request.user.username })

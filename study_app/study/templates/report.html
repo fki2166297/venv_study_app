@@ -25,6 +25,7 @@
     {{ subject }}
     {{ data|safe }}
 
+    {{ df }}
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -72,12 +73,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
 <script>
-    function drawBarChart(data) {
+    function drawBarChart(data, title=null) {
         window.barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
             data: data,
             options: {
                 plugins: {
+                    title,
                     tooltip: {
                         callbacks: {
                             // ラベルに表示する勉強時間の形式を変更
@@ -153,6 +155,8 @@
     const monthBtn = document.getElementById('monthBtn');
     const yearBtn = document.getElementById('yearBtn');
 
+    const now = new Date();
+
     drawBarChart({{ bar_chart_week|safe }});
     drawPieChart({{ pie_chart|safe }});
 
@@ -164,13 +168,19 @@
 
     monthBtn.onclick = () => {
         if (barChart) barChart.destroy();
-        drawBarChart({{ bar_chart_month|safe }});
+        drawBarChart({{ bar_chart_month|safe }}, {
+            display: true,
+            text: (now.getMonth() + 1) + '月'
+        });
         setActive(monthBtn, weekBtn, yearBtn);
     }
 
     yearBtn.onclick = () => {
         if (barChart) barChart.destroy();
-        drawBarChart({{ bar_chart_year|safe }});
+        drawBarChart({{ bar_chart_year|safe }}, {
+            display: true,
+            text: now.getFullYear() + '年'
+        });
         setActive(yearBtn, weekBtn, monthBtn);
     }
 </script>

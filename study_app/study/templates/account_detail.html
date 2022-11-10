@@ -6,15 +6,6 @@
 
 {% block contents %}
 <main class="container col-md-8">
-    {% comment %} <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="{{ form.icon.id_for_label }}" class="form-label">{{ form.icon.label }}</label>
-            {% render_field form.icon class='form-control' %}
-        </div>
-        <input type="submit" class="btn btn-primary" value="投稿する">
-    </form> {% endcomment %}
-
     {% for message in messages %}
         <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
@@ -30,8 +21,7 @@
                 </a>
                 <h6 class="mb-3">{{ username }}</h6>
                 {% if user.username == username %}
-                    {% comment %} <a href="{% url 'study:account_update' username %}" class="btn btn-info">プロフィール編集</a> {% endcomment %}
-                    <p>aaa</p>
+                    <a href="{% url 'study:account_update' username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
                 {% elif connected %}
                     <a href="{% url 'study:unfollow' username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
                 {% else %}
