@@ -77,7 +77,11 @@
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
                 <button class="btn btn-primary col-12 gap-3 creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
                 <div class="card card-body">
-                    <div>目標がありません</div>
+                    <a href="{% url 'study:goal' %}">作成する</a>
+                    {% for goal in goal_list %}
+                        {{ goal.text }}
+                        {{ goal.minutes }}
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -85,33 +89,6 @@
     <button class="btn btn-primary rounded-circle p-3 d-lg-none creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
         <span class="material-symbols-outlined">add</span>
     </button>
-
-    {% comment %} <!-- 記録削除モーダル -->
-    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
-                </div>
-                <div class="modal-body">
-                    <p>この記録を削除しますか？</p>
-                    <div class="card card-body hstack gap-3 mb-3">
-                        <i class="bi bi-circle-fill" id="subjectColor"></i>
-                        <div id="subject"></div>
-                        <div class="study_minutes" id="studyMinutes"></div>
-                        <div class="fw-light ms-auto" id="datetime"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <form method="post" action="#" id="deletionForm">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">削除する</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div> {% endcomment %}
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
@@ -168,7 +145,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                        <input type="submit" class="btn btn-primary" value="記録する"></input>
+                        <input type="submit" class="btn btn-primary" value="記録する">
                     </div>
                 </form>
             </div>

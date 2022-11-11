@@ -4,10 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.views import generic
-from .models import StudyTime, Subject, Question, Answer
+from .models import StudyTime, Goal, Subject, Question, Answer
 from accounts.models import CustomUser, Connection
 from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
-from .multiforms import MultiFormsView
 from django.db.models import Q
 import datetime as dt
 import pandas as pd
@@ -22,12 +21,10 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        tab = 'all'
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
         # ログインユーザー、フォローユーザーのデータを取得
         queryset = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
-        # GETパラメータのtabを取得
         tab = self.request.GET.get('tab') or 'all'
         if tab == 'my-record':
             queryset = queryset.filter(user=self.request.user)
@@ -35,6 +32,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
             queryset = queryset.filter(user__in=following)
         context['tab'] = tab
         context['study_time_list'] = queryset
+        context['goal_list'] = Goal.objects.filter(user=self.request.user).order_by('-created_at')
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -56,31 +54,6 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
-class MultipleFormsDemoView(MultiFormsView):
-    template_name = "pages/cbv_multiple_forms.html"
-    form_classes = {
-        'contact': StudyTimeForm,
-        'subscription': GoalCreateForm,
-    }
-
-    success_urls = {
-        'contact': reverse_lazy('form-redirect'),
-        'subscription': reverse_lazy('form-redirect'),
-    }
-
-    def contact_form_valid(self, form):
-        title = form.cleaned_data.get('title')
-        form_name = form.cleaned_data.get('action')
-        print(title)
-        return HttpResponseRedirect(self.get_success_url(form_name))
-
-    def subscription_form_valid(self, form):
-        email = form.cleaned_data.get('email')
-        form_name = form.cleaned_data.get('action')
-        print(email)
-        return HttpResponseRedirect(self.get_success_url(form_name))
-
-
 class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = StudyTime
     success_url = reverse_lazy('study:home')
@@ -97,13 +70,37 @@ class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
     success_url = reverse_lazy('study:home')
 
 
+class GoalCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'goal.html'
+    form_class = GoalCreateForm
+    success_url = reverse_lazy('study:home')
+
+    # StudyTimeFormにログインユーザーIDを渡す
+    def get_form_kwargs(self):
+        kwargs = super(GoalCreateView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        goal = form.save(commit=False)
+        # ログインユーザーのIDを保存
+        goal.user = self.request.user
+        goal.save()
+        messages.success(self.request, '目標を作成しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "目標の作成に失敗しました。")
+        return super().form_invalid(form)
+
+
 class ReportView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'report.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
-        # querysetをDataFrame型に変換
+        # Queryset型からDataFrame型に変換
         df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
 
         today = dt.date.today()
@@ -121,9 +118,7 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         queryset = Question.objects.order_by('-created_at')
-        # GETパラメータのsubjectを取得
         subject = self.request.GET.get('subject')
-        # GETパラメータのqueryを取得
         query = self.request.GET.get('query')
         if subject:
             queryset = queryset.filter(subject=subject)
@@ -189,6 +184,15 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
         subject.user = self.request.user
         subject.save()
         return super().form_valid(form)
+
+
+class SubjectDeleteView(LoginRequiredMixin, generic.DeleteView):
+    model = Subject
+    success_url = reverse_lazy('study:subject')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, '記録を削除しました。')
+        return super().delete(request, *args, **kwargs)
 
 # フォロー
 @login_required
