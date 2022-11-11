@@ -6,12 +6,13 @@ from django.http import HttpResponseRedirect
 from django.views import generic
 from .models import StudyTime, Subject, Question, Answer
 from accounts.models import CustomUser, Connection
-from .forms import StudyTimeForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
+from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
+from .multiforms import MultiFormsView
 from django.db.models import Q
 import datetime as dt
 import pandas as pd
 from django_pandas.io import read_frame
-from .helpers import get_current_user, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year
+from .helpers import get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, generic.CreateView):
@@ -25,16 +26,15 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
         # ログインユーザー、フォローユーザーのデータを取得
-        query = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
-        if 'tab' in self.request.GET:
-            # GETパラメータのtabを取得
-            tab = self.request.GET['tab']
-            if tab == 'my-record':
-                query = StudyTime.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
-            elif tab == 'following':
-                query = StudyTime.objects.filter(user__in=following).order_by('-studied_at').select_related()
+        queryset = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
+        # GETパラメータのtabを取得
+        tab = self.request.GET.get('tab') or 'all'
+        if tab == 'my-record':
+            queryset = queryset.filter(user=self.request.user)
+        elif tab == 'following':
+            queryset = queryset.filter(user__in=following)
         context['tab'] = tab
-        context['study_time_list'] = query
+        context['study_time_list'] = queryset
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -54,6 +54,31 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
     def form_invalid(self, form):
         messages.error(self.request, "記録の作成に失敗しました。")
         return super().form_invalid(form)
+
+
+class MultipleFormsDemoView(MultiFormsView):
+    template_name = "pages/cbv_multiple_forms.html"
+    form_classes = {
+        'contact': StudyTimeForm,
+        'subscription': GoalCreateForm,
+    }
+
+    success_urls = {
+        'contact': reverse_lazy('form-redirect'),
+        'subscription': reverse_lazy('form-redirect'),
+    }
+
+    def contact_form_valid(self, form):
+        title = form.cleaned_data.get('title')
+        form_name = form.cleaned_data.get('action')
+        print(title)
+        return HttpResponseRedirect(self.get_success_url(form_name))
+
+    def subscription_form_valid(self, form):
+        email = form.cleaned_data.get('email')
+        form_name = form.cleaned_data.get('action')
+        print(email)
+        return HttpResponseRedirect(self.get_success_url(form_name))
 
 
 class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -77,14 +102,16 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        query = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
-        df = read_frame(query, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
+        queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        # querysetをDataFrame型に変換
+        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
 
         today = dt.date.today()
         context['df'] = df
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
+        context['pie_chart'] = get_pie_chart_data(df.copy())
         return context
 
 
@@ -93,11 +120,15 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        queryset = Question.objects.order_by('-created_at')
+        # GETパラメータのsubjectを取得
         subject = self.request.GET.get('subject')
+        # GETパラメータのqueryを取得
+        query = self.request.GET.get('query')
         if subject:
-            queryset = Question.objects.filter(subject=subject).order_by('-created_at')
-        else:
-            queryset = Question.objects.order_by('-created_at')
+            queryset = queryset.filter(subject=subject)
+        if query:
+            queryset = queryset.filter(text__icontains=query)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -163,7 +194,9 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
 @login_required
 def follow_view(request, *args, **kwargs):
     try:
+        # フォロワー（ログインユーザー）を取得
         follower = CustomUser.objects.get(username=request.user.username)
+        # フォロー対象を取得
         following = CustomUser.objects.get(username=kwargs['username'])
     except CustomUser.DoesNotExist:
         messages.warning(request, f'{kwargs["username"]}は存在しません')
@@ -176,17 +209,18 @@ def follow_view(request, *args, **kwargs):
             messages.success(request, f'{following.username}をフォローしました')
         else:
             messages.warning(request, f'あなたはすでに{following.username}をフォローしています')
-
     return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
 # フォロー解除
 @login_required
 def unfollow_view(request, *args, **kwargs):
     try:
+        # フォロワー（ログインユーザー）を取得
         follower = CustomUser.objects.get(username=request.user.username)
+        # フォロー解除対象を取得
         following = CustomUser.objects.get(username=kwargs['username'])
         if follower == following:
-            messages.warning(request, '自分自身のフォローを外せません')
+            messages.warning(request, '自分自身のフォローは外すことができません')
         else:
             unfollow = Connection.objects.get(follower=follower, following=following)
             unfollow.delete()
@@ -196,7 +230,7 @@ def unfollow_view(request, *args, **kwargs):
         return HttpResponseRedirect(reverse_lazy('study:home'))
     except Connection.DoesNotExist:
         messages.warning(request, f'あなたは{following.username}をフォローしませんでした')
-
+        return HttpResponseRedirect(reverse_lazy('study:home'))
     return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
 # プロフィール画面
@@ -208,16 +242,14 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # URLパラメータのusernameを取得
         username = self.kwargs['username']
-        context['username'] = username
-        context['user'] = get_current_user(self.request)
+        context['account'] = CustomUser.objects.get(username=username)
         context['following'] = Connection.objects.filter(follower__username=username).count()
         context['follower'] = Connection.objects.filter(following__username=username).count()
-
-        if username is not context['user'].username:
-            result = Connection.objects.filter(follower__username=context['user'].username).filter(following__username=username)
+        if username is not self.request.user.username:
+            result = Connection.objects.filter(follower__username=self.request.user.username).filter(following__username=username)
             context['connected'] = True if result else False
-
         return context
 
 

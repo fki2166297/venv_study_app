@@ -8,14 +8,20 @@
 <main class="container-md col-lg-5">
     <div class="card mb-3">
         <div class="card-header hstack gap-3">
-            <div>作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</div>
-            <div>更新日時：{{ question.updated_at|date:'Y/n/j G:i' }}</div>
-            <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
-            {% if user.id == question.user_id %}
-                <button class="btn btn-primary shadow-sm col-1.5 ms-auto">編集</button>
-            {% endif %}
+            <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
+            <div class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</div>
         </div>
-        <div class="card-body m-2">
+        <div class="card-body mx-3 my-2">
+            <div class="hstack gap-2 mb-3">
+                <a href="{% url 'study:account_detail' question.user.username %}">
+                    <img src="/media/{{ question.user.icon }}" alt="{{ question.user.username }}" width="28" height="28" class="rounded-circle">
+                </a>
+                <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
+                <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
+                {% if question.user_id == user.id %}
+                    <button class="btn btn-primary ms-auto">編集</button>
+                {% endif %}
+            </div>
             <div class="card-text mb-4">
                 {{ question.text|linebreaksbr }}
             </div>

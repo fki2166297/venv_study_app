@@ -17,15 +17,15 @@
         <div class="col-lg-4">
             <div class="card card-body d-flex justify-content-center text-center">
                 <a href="#">
-                    <img src="/media/{{ user.icon }}" alt="{{ user.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
+                    <img src="/media/{{ account.icon }}" alt="{{ account.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
                 </a>
-                <h6 class="mb-3">{{ username }}</h6>
-                {% if user.username == username %}
-                    <a href="{% url 'study:account_update' username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
+                <h6 class="mb-3">{{ account.username }}</h6>
+                {% if account.username == user.username %}
+                    <a href="{% url 'study:account_update' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
                 {% elif connected %}
-                    <a href="{% url 'study:unfollow' username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
+                    <a href="{% url 'study:unfollow' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
                 {% else %}
-                    <a href="{% url 'study:follow' username %}" class="btn btn-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー</a>
+                    <a href="{% url 'study:follow' account.username %}" class="btn btn-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー</a>
                 {% endif %}
                 <div class="hstack gap-3 mx-auto">
                     <div class="fw-light" style="font-size: 0.9rem;">フォロー : {{ following }}</div>

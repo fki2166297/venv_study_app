@@ -5,14 +5,6 @@ from dateutil.relativedelta import relativedelta
 import calendar
 
 
-def get_current_user(request=None):
-    if not request:
-        return None
-    session_key = request.session.session_key
-    session = Session.objects.get(session_key=session_key).get_decoded()
-    user_id = session.get('_auth_user_id')
-    return CustomUser.objects.get(id=user_id)
-
 def set_bar_chart_dataset(data, df, start, end):
     date_diff = (end - start).days + 1
     # startからendの期間内のデータを取得
@@ -87,4 +79,15 @@ def get_bar_chart_year(df, today):
                 else:
                     dataset['data'].append(0)
             data['datasets'].append(dataset)
+    return data
+
+def get_pie_chart_data(df):
+    data = {'labels': [], 'datasets': []}
+    if not df.empty:
+        dataset = {'data': []}
+        df = df.groupby(['subject', 'subject__color'], as_index=False).sum().sort_values('study_minutes', ascending=False)
+        data['labels'] = df['subject'].values.tolist()
+        dataset['data'] = df['study_minutes'].values.tolist()
+        dataset['backgroundColor'] = df['subject__color'].values.tolist()
+        data['datasets'].append(dataset)
     return data
