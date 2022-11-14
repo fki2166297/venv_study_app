@@ -50,7 +50,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, "記録の作成に失敗しました。")
+        messages.error(self.request, '記録の作成に失敗しました。')
         return super().form_invalid(form)
 
 
@@ -119,30 +119,23 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         queryset = Question.objects.order_by('-created_at')
         subject = self.request.GET.get('subject')
+        status = self.request.GET.get('status')
         query = self.request.GET.get('query')
         if subject:
             queryset = queryset.filter(subject=subject)
+        if status == 'answered':
+            queryset = queryset.filter(is_answered=True)
+        elif status == 'not_answered':
+            queryset = queryset.filter(is_answered=False)
         if query:
             queryset = queryset.filter(text__icontains=query)
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subject_select_form'] = SubjectSelectForm
         return context
-
-
-class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question_create.html'
-    form_class = QuestionCreateForm
-    success_url = reverse_lazy('study:qa')
-
-    def form_valid(self, form):
-        question = form.save(commit=False)
-        # ログインユーザーのIDを保存
-        question.user = self.request.user
-        question.save()
-        return super().form_valid(form)
 
 
 class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
@@ -165,6 +158,42 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         # questionのIDを保存
         answer.question = Question.objects.get(pk=self.kwargs['pk'])
         answer.save()
+        messages.success(self.request, '回答を作成しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '回答の作成に失敗しました。')
+        return super().form_invalid(form)
+
+
+class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'question_create.html'
+    form_class = QuestionCreateForm
+    success_url = reverse_lazy('study:qa')
+
+    def form_valid(self, form):
+        question = form.save(commit=False)
+        # ログインユーザーのIDを保存
+        question.user = self.request.user
+        question.save()
+        messages.success(self.request, '質問を作成しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '質問の作成に失敗しました。')
+        return super().form_invalid(form)
+
+
+class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'question_update.html'
+    model = Question
+    fields = ['is_answered', 'supplement']
+
+    def get_success_url(self):
+        return reverse_lazy('study:question_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        messages.success(self.request, '質問を更新しました。')
         return super().form_valid(form)
 
 
@@ -175,7 +204,7 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subject_list'] = Subject.objects.filter(user=self.request.user).order_by('created_at')
+        context['subject_list'] = Subject.objects.filter(user=self.request.user, is_disable=False).order_by('created_at')
         return context
 
     def form_valid(self, form):
@@ -183,16 +212,30 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         subject.user = self.request.user
         subject.save()
+        messages.success(self.request, '教科を作成しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '教科の作成に失敗しました。')
+        return super().form_invalid(form)
+
+
+class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'subject_update.html'
+    model = Subject
+    fields = ['subject', 'color', 'is_learned']
+    success_url = reverse_lazy('study:subject')
+
+    def form_valid(self, form):
+        messages.success(self.request, '教科を更新しました。')
         return super().form_valid(form)
 
 
-class SubjectDeleteView(LoginRequiredMixin, generic.DeleteView):
-    model = Subject
-    success_url = reverse_lazy('study:subject')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, '記録を削除しました。')
-        return super().delete(request, *args, **kwargs)
+def subject_delete_view(request, *args, **kwargs):
+    subject = Subject.objects.get(pk=kwargs['pk'])
+    subject.is_disable = True
+    subject.save()
+    return HttpResponseRedirect(reverse_lazy('study:subject'))
 
 # フォロー
 @login_required

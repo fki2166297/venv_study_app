@@ -7,7 +7,7 @@
 {% block active_qa %}active{% endblock %}
 
 {% block contents %}
-<main class="container col-md-9">
+<main class="container-md">
     <div class="row">
         <div class="col-md-8">
             <form method="get">
@@ -88,8 +88,8 @@
                     <label class="form-label" for="id_status">回答状況の選択</label>
                     <select class="form-select mb-3" id="id_status">
                         <option value="" selected>---------</option>
-                        <option value="1">回答済み</option>
-                        <option value="0">未回答</option>
+                        <option value="answered">回答済み</option>
+                        <option value="not_answered">回答募集中</option>
                     </select>
                 </form>
             </div>
@@ -115,14 +115,27 @@
         return null;
     }
 
-    const select = document.getElementById('id_subject');
+    const subjectSelect = document.getElementById('id_subject');
+    const statusSelect = document.getElementById('id_status');
 
-    subject = getOptionElement(select, getParam('subject', window.location.href));
-    if (subject) subject.selected = true;
+    subjectOption = getOptionElement(subjectSelect, getParam('subject', window.location.href));
+    if (subjectOption) subjectOption.selected = true;
 
-    select.onchange = () => {
-        if (select.value) window.location.href = '?subject=' + select.value;
-        else  window.location.href = 'qa';
+    statusOption = getOptionElement(statusSelect, getParam('status', window.location.href));
+    if (statusOption) statusOption.selected = true;
+
+    subjectSelect.onchange = () => {
+        const url = new URL(window.location);
+        url.searchParams.delete('subject');
+        url.searchParams.append('subject', subjectSelect.value);
+        window.location.href = url.href;
     };
+
+    statusSelect.onchange = () => {
+        const url = new URL(window.location);
+        url.searchParams.delete('status');
+        url.searchParams.append('status', statusSelect.value);
+        window.location.href = url.href;
+    }
 </script>
 {% endblock %}

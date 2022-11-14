@@ -1,3 +1,5 @@
+{% load static %}
+
 <html lang="ja">
 
 <head>
@@ -14,6 +16,8 @@
     <script src="https://kit.fontawesome.com/2a2e490519.js" crossorigin="anonymous"></script>
     <!-- Tempus Dominus -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/css/tempus-dominus.min.css" crossorigin="anonymous">
+    <!-- My style -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mystyle.css' %}">
 </head>
 
 <body style="padding-top: 5rem;">
@@ -70,6 +74,16 @@
             </div>
         </div>
     </header>
+
+    <!-- メッセージフレームワーク -->
+    <div class="container-md">
+        {% for message in messages %}
+            <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
 
     {% block contents %}{% endblock %}
 

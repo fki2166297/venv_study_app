@@ -5,7 +5,7 @@
 {% block title %}Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md col-lg-5">
+<main class="container-md" style="max-width: 960px;">
     <div class="card mb-3">
         <div class="card-header hstack gap-3">
             <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
@@ -19,7 +19,7 @@
                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
                 <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
                 {% if question.user_id == user.id %}
-                    <button class="btn btn-primary ms-auto">編集</button>
+                    <a href="{% url 'study:question_update' question.id %}" class="btn btn-primary ms-auto">編集</a>
                 {% endif %}
             </div>
             <div class="card-text mb-4">
@@ -27,7 +27,9 @@
             </div>
             {% if question.image %}
                 <div class="col-md-7 mx-auto mb-3">
-                    <img class="col-12" src="/media/{{ question.image }}"/>
+                    <a role="button" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ question.image }}">
+                        <img class="col-12" src="/media/{{ question.image }}"/>
+                    </a>
                 </div>
             {% endif %}
             <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -72,5 +74,20 @@
     {% endif %}
 
     <div style="height: 80vh;"></div>
+
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <img class="col-12" id="image" src="/media/{{ question.image }}"/>
+            </div>
+        </div>
+    </div>
 </main>
+<script>
+    document.getElementById('imageModal').addEventListener('show.bs.modal', event => {
+        targetEl = event.relatedTarget
+        const image = targetEl.dataset.image;
+        document.getElementById('image').setAttribute('src', '/media/' + image);
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}教科の更新 | Study App{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 960px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" class="btn btn-primary" value="更新">
+    </form>
+</main>
+{% endblock %}

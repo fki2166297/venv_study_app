@@ -5,7 +5,7 @@
 {% block title %}プロフィールの更新 | Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md col-md-6">
+<main class="container-md" style="max-width: 960px;">
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

@@ -6,26 +6,6 @@
 
 {% block contents %}
 <main class="container-md">
-    {% comment %} <table class="table table-striped table-bordered table-hover">
-        <tr>
-            <td>index</td>
-            {% for column, item in df.iteritems %}
-                <th>{{ column }}</th>
-            {% endfor %}
-        </tr>
-        {% for index, values in df.iterrows %}
-            <tr>
-                <th>{{ index }}</th>
-                {% for value in values %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </table>
-    {{ subject }}
-    {{ data|safe }}
-
-    {{ df }} {% endcomment %}
     <div class="row">
         <div class="col-lg-6 mb-4">
             <div class="hstack mb-4">
@@ -99,8 +79,8 @@
                                     }
                                 }
                                 return label;
-                            }
-                        }
+                            },
+                        },
                     },
                     legend: {
                         position: 'bottom',
@@ -120,7 +100,7 @@
                                 if (value >= 60) value = (value / 60) + '時間';
                                 else if (value != 0)  value = value + '分';
                                 return value;
-                            }
+                            },
                         },
                     },
                 },

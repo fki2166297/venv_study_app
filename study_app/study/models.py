@@ -6,7 +6,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 class Subject(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.CharField(verbose_name='教科', max_length=30)
-    color = models.CharField(verbose_name='色', max_length=10)
+    color = models.CharField(verbose_name='色', max_length=7, default='#c8c8c8')
+    is_learned = models.BooleanField(verbose_name='学習済み', default=False)
+    is_disable = models.BooleanField(verbose_name='使用不可', default=False)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
@@ -19,7 +21,7 @@ class Subject(models.Model):
 
 class StudyTime(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, verbose_name="教科", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, verbose_name="教科", null=True, on_delete=models.CASCADE)
     studied_at = models.DateTimeField(verbose_name='日時', null=False)
     study_minutes = models.IntegerField(verbose_name='学習時間', default=30, validators=[MinValueValidator(5), MaxValueValidator(1440)])
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
@@ -28,9 +30,10 @@ class StudyTime(models.Model):
     class Meta:
         verbose_name_plural = 'StudyTime'
 
+
 class Goal(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, verbose_name="教科", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, verbose_name='教科', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='テキスト', blank=True)
     minutes = models.IntegerField(verbose_name='目標学習時間')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
@@ -52,6 +55,7 @@ class Question(models.Model):
     subject = models.CharField(verbose_name='教科', choices=SubjectChoices.choices, max_length=15)
     image = models.ImageField(verbose_name='画像', upload_to='question_images/', null=True, blank=True, default='')
     text = models.TextField(verbose_name='質問文', blank=True)
+    supplement = models.TextField(verbose_name='補足', blank=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

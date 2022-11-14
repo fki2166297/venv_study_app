@@ -48,7 +48,7 @@ def get_bar_chart_month(df, today):
         start = today.replace(day=1)
         days = calendar.monthrange(today.year, today.month)[1]
         for i in range(days):
-            data['labels'].append(i + 1)
+            data['labels'].append(str(i + 1) + '日')
         df = df[df['month'] == today.month]
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()

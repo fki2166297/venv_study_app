@@ -7,20 +7,13 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md col-lg-8">
-    <!-- メッセージフレームワーク -->
-    {% for message in messages %}
-        <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
-            {{ message }}
-        </div>
-    {% endfor %}
+<main class="container-md">
     <div class="row">
         <div class="col-lg-8">
             <!-- タブ -->
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a href="?tab=all" class="nav-link {% if tab == 'all' %}active{% endif %}" aria-current="page">すべて</a>
+                    <a href="?tab=all" class="nav-link {% if tab == 'all' %}active{% endif %}">すべて</a>
                 </li>
                 <li class="nav-item">
                     <a href="?tab=my-record" class="nav-link {% if tab == 'my-record' %}active{% endif %}">自分の記録</a>
@@ -33,39 +26,37 @@
                 <ul class="list-group list-group-flush border-bottom">
                     {% for study_time in study_time_list %}
                         <li class="list-group-item py-3">
-                            <a href="/report">
-                                <div class="hstack gap-2 mb-3">
-                                    <a href="{% url 'study:account_detail' study_time.user.username %}">
-                                        <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
-                                    </a>
-                                    <a class="text-decoration-none me-3" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
-                                    <div class="dropdown ms-auto">
-                                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" role="button" href="{% url 'study:study_time_update' study_time.id %}">編集</a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
-                                                    data-id="{{ study_time.id }}"
-                                                    data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
-                                                    data-subject-color="{{ study_time.subject.color }}"
-                                                    data-subject="{{ study_time.subject }}"
-                                                    data-study-minutes="{{ study_time.study_minutes }}">
-                                                    削除
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                            <div class="hstack gap-2 mb-3">
+                                <a href="{% url 'study:account_detail' study_time.user.username %}">
+                                    <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                </a>
+                                <a class="text-decoration-none me-3" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
+                                <div class="dropdown ms-auto">
+                                    <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" role="button" href="{% url 'study:study_time_update' study_time.id %}">編集</a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
+                                                data-id="{{ study_time.id }}"
+                                                data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
+                                                data-subject-color="{{ study_time.subject.color }}"
+                                                data-subject="{{ study_time.subject }}"
+                                                data-study-minutes="{{ study_time.study_minutes }}">
+                                                削除
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
-                                <div class="card card-body hstack gap-3">
-                                    <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
-                                    {{ study_time.subject }}
-                                    <div class="study_minutes">{{ study_time.study_minutes }}</div>
-                                    <div class="fw-light ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
-                                </div>
-                            </a>
+                            </div>
+                            <div class="card card-body hstack gap-3">
+                                <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
+                                {{ study_time.subject }}
+                                <div class="study_minutes">{{ study_time.study_minutes }}</div>
+                                <div class="fw-light ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -76,13 +67,13 @@
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
                 <button class="btn btn-primary col-12 gap-3 creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
-                <div class="card card-body">
+                {% comment %} <div class="card card-body">
                     <a href="{% url 'study:goal' %}">作成する</a>
                     {% for goal in goal_list %}
                         {{ goal.text }}
                         {{ goal.minutes }}
                     {% endfor %}
-                </div>
+                </div> {% endcomment %}
             </div>
         </div>
     </div>
@@ -213,10 +204,8 @@
 
     // 勉強時間の表示形式を変更
     document.querySelectorAll('.study_minutes').forEach(element => {
-        let time = parseInt(element.innerHTML);
-        if (time >= 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
-        else time = time % 60 + '分';
-        element.innerHTML = time;
+        const time = parseInt(element.innerHTML);
+        element.innerHTML = changeTimeFormat(time);
     });
 
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {

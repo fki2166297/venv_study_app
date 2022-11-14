@@ -5,7 +5,7 @@
 {% block title %}教科の一覧 | Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md col-md-6">
+<main class="container-md" style="max-width: 960px;">
     <form method="post">
         {% csrf_token %}
         <div class="hstack gap-3 mb-5 align-items-center col-11 mx-auto">
@@ -18,12 +18,53 @@
     {% for subject in subject_list %}
         <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
             <i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.subject }}
-            <a class="btn btn-primary ms-auto" href="#" role="button">編集</a>
-            <form method="post" action="{% url 'study:subject_delete' subject.id %}" id="deletionForm">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">削除</button>
-            </form>
+            <a class="btn btn-primary ms-auto" href="{% url 'study:subject_update' subject.id %}" role="button">編集</a>
+            <a
+                class="btn btn-primary" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
+                data-id="{{ subject.id }}"
+                data-subject-color="{{ subject.color }}"
+                data-subject="{{ subject.subject }}">
+                削除
+            </a>
         </div>
     {% endfor %}
+
+    <!-- 記録削除モーダル -->
+    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
+                </div>
+                <div class="modal-body">
+                    <p>この教科を削除しますか？</p>
+                    <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
+                        <i class="bi bi-circle-fill mx-3" id="subjectColor"></i>
+                        <div id="subject">{{ subject.subject }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form method="post" action="#" id="deletionForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
+
+<script>
+    document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
+        targetEl = event.relatedTarget
+        const id = targetEl.dataset.id;
+        const subjectColor = targetEl.dataset.subjectColor;
+        const subject = targetEl.dataset.subject;
+
+        document.getElementById('deletionForm').action = 'subject/subject-delete/' + id;
+        document.getElementById('subjectColor').style.color = subjectColor;
+        document.getElementById('subject').innerHTML = subject;
+    });
+</script>
 {% endblock %}
