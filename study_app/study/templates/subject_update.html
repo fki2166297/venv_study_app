@@ -6,6 +6,7 @@
 
 {% block contents %}
 <main class="container-md" style="max-width: 960px;">
+    <h4 class="mb-3">教科の更新</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

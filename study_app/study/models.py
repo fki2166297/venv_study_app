@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 class Subject(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.CharField(verbose_name='教科', max_length=30)
-    color = models.CharField(verbose_name='色', max_length=7, default='#c8c8c8')
+    color = models.CharField(verbose_name='色', max_length=7, default='#ffa8a8')
     is_learned = models.BooleanField(verbose_name='学習済み', default=False)
     is_disable = models.BooleanField(verbose_name='使用不可', default=False)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
@@ -62,6 +62,12 @@ class Question(models.Model):
     class Meta:
         verbose_name_plural = 'Question'
 
+# 質問に対するいいね
+class LikeForQuestion(models.Model):
+    target = models.ForeignKey(Question, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class Answer(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
@@ -73,3 +79,9 @@ class Answer(models.Model):
 
     class Meta:
         verbose_name_plural = 'Answer'
+
+# 回答に対するいいね
+class LikeForAnswer(models.Model):
+    target = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
