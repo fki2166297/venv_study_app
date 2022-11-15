@@ -10,7 +10,21 @@
         {% csrf_token %}
         <div class="hstack gap-3 mb-5 align-items-center col-11 mx-auto">
             {% render_field form.subject class='form-control me-auto' placeholder='教科名を入力してください' %}
-            {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' value='#A3C8FF' %}
+            {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
+            <datalist id="color-list">
+                <option value="#ffa8a8"></option>
+                <option value="#ffa8d3"></option>
+                <option value="#ffa8ff"></option>
+                <option value="#d3a8ff"></option>
+                <option value="#a8a8ff"></option>
+                <option value="#a8d3ff"></option>
+                <option value="#a8ffff"></option>
+                <option value="#a8ffd3"></option>
+                <option value="#a8ffa8"></option>
+                <option value="#d3ffa8"></option>
+                <option value="#ffffa8"></option>
+                <option value="#ffd3a8"></option>
+            </datalist>
             <div class="vr"></div>
             <input type="submit" value="作成する" class="btn btn-primary flex-shrink-0">
         </div>
@@ -34,7 +48,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="deletionModalLabel">記録の削除</h1>
+                    <h1 class="modal-title fs-5" id="deletionModalLabel">教科の削除</h1>
                 </div>
                 <div class="modal-body">
                     <p>この教科を削除しますか？</p>
