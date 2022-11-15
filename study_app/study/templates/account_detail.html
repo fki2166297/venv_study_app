@@ -6,24 +6,15 @@
 
 {% block contents %}
 <main class="container-md">
-    {% for message in messages %}
-        <div class="{{ message.tags }} alert-dismissible fade show" role="alert">
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
-            {{ message }}
-        </div>
-    {% endfor %}
-
     <div class="row mt-4">
         <div class="col-lg-4">
             <div class="card card-body d-flex justify-content-center text-center">
-                <a href="#">
-                    <img src="/media/{{ account.icon }}" alt="{{ account.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
-                </a>
+                <img src="/media/{{ account.icon }}" alt="{{ account.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
                 <h6 class="mb-3">{{ account.username }}</h6>
                 {% if account.username == user.username %}
                     <a href="{% url 'study:account_update' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
                 {% elif connected %}
-                    <a href="{% url 'study:unfollow' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
+                    <a href="{% url 'study:unfollow' account.username %}" class="btn btn-secondary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
                 {% else %}
                     <a href="{% url 'study:follow' account.username %}" class="btn btn-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー</a>
                 {% endif %}
@@ -34,8 +25,37 @@
             </div>
         </div>
         <div class="col-lg-8">
+            <div class="card card-body mb-3">
+                <h4 class="mb-3">学習時間</h4>
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" scope="col">今日</th>
+                            <th class="text-center" scope="col">今週</th>
+                            <th class="text-center" scope="col">今月</th>
+                            <th class="text-center" scope="col">総計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center">時間</td>
+                            <td class="text-center">時間</td>
+                            <td class="text-center">時間</td>
+                            <td class="text-center">時間</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <div class="card card-body">
-                <h4>学習時間</h4>
+                <h4>質問・回答</h4>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a href="?tab=question" class="nav-link active">質問</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="?tab=answer" class="nav-link">回答</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

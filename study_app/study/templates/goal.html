@@ -5,10 +5,26 @@
 {% block title %}目標一覧 | Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 960px;">
+<main class="container-md" style="max-width: 720px;">
+    <h4 class="mb-3">目標の作成</h4>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+            {% render_field form.subject class='form-select' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+            {% render_field form.text class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+            {% render_field form.date class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
+            {% render_field form.minutes class='form-control' %}
+        </div>
         <input type="submit" class="btn btn-primary" value="作成する">
     </form>
 </main>

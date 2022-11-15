@@ -35,6 +35,7 @@ class Goal(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, verbose_name='教科', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='テキスト', blank=True)
+    date = models.DateField(verbose_name='目標日')
     minutes = models.IntegerField(verbose_name='目標学習時間')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)

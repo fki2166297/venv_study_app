@@ -5,26 +5,6 @@ from dateutil.relativedelta import relativedelta
 import calendar
 
 
-def set_bar_chart_dataset(data, df, start, end):
-    date_diff = (end - start).days + 1
-    # startからendの期間内のデータを取得
-    df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
-    # 教科名と教科の色をタプルのリストで取得
-    subjects = df.groupby(['subject', 'subject__color']).groups.keys()
-    for subject in subjects:
-        dataset = {'label': subject[0], 'data': [], 'backgroundColor': subject[1]}
-        df2 = df.groupby('subject').get_group(subject[0])
-        df2 = df2.groupby('studied_at', as_index=False).sum().reset_index(drop=True)
-        for i in range(date_diff):
-            for row in df2.itertuples():
-                if row.studied_at == (start + dt.timedelta(days=i)):
-                    dataset['data'].append(row.study_minutes)
-                    break
-            else:
-                dataset['data'].append(0)
-        data['datasets'].append(dataset)
-    return data
-
 def get_bar_chart_week(df, today):
     data = {'labels': [], 'datasets': []}
     if not df.empty:
@@ -37,7 +17,23 @@ def get_bar_chart_week(df, today):
         for i in range(date_diff):
             date = start + dt.timedelta(days=i)
             data['labels'].append(date.strftime('%m/%d') + ' (' + ['日', '月', '火', '水', '木', '金', '土'][date.isoweekday() % 7] + ')')
-        data = set_bar_chart_dataset(data, df.copy(), start, end)
+            date_diff = (end - start).days + 1
+        # startからendの期間内のデータを取得
+        df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
+        # 教科名と教科の色をタプルのリストで取得
+        subjects = df.groupby(['subject', 'subject__color']).groups.keys()
+        for subject in subjects:
+            dataset = {'label': subject[0], 'data': [], 'backgroundColor': subject[1]}
+            df2 = df.groupby('subject').get_group(subject[0])
+            df2 = df2.groupby('studied_at', as_index=False).sum().reset_index(drop=True)
+            for i in range(date_diff):
+                for row in df2.itertuples():
+                    if row.studied_at == (start + dt.timedelta(days=i)):
+                        dataset['data'].append(row.study_minutes)
+                        break
+                else:
+                    dataset['data'].append(0)
+            data['datasets'].append(dataset)
     return data
 
 def get_bar_chart_month(df, today):
@@ -48,7 +44,7 @@ def get_bar_chart_month(df, today):
         start = today.replace(day=1)
         days = calendar.monthrange(today.year, today.month)[1]
         for i in range(days):
-            data['labels'].append(str(i + 1) + '日')
+            data['labels'].append(i + 1)
         df = df[df['month'] == today.month]
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()

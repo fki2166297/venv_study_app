@@ -5,11 +5,38 @@
 {% block title %}教科の更新 | Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 960px;">
+<main class="container-md" style="max-width: 720px;">
     <h4 class="mb-3">教科の更新</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+            {% render_field form.subject class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.color.id_for_label }}">{{ form.color.label }}</label>
+            {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
+            <datalist id="color-list">
+                <option value="#ffa8a8"></option>
+                <option value="#ffa8d3"></option>
+                <option value="#ffa8ff"></option>
+                <option value="#d3a8ff"></option>
+                <option value="#a8a8ff"></option>
+                <option value="#a8d3ff"></option>
+                <option value="#a8ffff"></option>
+                <option value="#a8ffd3"></option>
+                <option value="#a8ffa8"></option>
+                <option value="#d3ffa8"></option>
+                <option value="#ffffa8"></option>
+                <option value="#ffd3a8"></option>
+            </datalist>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                {% render_field form.is_learned class='form-check-input' %}
+                <label class="form-check-label" for="{{ form.is_learned.id_for_label }}">{{ form.is_learned.label }}</label>
+            </div>
+        </div>
         <input type="submit" class="btn btn-primary" value="更新">
     </form>
 </main>

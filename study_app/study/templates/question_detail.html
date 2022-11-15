@@ -22,9 +22,7 @@
                     <a href="{% url 'study:question_update' question.id %}" class="btn btn-primary ms-auto">編集</a>
                 {% endif %}
             </div>
-            <div class="card-text mb-4">
-                {{ question.text|linebreaksbr }}
-            </div>
+            <div class="card-text mb-4">{{ question.text|linebreaksbr }}</div>
             {% if question.image %}
                 <div class="col-md-7 mx-auto mb-3">
                     <a role="button" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ question.image }}">
@@ -32,15 +30,13 @@
                     </a>
                 </div>
             {% endif %}
-            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                回答する
-            </a>
+            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
             <button type="button" class="btn btn-primary">いいね！</button>
         </div>
     </div>
 
     <!-- 回答フォームのカード -->
-    <div class="collapse mb-3" id="collapseExample">
+    <div class="collapse mb-3" id="collapse">
         <div class="card card-body">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}

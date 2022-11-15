@@ -129,7 +129,6 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
             queryset = queryset.filter(is_answered=False)
         if query:
             queryset = queryset.filter(text__icontains=query)
-
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -196,6 +195,10 @@ class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
         messages.success(self.request, '質問を更新しました。')
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        messages.error(self.request, '質問の更新に失敗しました。')
+        return super().form_invalid(form)
+
 
 class SubjectView(LoginRequiredMixin, generic.CreateView):
     template_name = 'subject.html'
@@ -230,11 +233,17 @@ class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
         messages.success(self.request, '教科を更新しました。')
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        messages.error(self.request, '教科の更新に失敗しました。')
+        return super().form_invalid(form)
 
+
+@login_required
 def subject_delete_view(request, *args, **kwargs):
     subject = Subject.objects.get(pk=kwargs['pk'])
     subject.is_disable = True
     subject.save()
+    messages.success(request, '教科を削除しました。')
     return HttpResponseRedirect(reverse_lazy('study:subject'))
 
 # フォロー
@@ -306,6 +315,14 @@ class AccountUpdateView(LoginRequiredMixin, generic.UpdateView):
     fields = ['icon']
     slug_field = 'username'
     slug_url_kwarg = 'username'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'プロフィールを更新しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'プロフィールの更新に失敗しました。')
+        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse_lazy('study:account_detail', kwargs={'username': self.request.user.username })

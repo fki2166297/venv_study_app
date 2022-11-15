@@ -12,7 +12,7 @@ class StudyTimeForm(forms.ModelForm):
 
     class Meta:
         model = StudyTime
-        fields = ('subject', 'studied_at', 'study_minutes')
+        fields = ['subject', 'studied_at', 'study_minutes']
 
 
 class GoalCreateForm(forms.ModelForm):
@@ -25,13 +25,13 @@ class GoalCreateForm(forms.ModelForm):
 
     class Meta:
         model = Goal
-        fields = ('subject', 'text', 'minutes')
+        fields = ['subject', 'text', 'date', 'minutes']
 
 
 class SubjectCreateForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ('subject', 'color')
+        fields = ['subject', 'color']
 
 
 class SubjectSelectForm(forms.Form):
@@ -41,10 +41,10 @@ class SubjectSelectForm(forms.Form):
 class QuestionCreateForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ('subject', 'text', 'image')
+        fields = ['subject', 'text', 'image']
 
 
 class AnswerCreateForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ('text', 'image')
+        fields = ['text', 'image']

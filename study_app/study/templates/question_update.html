@@ -5,7 +5,7 @@
 {% block title %}Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 960px;">
+<main class="container-md" style="max-width: 720px;">
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

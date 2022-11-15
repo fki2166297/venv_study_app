@@ -55,7 +55,7 @@
                                 <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
                                 {{ study_time.subject }}
                                 <div class="study_minutes">{{ study_time.study_minutes }}</div>
-                                <div class="fw-light ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
+                                <div class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
                             </div>
                         </li>
                     {% endfor %}
@@ -67,13 +67,20 @@
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
                 <button class="btn btn-primary col-12 gap-3 creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
-                {% comment %} <div class="card card-body">
-                    <a href="{% url 'study:goal' %}">作成する</a>
+                <div class="card card-body">
+                    <h5 class="mb-3">目標</h5>
                     {% for goal in goal_list %}
-                        {{ goal.text }}
-                        {{ goal.minutes }}
+                        <div class="card card-body py-2 hstack gap-3 mb-3">
+                            <div>{{ goal.date|date:'Y/n/j' }}</div>
+                            <i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>
+                            <div>{{ goal.subject }}</div>
+                            <div>{{ goal.text }}</div>
+                            <div class="study_minutes">{{ goal.minutes }}</div>
+                        </div>
                     {% endfor %}
-                </div> {% endcomment %}
+                    <a href="{% url 'study:goal' %}">作成する</a>
+                    {% comment %} 目標までの日数と達成度を表示 {% endcomment %}
+                </div>
             </div>
         </div>
     </div>
@@ -94,7 +101,7 @@
                         <i class="bi bi-circle-fill" id="subjectColor"></i>
                         <div id="subject"></div>
                         <div class="study_minutes" id="studyMinutes"></div>
-                        <div class="fw-light ms-auto" id="datetime"></div>
+                        <div class="text-muted ms-auto" id="datetime"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
