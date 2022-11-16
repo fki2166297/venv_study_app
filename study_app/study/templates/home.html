@@ -166,7 +166,7 @@
 
 <script>
     function changeTimeFormat(time) {
-        if (time > 60) {
+        if (time >= 60) {
             return ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
         } else {
             return time % 60 + '分';

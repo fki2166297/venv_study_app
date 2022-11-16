@@ -9,6 +9,7 @@ def get_bar_chart_week(df, today):
     data = {'labels': [], 'datasets': []}
     if not df.empty:
         DAYS = 7
+        ZERO = 0
         weekday = today.isoweekday() % DAYS
         start = today + dt.timedelta(days=-weekday)
         end = today + dt.timedelta(days=(DAYS - 1 - weekday))
@@ -20,7 +21,7 @@ def get_bar_chart_week(df, today):
             date = start + dt.timedelta(days=i)
             data['labels'].append(date.strftime('%m/%d') + ' (' + ['日', '月', '火', '水', '木', '金', '土'][date.isoweekday() % 7] + ')')
         # startからendの期間内のデータを取得
-        df = df[(df['studied_at'] >= start) & (df['studied_at'] <= end)]
+        df = df.query('@start <= studied_at <= @end')
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()
         for subject in subjects:
@@ -33,7 +34,7 @@ def get_bar_chart_week(df, today):
                         dataset['data'].append(row.minutes)
                         break
                 else:
-                    dataset['data'].append(0)
+                    dataset['data'].append(ZERO)
             data['datasets'].append(dataset)
     return data
 
@@ -41,12 +42,13 @@ def get_bar_chart_month(df, today):
     data = {'labels': [], 'datasets': []}
     if not df.empty:
         DAYS = calendar.monthrange(today.year, today.month)[1]
+        ZERO = 0
         start = today.replace(day=1)
 
         df['month'] = df['studied_at'].dt.month
         for i in range(DAYS):
             data['labels'].append(i + 1)
-        df = df[df['month'] == today.month]
+        df = df.query('month == @today.month')
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()
         for subject in subjects:
@@ -59,7 +61,7 @@ def get_bar_chart_month(df, today):
                         dataset['data'].append(row.minutes)
                         break
                 else:
-                    dataset['data'].append(0)
+                    dataset['data'].append(ZERO)
             data['datasets'].append(dataset)
     return data
 
@@ -67,12 +69,13 @@ def get_bar_chart_year(df, today):
     data = {'labels': [], 'datasets': []}
     if not df.empty:
         MONTHS = 12
-        # studied_atカラムをDatetime型からdate型に変更
+        ZERO = 0
+
         df['year'] = df['studied_at'].dt.year
         df['month'] = df['studied_at'].dt.month
-        df = df[df['year'] == today.year]
         for i in range(MONTHS):
             data['labels'].append(str(i + 1) + '月')
+        df = df.query('year == @today.year')
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()
         for subject in subjects:
@@ -85,7 +88,7 @@ def get_bar_chart_year(df, today):
                         dataset['data'].append(row.minutes)
                         break
                 else:
-                    dataset['data'].append(0)
+                    dataset['data'].append(ZERO)
             data['datasets'].append(dataset)
     return data
 
