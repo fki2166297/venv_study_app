@@ -18,8 +18,8 @@
             {% render_field form.studied_at class='form-control js-dateTimePicker' %}
         </div>
         <div class="mb-4">
-            <label class="form-label" for="{{ form.study_minutes.id_for_label }}">{{ form.study_minutes.label }}</label>
-            {% render_field form.study_minutes class='form-control' min='5' max='1440' step='5' %}
+            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
+            {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
         </div>
         <input type="submit" class="btn btn-primary" value="更新">
     </form>

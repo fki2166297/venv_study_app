@@ -9,7 +9,7 @@
     <form method="post">
         {% csrf_token %}
         <div class="hstack gap-3 mb-5 align-items-center col-11 mx-auto">
-            {% render_field form.subject class='form-control me-auto' placeholder='教科名を入力してください' %}
+            {% render_field form.name class='form-control me-auto' placeholder='教科名を入力してください' %}
             {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
             <datalist id="color-list">
                 <option value="#ffa8a8"></option>
@@ -31,13 +31,13 @@
     </form>
     {% for subject in subject_list %}
         <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
-            <i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.subject }}
+            <i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.name }}
             <a class="btn btn-primary ms-auto" href="{% url 'study:subject_update' subject.id %}" role="button">編集</a>
             <a
                 class="btn btn-primary" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
                 data-id="{{ subject.id }}"
                 data-subject-color="{{ subject.color }}"
-                data-subject="{{ subject.subject }}">
+                data-subject="{{ subject.name }}">
                 削除
             </a>
         </div>
@@ -54,7 +54,7 @@
                     <p>この教科を削除しますか？</p>
                     <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
                         <i class="bi bi-circle-fill mx-3" id="subjectColor"></i>
-                        <div id="subject">{{ subject.subject }}</div>
+                        <div id="name">{{ subject.name }}</div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -74,11 +74,11 @@
         targetEl = event.relatedTarget
         const id = targetEl.dataset.id;
         const subjectColor = targetEl.dataset.subjectColor;
-        const subject = targetEl.dataset.subject;
+        const name = targetEl.dataset.subject;
 
         document.getElementById('deletionForm').action = 'subject/subject-delete/' + id;
         document.getElementById('subjectColor').style.color = subjectColor;
-        document.getElementById('subject').innerHTML = subject;
+        document.getElementById('name').innerHTML = name;
     });
 </script>
 {% endblock %}

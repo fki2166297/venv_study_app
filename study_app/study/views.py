@@ -66,7 +66,7 @@ class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
 class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'study_time_update.html'
     model = StudyTime
-    fields = ['subject', 'studied_at', 'study_minutes']
+    fields = ['subject', 'studied_at', 'minutes']
     success_url = reverse_lazy('study:home')
 
 
@@ -101,7 +101,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
         queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
-        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'study_minutes'])
+        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
 
         today = dt.date.today()
         context['df'] = df
@@ -226,7 +226,7 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
 class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'subject_update.html'
     model = Subject
-    fields = ['subject', 'color', 'is_learned']
+    fields = ['name', 'color', 'is_learned']
     success_url = reverse_lazy('study:subject')
 
     def form_valid(self, form):
@@ -241,6 +241,7 @@ class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
 @login_required
 def subject_delete_view(request, *args, **kwargs):
     subject = Subject.objects.get(pk=kwargs['pk'])
+    # 教科を使用不可に設定
     subject.is_disable = True
     subject.save()
     messages.success(request, '教科を削除しました。')
@@ -257,15 +258,16 @@ def follow_view(request, *args, **kwargs):
     except CustomUser.DoesNotExist:
         messages.warning(request, f'{kwargs["username"]}は存在しません')
         return HttpResponseRedirect(reverse_lazy('study:home'))
-    if follower == following:
-        messages.warning(request, '自分自身はフォローできません')
     else:
-        _, created = Connection.objects.get_or_create(follower=follower, following=following)
-        if (created):
-            messages.success(request, f'{following.username}をフォローしました')
+        if follower == following:
+            messages.warning(request, '自分自身はフォローできません')
         else:
-            messages.warning(request, f'あなたはすでに{following.username}をフォローしています')
-    return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
+            _, created = Connection.objects.get_or_create(follower=follower, following=following)
+            if (created):
+                messages.success(request, f'{following.username}をフォローしました')
+            else:
+                messages.warning(request, f'あなたはすでに{following.username}をフォローしています')
+        return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
 # フォロー解除
 @login_required
@@ -287,7 +289,8 @@ def unfollow_view(request, *args, **kwargs):
     except Connection.DoesNotExist:
         messages.warning(request, f'あなたは{following.username}をフォローしませんでした')
         return HttpResponseRedirect(reverse_lazy('study:home'))
-    return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
+    else:
+        return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
 
 # プロフィール画面
 class AccountDetailView(LoginRequiredMixin, generic.DetailView):

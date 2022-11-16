@@ -12,11 +12,11 @@ class StudyTimeForm(forms.ModelForm):
 
     class Meta:
         model = StudyTime
-        fields = ['subject', 'studied_at', 'study_minutes']
+        fields = ['subject', 'studied_at', 'minutes']
 
 
 class GoalCreateForm(forms.ModelForm):
-    subject = forms.ModelChoiceField(label='教科', required=True, queryset=Subject.objects.none())
+    subject = forms.ModelChoiceField(label='教科', required=False, queryset=Subject.objects.none())
 
     # ログインユーザーの教科を選択肢にする
     def __init__(self, user=None, *args, **kwargs):
@@ -31,7 +31,7 @@ class GoalCreateForm(forms.ModelForm):
 class SubjectCreateForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['subject', 'color']
+        fields = ['name', 'color']
 
 
 class SubjectSelectForm(forms.Form):

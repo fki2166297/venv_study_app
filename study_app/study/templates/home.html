@@ -7,7 +7,7 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md">
+<main class="container-lg">
     <div class="row">
         <div class="col-lg-8">
             <!-- タブ -->
@@ -44,17 +44,17 @@
                                                 data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
                                                 data-subject-color="{{ study_time.subject.color }}"
                                                 data-subject="{{ study_time.subject }}"
-                                                data-study-minutes="{{ study_time.study_minutes }}">
+                                                data-study-minutes="{{ study_time.minutes }}">
                                                 削除
                                             </a>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="card card-body hstack gap-3">
+                            <div class="card card-body hstack">
                                 <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
-                                {{ study_time.subject }}
-                                <div class="study_minutes">{{ study_time.study_minutes }}</div>
+                                <div class="ms-2">{{ study_time.subject }}</div>
+                                <div class="ms-4 js-studyMinutes">{{ study_time.minutes }}</div>
                                 <div class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
                             </div>
                         </li>
@@ -66,25 +66,32 @@
         </div>
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
-                <button class="btn btn-primary col-12 gap-3 creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+                <button class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
                 <div class="card card-body">
                     <h5 class="mb-3">目標</h5>
-                    {% for goal in goal_list %}
-                        <div class="card card-body py-2 hstack gap-3 mb-3">
-                            <div>{{ goal.date|date:'Y/n/j' }}</div>
-                            <i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>
-                            <div>{{ goal.subject }}</div>
-                            <div>{{ goal.text }}</div>
-                            <div class="study_minutes">{{ goal.minutes }}</div>
-                        </div>
-                    {% endfor %}
+                    <ul class="list-group list-group-flush">
+                        {% for goal in goal_list %}
+                            <li class="list-group-item">
+                                <div class="card card-body py-2">
+                                    <div class="hstack gap-3">
+                                        <div>{{ goal.date|date:'Y/n/j' }}</div>
+                                        {% if goal.subject %}
+                                            <i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>
+                                            {{ goal.subject }}
+                                            <div class="js-studyMinutes">{{ goal.minutes }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div>{{ goal.text }}</div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
                     <a href="{% url 'study:goal' %}">作成する</a>
-                    {% comment %} 目標までの日数と達成度を表示 {% endcomment %}
                 </div>
             </div>
         </div>
     </div>
-    <button class="btn btn-primary rounded-circle p-3 d-lg-none creation-btn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
+    <button class="btn btn-primary rounded-circle p-3 d-lg-none js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
         <span class="material-symbols-outlined">add</span>
     </button>
 
@@ -100,7 +107,7 @@
                     <div class="card card-body hstack gap-3 mb-3">
                         <i class="bi bi-circle-fill" id="subjectColor"></i>
                         <div id="subject"></div>
-                        <div class="study_minutes" id="studyMinutes"></div>
+                        <div class="js-studyMinutes" id="studyMinutes"></div>
                         <div class="text-muted ms-auto" id="datetime"></div>
                     </div>
                 </div>
@@ -137,8 +144,8 @@
                             {% render_field form.studied_at class='form-control js-dateTimePicker' %}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.study_minutes.id_for_label }}">{{ form.study_minutes.label }}</label>
-                            {% render_field form.study_minutes class='form-control' min='5' max='1440' step='5' %}
+                            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
+                            {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -159,9 +166,11 @@
 
 <script>
     function changeTimeFormat(time) {
-        if (time > 60) time = ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
-        else time = time % 60 + '分';
-        return time;
+        if (time > 60) {
+            return ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
+        } else {
+            return time % 60 + '分';
+        }
     }
 
     tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
@@ -201,7 +210,7 @@
     });
 
     // 日付、時刻フォームに現在の日時を設定
-    document.querySelectorAll('.creation-btn').forEach(element => {
+    document.querySelectorAll('.js-creationBtn').forEach(element => {
         element.addEventListener('click', () => {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -210,13 +219,13 @@
     });
 
     // 勉強時間の表示形式を変更
-    document.querySelectorAll('.study_minutes').forEach(element => {
+    document.querySelectorAll('.js-studyMinutes').forEach(element => {
         const time = parseInt(element.innerHTML);
         element.innerHTML = changeTimeFormat(time);
     });
 
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
-        targetEl = event.relatedTarget
+        const targetEl = event.relatedTarget
         const id = targetEl.dataset.id;
         const datetime = targetEl.dataset.datetime;
         const subjectColor = targetEl.dataset.subjectColor;
