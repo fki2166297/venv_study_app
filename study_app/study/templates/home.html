@@ -22,8 +22,8 @@
                     <a href="?tab=following" class="nav-link {% if tab == 'following' %}active{% endif %}">フォロー</a>
                 </li>
             </ul>
-            {% if study_time_list %}
-                <ul class="list-group list-group-flush border-bottom">
+            <ul class="list-group list-group-flush border-bottom">
+                {% if study_time_list %}
                     {% for study_time in study_time_list %}
                         <li class="list-group-item py-3">
                             <div class="hstack gap-2 mb-3">
@@ -45,17 +45,17 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="card card-body hstack gap-3">
+                            <div class="card card-body hstack gap-4 px-4">
                                 <span><i class="bi bi-circle-fill me-2" style="color: {{ study_time.subject.color }};"></i>{{ study_time.subject }}</span>
                                 <span class="js-studyMinutes">{{ study_time.minutes }}</span>
                                 <span class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</span>
                             </div>
                         </li>
                     {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-center mt-5">記録がありません</p>
-            {% endif %}
+                {% else %}
+                    <li class="list-group-item text-center py-5">記録がありません</li>
+                {% endif %}
+            </ul>
         </div>
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
@@ -83,7 +83,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="btn btn-primary rounded-circle p-3 d-lg-none js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;"><span class="material-symbols-outlined">add</span></button>
+    <button type="button" class="btn btn-primary rounded-circle p-3 d-lg-none position-fixed bottom-0 end-0 m-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal"><span class="material-symbols-outlined">add</span></button>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">

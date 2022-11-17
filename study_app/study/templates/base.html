@@ -21,13 +21,13 @@
 </head>
 
 <!--
-　 ▲  ハ　　ハ,,ﾊ   　ハ ﾊ　 　   ／■ヽ　 　 ハ,,ﾊ　　
-　(=ﾟヮﾟ)　(,,^0^)　 (*ﾟヮﾟ) 　　(*ﾟヮﾟ)　　(*ﾟヮﾟ)　　　
-~(,,u,,u　~(ou,,uっ~(,,u,,u　　~(ou,,u　 ~(ou,,uっ　 　
+　 ▲  ハ　　ハ,,ﾊ   　ハ ﾊ　 　   ／■ヽ　 　 ハ,,ﾊ
+　(=ﾟヮﾟ)　(,,^0^)　 (*ﾟヮﾟ) 　　(*ﾟヮﾟ)　　(*ﾟヮﾟ)
+~(,,u,,u　~(ou,,uっ~(,,u,,u　　~(ou,,u　 ~(ou,,uっ
 -->
 
-<body style="padding-top: 5rem;">
-    <header class="navbar navbar-expand-md navbar-light bg-light shadow-sm fixed-top">
+<body class="bg-light" style="padding-top: 5rem; opacity: 85%;">
+    <header class="navbar navbar-expand-md navbar-light bg-light shadow-sm fixed-top" style="opacity: 97.5%;">
         <div class="container-fluid px-5">
             <a class="navbar-brand fw-bold" href="{% url 'study:home' %}">Study App</a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -85,26 +85,10 @@
 
     {% block contents %}{% endblock %}
 
-    <div class="toast py-1 align-items-center position-fixed bottom-1 start-1 p-3" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">こんにちは！ これはトーストのメッセージです。</div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="閉じる"></button>
-        </div>
-    </div>
-
     <!-- Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 
     {% block script %}{% endblock %}
-
-    <script>
-        document.querySelectorAll('.toast').forEach(toastNode => {
-            const toast = new bootstrap.Toast(toastNode, {
-                autohide: false
-            })
-            toast.show()
-        })
-    </script>
 </body>
 
 </html>
