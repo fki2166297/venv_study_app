@@ -9,7 +9,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" class="btn btn-primary" value="更新">
+        <button type="submit" class="btn btn-primary">更新</button>
     </form>
 </main>
 {% endblock %}

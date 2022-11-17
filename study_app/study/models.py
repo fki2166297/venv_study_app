@@ -65,8 +65,8 @@ class Question(models.Model):
 
 # 質問に対するいいね
 class LikeForQuestion(models.Model):
-    target = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    target = models.ForeignKey(Question, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -81,8 +81,8 @@ class Answer(models.Model):
     class Meta:
         verbose_name_plural = 'Answer'
 
-# 回答に対するいいね
-class LikeForAnswer(models.Model):
-    target = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+# # 回答に対するいいね
+# class LikeForAnswer(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+#     target = models.ForeignKey(Answer, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(auto_now_add=True)

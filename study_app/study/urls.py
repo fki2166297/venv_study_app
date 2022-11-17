@@ -13,6 +13,7 @@ urlpatterns = [
     path('qa/question-detail/<int:pk>', views.QuestionDetailView.as_view(), name='question_detail'),
     path('qa/question-create', views.QuestionCreateView.as_view(), name='question_create'),
     path('qa/question-update/<int:pk>', views.QuestionUpdateView.as_view(), name='question_update'),
+    path('like_for_question/', views.like_for_question, name='like_for_question'),
     path('subject', views.SubjectView.as_view(), name='subject'),
     path('subject/subject-update/<int:pk>', views.SubjectUpdateView.as_view(), name='subject_update'),
     path('subject/subject-delete/<int:pk>', views.subject_delete_view, name='subject_delete'),

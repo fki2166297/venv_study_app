@@ -13,9 +13,7 @@
             <form method="get">
                 <div class="input-group mb-4">
                     <input type="search" class="form-control" name="query" placeholder="キーワードを入力">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="material-symbols-outlined">search</i>
-                    </button>
+                    <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined">search</i></button>
                 </div>
             </form>
             {% if question_list %}
@@ -23,15 +21,13 @@
                     <a href="{% url 'study:question_detail' question.id %}" class="text-reset text-decoration-none">
                         <div class="card mb-4">
                             <div class="card-header d-flex py-1">
-                                <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
-                                <div class="ms-auto text-muted">
-                                    {{ question.created_at|date:'n/j G:i' }}
-                                </div>
+                                <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
+                                <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        {{ question.text|truncatechars:200 }}
+                                        <span>{{ question.text|truncatechars:200 }}</span>
                                     </div>
                                     {% if question.image %}
                                         <div class="col-3">
@@ -44,7 +40,7 @@
                     </a>
                 {% endfor %}
             {% else %}
-                <div class="text-center mt-5">Q&ampAが見つかりませんでした。</div>
+                <p class="text-center mt-5">Q&ampAが見つかりませんでした。</p>
             {% endif %}
 
             <!-- ページネーション -->
@@ -79,19 +75,15 @@
         </div>
         <div class="col-md-4 d-none d-md-block mb-3">
             <div style="position: sticky; top: 5rem;">
-                <a type="submit" class="btn btn-primary col-12 mb-3" href="{% url 'study:question_create' %}" role="button">投稿する</a>
-                <form>
-                    <label class="form-label" for="{{ subject_select_form.subject.id_for_label }}">{{ subject_select_form.subject.label }}</label>
-                    {% render_field subject_select_form.subject class='form-select mb-3' %}
-                </form>
-                <form>
-                    <label class="form-label" for="id_status">回答状況の選択</label>
-                    <select class="form-select mb-3" id="id_status">
-                        <option value="" selected>---------</option>
-                        <option value="answered">回答済み</option>
-                        <option value="not_answered">回答募集中</option>
-                    </select>
-                </form>
+                <a class="btn btn-primary col-12 mb-3" href="{% url 'study:question_create' %}" role="button">投稿する</a>
+                <label class="form-label" for="{{ subject_select_form.subject.id_for_label }}">{{ subject_select_form.subject.label }}</label>
+                {% render_field subject_select_form.subject class='form-select mb-3' %}
+                <label class="form-label" for="id_status">回答状況の選択</label>
+                <select class="form-select mb-3" id="id_status">
+                    <option value="" selected>---------</option>
+                    <option value="answered">回答済み</option>
+                    <option value="not_answered">回答募集中</option>
+                </select>
             </div>
         </div>
     </div>

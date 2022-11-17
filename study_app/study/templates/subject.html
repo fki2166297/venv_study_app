@@ -33,13 +33,7 @@
         <div class="card card-body hstack gap-3 mb-3 col-11 mx-auto">
             <i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.name }}
             <a class="btn btn-primary ms-auto" href="{% url 'study:subject_update' subject.id %}" role="button">編集</a>
-            <a
-                class="btn btn-primary" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
-                data-id="{{ subject.id }}"
-                data-subject-color="{{ subject.color }}"
-                data-subject="{{ subject.name }}">
-                削除
-            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ subject.id }}" data-subject-color="{{ subject.color }}" data-subject="{{ subject.name }}">削除</button>
         </div>
     {% endfor %}
 

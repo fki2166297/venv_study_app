@@ -32,41 +32,34 @@
                                 </a>
                                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
                                 <div class="dropdown ms-auto">
-                                    <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></a>
+                                    <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots"></i>
+                                    </a>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <a class="dropdown-item" role="button" href="{% url 'study:study_time_update' study_time.id %}">編集</a>
                                         </li>
                                         <li>
-                                            <a
-                                                class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#deletionModal"
-                                                data-id="{{ study_time.id }}"
-                                                data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}"
-                                                data-subject-color="{{ study_time.subject.color }}"
-                                                data-subject="{{ study_time.subject }}"
-                                                data-study-minutes="{{ study_time.minutes }}">
-                                                削除
-                                            </a>
+                                            <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ study_time.id }}" data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}" data-subject-color="{{ study_time.subject.color }}" data-subject="{{ study_time.subject }}" data-study-minutes="{{ study_time.minutes }}">削除</button>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="card card-body hstack">
-                                <i class="bi bi-circle-fill" style="color: {{ study_time.subject.color }};"></i>
-                                <div class="ms-2">{{ study_time.subject }}</div>
-                                <div class="ms-4 js-studyMinutes">{{ study_time.minutes }}</div>
-                                <div class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</div>
+                            <div class="card card-body hstack gap-3">
+                                <span><i class="bi bi-circle-fill me-2" style="color: {{ study_time.subject.color }};"></i>{{ study_time.subject }}</span>
+                                <span class="js-studyMinutes">{{ study_time.minutes }}</span>
+                                <span class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</span>
                             </div>
                         </li>
                     {% endfor %}
                 </ul>
             {% else %}
-                <div class="text-center mt-5">記録がありません</div>
+                <p class="text-center mt-5">記録がありません</p>
             {% endif %}
         </div>
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
-                <button class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+                <button type="button" class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
                 <div class="card card-body">
                     <h5 class="mb-3">目標</h5>
                     <ul class="list-group list-group-flush">
@@ -76,9 +69,8 @@
                                     <div class="hstack gap-3">
                                         <div>{{ goal.date|date:'Y/n/j' }}</div>
                                         {% if goal.subject %}
-                                            <i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>
-                                            {{ goal.subject }}
-                                            <div class="js-studyMinutes">{{ goal.minutes }}</div>
+                                            <span><i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
+                                            <span class="js-studyMinutes">{{ goal.minutes }}</span>
                                         {% endif %}
                                     </div>
                                     <div>{{ goal.text }}</div>
@@ -91,9 +83,7 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-primary rounded-circle p-3 d-lg-none js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;">
-        <span class="material-symbols-outlined">add</span>
-    </button>
+    <button type="button" class="btn btn-primary rounded-circle p-3 d-lg-none js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal" style="position: fixed; right: 20px; bottom: 20px; z-index: 1000;"><span class="material-symbols-outlined">add</span></button>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
@@ -150,14 +140,16 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                        <input type="submit" class="btn btn-primary" value="記録する">
+                        <button type="submit" class="btn btn-primary">記録する</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </main>
+{% endblock %}
 
+{% block script %}
 <!-- Popper.js -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
 <!-- Tempus Dominus -->
@@ -226,17 +218,11 @@
 
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
         const targetEl = event.relatedTarget
-        const id = targetEl.dataset.id;
-        const datetime = targetEl.dataset.datetime;
-        const subjectColor = targetEl.dataset.subjectColor;
-        const subject = targetEl.dataset.subject;
-        const studyMinutes = changeTimeFormat(targetEl.dataset.studyMinutes);
-
-        document.getElementById('deletionForm').action = 'study-time-delete/' + id;
-        document.getElementById('datetime').innerHTML = datetime;
-        document.getElementById('subjectColor').style.color = subjectColor;
-        document.getElementById('subject').innerHTML = subject;
-        document.getElementById('studyMinutes').innerHTML = studyMinutes;
+        document.getElementById('deletionForm').action = 'study-time-delete/' + targetEl.dataset.id;
+        document.getElementById('datetime').innerHTML = targetEl.dataset.datetime;
+        document.getElementById('subjectColor').style.color = targetEl.dataset.subjectColor;
+        document.getElementById('subject').innerHTML = targetEl.dataset.subject;
+        document.getElementById('studyMinutes').innerHTML = changeTimeFormat(targetEl.dataset.studyMinutes);
     });
 </script>
 {% endblock %}

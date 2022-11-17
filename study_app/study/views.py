@@ -2,9 +2,10 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views import generic
-from .models import StudyTime, Goal, Subject, Question, Answer
+from .models import StudyTime, Goal, Subject, Question, LikeForQuestion, Answer
 from accounts.models import CustomUser, Connection
 from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
 from django.db.models import Q
@@ -102,9 +103,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
         df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
-
         today = dt.date.today()
-        context['df'] = df
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
@@ -148,6 +147,12 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
         context['question'] = Question.objects.get(pk=self.kwargs['pk'])
         context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
+        like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
+        context['like_for_question_count'] = like_for_question.count()
+        if like_for_question.filter(user=self.request.user).exists():
+            context['is_user_liked_for_question'] = True
+        else:
+            context['is_user_liked_for_question'] = False
         return context
 
     def form_valid(self, form):
@@ -163,6 +168,23 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     def form_invalid(self, form):
         messages.error(self.request, '回答の作成に失敗しました。')
         return super().form_invalid(form)
+
+
+@login_required
+def like_for_question(request):
+    context = {
+        'user': request.user.username,
+    }
+    question = get_object_or_404(Question, pk=request.POST.get('question_pk'))
+    like = LikeForQuestion.objects.filter(target=question, user=request.user)
+    if like.exists():
+        like.delete()
+        context['method'] = 'delete'
+    else:
+        like.create(target=question, user=request.user)
+        context['method'] = 'create'
+    context['like_for_question_count'] = LikeForQuestion.objects.filter(target=question).count()
+    return JsonResponse(context)
 
 
 class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
