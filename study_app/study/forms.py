@@ -1,4 +1,5 @@
 from django import forms
+from django.db import models
 from .models import StudyTime, Goal, Subject
 
 
@@ -12,7 +13,7 @@ class StudyTimeForm(forms.ModelForm):
 
     class Meta:
         model = StudyTime
-        fields = ['subject', 'studied_at', 'minutes']
+        fields = ['subject', 'studied_at', 'minutes', 'publication']
 
 
 class GoalCreateForm(forms.ModelForm):

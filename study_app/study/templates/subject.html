@@ -4,7 +4,7 @@
 
 {% load widget_tweaks %}
 
-{% block title %}教科の一覧 | Study App{% endblock %}
+{% block title %}教科一覧 | Study App{% endblock %}
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
@@ -32,7 +32,7 @@
             <input type="submit" value="作成する" class="btn btn-primary flex-shrink-0">
         </div>
     </form>
-    <h5 class="mb-3">教科の一覧</h5>
+    <h5 class="mb-3">教科一覧</h5>
     <ul class="list-group">
         {% if subject_list %}
             {% for subject in subject_list %}

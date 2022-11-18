@@ -29,14 +29,16 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         if tab == 'my-record':
             study_time_list = study_time_list.filter(user=self.request.user)
         elif tab == 'following':
-            study_time_list = study_time_list.filter(user__in=following)
+            study_time_list = study_time_list.filter(user__in=following, publication='follow')
         context['tab'] = tab
         context['study_time_list'] = study_time_list
         queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'minutes'])
+        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'minutes', 'created_at'])
         today = dt.date.today()
-        df['remaining_days'] = df['date'] - today
-        context['df_goal'] = df
+        # for row in df_goal.itertuples():
+
+        df_goal['remaining_days'] = df_goal['date'] - today
+        context['df_goal'] = df_goal
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -70,7 +72,7 @@ class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
 class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'study_time_update.html'
     model = StudyTime
-    fields = ['subject', 'studied_at', 'minutes']
+    fields = ['subject', 'studied_at', 'minutes', 'publication']
     success_url = reverse_lazy('study:home')
 
 

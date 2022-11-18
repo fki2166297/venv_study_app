@@ -19,11 +19,18 @@ class Subject(models.Model):
         return self.name
 
 
+class PublicationChoices(models.TextChoices):
+    PUBLIC = 'public', '全体に公開'
+    FOLLOW = 'follow', 'フォローのみに公開'
+    PRIVATE = 'private', '非公開'
+
+
 class StudyTime(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, verbose_name="教科", null=True, on_delete=models.CASCADE)
     studied_at = models.DateTimeField(verbose_name='日時', null=False)
     minutes = models.IntegerField(verbose_name='学習時間', default=30, validators=[MinValueValidator(5), MaxValueValidator(1440)])
+    publication = models.CharField(verbose_name='公開設定', max_length=10, choices=PublicationChoices.choices, null=False, default='follow')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

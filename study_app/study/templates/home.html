@@ -73,7 +73,8 @@
                     {% for goal in df_goal.itertuples %}
                         <li class="list-group-item">
                             <div class="hstack gap-2 mb-1">
-                                <span>{{ goal.date|date:'Y/n/j' }}</span>
+                                <span>開始日 {{ goal.created_at|date:'n/j' }}</span>
+                                <span>目標日 {{ goal.date|date:'n/j' }}</span>
                                 <span class="text-muted">残り{{ goal.remaining_days.days }}日</span>
                             </div>
                             {% if goal.subject %}
@@ -145,6 +146,10 @@
                         <div class="mb-3">
                             <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
                             {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.publication.id_for_label }}">{{ form.publication.label }}</label>
+                            {% render_field form.publication class='form-select' %}
                         </div>
                     </div>
                     <div class="modal-footer">
