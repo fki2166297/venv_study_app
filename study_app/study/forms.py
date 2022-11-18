@@ -1,5 +1,5 @@
 from django import forms
-from .models import StudyTime, Goal, Subject, Question, Answer, SubjectChoices
+from .models import StudyTime, Goal, Subject
 
 
 class StudyTimeForm(forms.ModelForm):
@@ -32,19 +32,3 @@ class SubjectCreateForm(forms.ModelForm):
     class Meta:
         model = Subject
         fields = ['name', 'color']
-
-
-class SubjectSelectForm(forms.Form):
-    subject = forms.fields.ChoiceField(label='教科の選択', required=False, choices=SubjectChoices.choices)
-
-
-class QuestionCreateForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = ['subject', 'text', 'image']
-
-
-class AnswerCreateForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = ['text', 'image']

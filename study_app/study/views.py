@@ -2,15 +2,14 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
 from django.views import generic
-from .models import StudyTime, Goal, Subject, Question, LikeForQuestion, Answer
+from .models import StudyTime, Goal, Subject
 from accounts.models import CustomUser, Connection
-from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm, QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
+from qa.models import Question, Answer
+from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
-import pandas as pd
 from django_pandas.io import read_frame
 from .helpers import get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
 
@@ -25,15 +24,19 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーがフォローしているユーザーのIDをすべて取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
         # ログインユーザー、フォローユーザーのデータを取得
-        queryset = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
+        study_time_list = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
         tab = self.request.GET.get('tab') or 'all'
         if tab == 'my-record':
-            queryset = queryset.filter(user=self.request.user)
+            study_time_list = study_time_list.filter(user=self.request.user)
         elif tab == 'following':
-            queryset = queryset.filter(user__in=following)
+            study_time_list = study_time_list.filter(user__in=following)
         context['tab'] = tab
-        context['study_time_list'] = queryset
-        context['goal_list'] = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        context['study_time_list'] = study_time_list
+        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'minutes'])
+        today = dt.date.today()
+        df['remaining_days'] = df['date'] - today
+        context['df_goal'] = df
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -111,117 +114,6 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         return context
 
 
-class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
-    template_name = 'qa.html'
-    paginate_by = 10
-
-    def get_queryset(self):
-        queryset = Question.objects.order_by('-created_at')
-        subject = self.request.GET.get('subject')
-        status = self.request.GET.get('status')
-        query = self.request.GET.get('query')
-        if subject:
-            queryset = queryset.filter(subject=subject)
-        if status == 'answered':
-            queryset = queryset.filter(is_answered=True)
-        elif status == 'not_answered':
-            queryset = queryset.filter(is_answered=False)
-        if query:
-            queryset = queryset.filter(text__icontains=query)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['subject_select_form'] = SubjectSelectForm
-        return context
-
-
-class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question_detail.html'
-    form_class = AnswerCreateForm
-
-    def get_success_url(self):
-        return reverse_lazy('study:question_detail', kwargs={'pk': self.kwargs['pk']})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
-        context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
-        like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
-        context['like_for_question_count'] = like_for_question.count()
-        if like_for_question.filter(user=self.request.user).exists():
-            context['is_user_liked_for_question'] = True
-        else:
-            context['is_user_liked_for_question'] = False
-        return context
-
-    def form_valid(self, form):
-        answer = form.save(commit=False)
-        # ログインユーザーのIDを保存
-        answer.user = self.request.user
-        # questionのIDを保存
-        answer.question = Question.objects.get(pk=self.kwargs['pk'])
-        answer.save()
-        messages.success(self.request, '回答を作成しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '回答の作成に失敗しました。')
-        return super().form_invalid(form)
-
-
-@login_required
-def like_for_question(request):
-    context = {
-        'user': request.user.username,
-    }
-    question = get_object_or_404(Question, pk=request.POST.get('question_pk'))
-    like = LikeForQuestion.objects.filter(target=question, user=request.user)
-    if like.exists():
-        like.delete()
-        context['method'] = 'delete'
-    else:
-        like.create(target=question, user=request.user)
-        context['method'] = 'create'
-    context['like_for_question_count'] = LikeForQuestion.objects.filter(target=question).count()
-    return JsonResponse(context)
-
-
-class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question_create.html'
-    form_class = QuestionCreateForm
-    success_url = reverse_lazy('study:qa')
-
-    def form_valid(self, form):
-        question = form.save(commit=False)
-        # ログインユーザーのIDを保存
-        question.user = self.request.user
-        question.save()
-        messages.success(self.request, '質問を作成しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '質問の作成に失敗しました。')
-        return super().form_invalid(form)
-
-
-class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'question_update.html'
-    model = Question
-    fields = ['is_answered', 'supplement']
-
-    def get_success_url(self):
-        return reverse_lazy('study:question_detail', kwargs={'pk': self.kwargs['pk']})
-
-    def form_valid(self, form):
-        messages.success(self.request, '質問を更新しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '質問の更新に失敗しました。')
-        return super().form_invalid(form)
-
-
 class SubjectView(LoginRequiredMixin, generic.CreateView):
     template_name = 'subject.html'
     form_class = SubjectCreateForm
@@ -269,6 +161,46 @@ def subject_delete_view(request, *args, **kwargs):
     messages.success(request, '教科を削除しました。')
     return HttpResponseRedirect(reverse_lazy('study:subject'))
 
+
+class AccountDetailView(LoginRequiredMixin, generic.DetailView):
+    template_name = 'account_detail.html'
+    model = CustomUser
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # URLパラメータのusernameを取得
+        username = self.kwargs['username']
+        account = CustomUser.objects.get(username=username)
+        context['account'] = account
+        context['following'] = Connection.objects.filter(follower__username=username).count()
+        context['follower'] = Connection.objects.filter(following__username=username).count()
+        context['question_list'] = Question.objects.filter(user=account.id)
+        if username is not self.request.user.username:
+            result = Connection.objects.filter(follower__username=self.request.user.username).filter(following__username=username)
+            context['connected'] = True if result else False
+        return context
+
+
+class AccountUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'account_update.html'
+    model = CustomUser
+    fields = ['icon']
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'プロフィールを更新しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'プロフィールの更新に失敗しました。')
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('study:account_detail', kwargs={'username': self.request.user.username })
+
 # フォロー
 @login_required
 def follow_view(request, *args, **kwargs):
@@ -313,41 +245,3 @@ def unfollow_view(request, *args, **kwargs):
         return HttpResponseRedirect(reverse_lazy('study:home'))
     else:
         return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
-
-# プロフィール画面
-class AccountDetailView(LoginRequiredMixin, generic.DetailView):
-    template_name = 'account_detail.html'
-    model = CustomUser
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # URLパラメータのusernameを取得
-        username = self.kwargs['username']
-        context['account'] = CustomUser.objects.get(username=username)
-        context['following'] = Connection.objects.filter(follower__username=username).count()
-        context['follower'] = Connection.objects.filter(following__username=username).count()
-        if username is not self.request.user.username:
-            result = Connection.objects.filter(follower__username=self.request.user.username).filter(following__username=username)
-            context['connected'] = True if result else False
-        return context
-
-
-class AccountUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'account_update.html'
-    model = CustomUser
-    fields = ['icon']
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
-
-    def form_valid(self, form):
-        messages.success(self.request, 'プロフィールを更新しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, 'プロフィールの更新に失敗しました。')
-        return super().form_invalid(form)
-
-    def get_success_url(self):
-        return reverse_lazy('study:account_detail', kwargs={'username': self.request.user.username })

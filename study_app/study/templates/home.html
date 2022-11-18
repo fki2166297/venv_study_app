@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% load widget_tweaks %}
 
 {% block title %}Study App{% endblock %}
@@ -28,7 +30,11 @@
                         <li class="list-group-item py-3">
                             <div class="hstack gap-2 mb-3">
                                 <a href="{% url 'study:account_detail' study_time.user.username %}">
-                                    <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                    {% if user.icon %}
+                                        <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                    {% else %}
+                                        <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
+                                    {% endif %}
                                 </a>
                                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' study_time.user.username %}">@{{ study_time.user.username }}</a>
                                 <div class="dropdown ms-auto">
@@ -60,26 +66,29 @@
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
                 <button type="button" class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
-                <div class="card card-body">
-                    <h5 class="mb-3">目標</h5>
-                    <ul class="list-group list-group-flush">
-                        {% for goal in goal_list %}
-                            <li class="list-group-item">
-                                <div class="card card-body py-2">
-                                    <div class="hstack gap-3">
-                                        <div>{{ goal.date|date:'Y/n/j' }}</div>
-                                        {% if goal.subject %}
-                                            <span><i class="bi bi-circle-fill" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
-                                            <span class="js-studyMinutes">{{ goal.minutes }}</span>
-                                        {% endif %}
-                                    </div>
-                                    <div>{{ goal.text }}</div>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <h5 class="my-auto">目標</h5>
+                    </li>
+                    {% for goal in df_goal.itertuples %}
+                        <li class="list-group-item">
+                            <div class="hstack gap-2 mb-1">
+                                <span>{{ goal.date|date:'Y/n/j' }}</span>
+                                <span class="text-muted">残り{{ goal.remaining_days.days }}日</span>
+                            </div>
+                            {% if goal.subject %}
+                                <div class="hstack gap-2 mb-1">
+                                    <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject__color }};"></i>{{ goal.subject }}</span>
+                                    <span class="js-studyMinutes">{{ goal.minutes }}</span>
                                 </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <a href="{% url 'study:goal' %}">作成する</a>
-                </div>
+                            {% endif %}
+                            <small class="text-muted">{{ goal.text }}</small>
+                        </li>
+                    {% endfor %}
+                    <li class="list-group-item">
+                        <a href="{% url 'study:goal' %}">作成する</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% load widget_tweaks %}
 
 {% block title %}Study App{% endblock %}
@@ -14,12 +16,16 @@
         <div class="card-body mx-3 my-2">
             <div class="hstack gap-2 mb-3">
                 <a href="{% url 'study:account_detail' question.user.username %}">
-                    <img src="/media/{{ question.user.icon }}" alt="{{ question.user.username }}" width="28" height="28" class="rounded-circle">
+                    {% if user.icon %}
+                        <img src="/media/{{ question.user.icon }}" alt="{{ question.user.username }}" width="28" height="28" class="rounded-circle">
+                    {% else %}
+                        <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
+                    {% endif %}
                 </a>
                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
                 <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
                 {% if question.user_id == user.id %}
-                    <a href="{% url 'study:question_update' question.id %}" class="btn btn-primary ms-auto">編集</a>
+                    <a href="{% url 'qa:question_update' question.id %}" class="btn btn-primary ms-auto">編集</a>
                 {% endif %}
             </div>
             <div class="card-text mb-4">{{ question.text|linebreaksbr }}</div>
@@ -103,7 +109,7 @@
     /* ポストに対するイイね */
     document.getElementById('ajax-like-for-question').addEventListener('click', e => {
         e.preventDefault();
-        const url = '{% url "study:like_for_question" %}';
+        const url = '{% url "qa:like_for_question" %}';
         fetch(url, {
             method: 'POST',
             body: `question_pk={{ question.pk }}`,

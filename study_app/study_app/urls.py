@@ -23,8 +23,10 @@ from . import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('study.urls')),
-    path('accounts/', include('allauth.urls'))
+    path('qa/', include('qa.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
 # 開発サーバーでメディアを配信できるようにする設定
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

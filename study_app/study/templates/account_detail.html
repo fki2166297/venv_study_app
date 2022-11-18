@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% load widget_tweaks %}
 
 {% block title %}{{ user.get_username }} | Study App{% endblock %}
@@ -9,7 +11,11 @@
     <div class="row mt-4">
         <div class="col-lg-4">
             <div class="card card-body d-flex justify-content-center text-center">
-                <img src="/media/{{ account.icon }}" alt="{{ account.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
+                {% if user.icon %}
+                    <img src="/media/{{ account.icon }}" alt="{{ account.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
+                {% else %}
+                    <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="64" height="64" class="rounded-circle mx-auto mb-2">
+                {% endif %}
                 <h6 class="mb-3">{{ account.username }}</h6>
                 {% if account.username == user.username %}
                     <a href="{% url 'study:account_update' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
@@ -27,7 +33,7 @@
         <div class="col-lg-8">
             <div class="card card-body mb-3">
                 <h4 class="mb-3">学習時間</h4>
-                <table class="table table-bordered" style="table-layout: fixed;">
+                <table class="table table-bordered mb-4" style="table-layout: fixed;">
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" scope="col">今日</th>
@@ -37,7 +43,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr class="bg-white">
                             <td class="text-center">時間</td>
                             <td class="text-center">時間</td>
                             <td class="text-center">時間</td>
@@ -48,7 +54,7 @@
             </div>
             <div class="card card-body">
                 <h4>質問・回答</h4>
-                <ul class="nav nav-tabs">
+                <ul class="nav mb-3">
                     <li class="nav-item">
                         <a href="?tab=question" class="nav-link active">質問</a>
                     </li>
@@ -56,6 +62,32 @@
                         <a href="?tab=answer" class="nav-link">回答</a>
                     </li>
                 </ul>
+                {% if question_list %}
+                    {% for question in question_list %}
+                        <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
+                            <div class="card mb-4">
+                                <div class="card-header d-flex py-1">
+                                    <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
+                                    <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <span>{{ question.text|truncatechars:200 }}</span>
+                                        </div>
+                                        {% if question.image %}
+                                            <div class="col-3">
+                                                <img class="col-12" src="/media/{{ question.image }}" style="max-height: 100px; object-fit: cover;"/>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center mt-5">Q&ampAが見つかりませんでした。</p>
+                {% endif %}
             </div>
         </div>
     </div>
