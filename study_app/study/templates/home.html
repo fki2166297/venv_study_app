@@ -52,8 +52,8 @@
                                 </div>
                             </div>
                             <div class="card card-body hstack gap-4 px-4">
-                                <span><i class="bi bi-circle-fill me-2" style="color: {{ study_time.subject.color }};"></i>{{ study_time.subject }}</span>
-                                <span class="js-studyMinutes">{{ study_time.minutes }}</span>
+                                <span><i class="bi bi-circle-fill me-1" style="color: {{ study_time.subject.color }};"></i>{{ study_time.subject }}</span>
+                                <span><i class="bi bi-clock me-1"></i><span class="js-studyMinutes">{{ study_time.minutes }}</span></span>
                                 <span class="text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</span>
                             </div>
                         </li>
@@ -67,23 +67,30 @@
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
                 <button type="button" class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
                 <ul class="list-group">
-                    <li class="list-group-item">
+                    <li class="list-group-item bg-light">
                         <h5 class="my-auto">目標</h5>
                     </li>
                     {% for goal in df_goal.itertuples %}
                         <li class="list-group-item">
-                            <div class="hstack gap-2 mb-1">
-                                <span>開始日 {{ goal.created_at|date:'n/j' }}</span>
-                                <span>目標日 {{ goal.date|date:'n/j' }}</span>
-                                <span class="text-muted">残り{{ goal.remaining_days.days }}日</span>
-                            </div>
-                            {% if goal.subject %}
+                            <a href="#" class="text-reset text-decoration-none">
                                 <div class="hstack gap-2 mb-1">
-                                    <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject__color }};"></i>{{ goal.subject }}</span>
-                                    <span class="js-studyMinutes">{{ goal.minutes }}</span>
+                                    <small class="text-muted">{{ goal.created_at|date:'Y/n/j' }} ~ {{ goal.date|date:'Y/n/j' }}</small>
+                                    <span class="ms-auto">残り{{ goal.remaining_days.days }}日</span>
                                 </div>
-                            {% endif %}
-                            <small class="text-muted">{{ goal.text }}</small>
+                                {% if goal.subject %}
+                                    <div class="row mb-1">
+                                        <div class="col-5 hstack gap-2">
+                                            <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject__color }};"></i>{{ goal.subject }}</span>
+                                            <span class="js-studyMinutes">{{ goal.goal_minutes }}</span>
+                                        </div>
+                                        <div class="col-7 d-flex flex-row align-items-center">
+                                            <small class="text-muted">学習済み:</small>
+                                            <small class="text-muted"><span class="js-studyMinutes me-1">{{ goal.studied_minutes }}</span>({{ goal.achievement_rate }}%)</small>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted text-break">{{ goal.text }}</small>
+                            </a>
                         </li>
                     {% endfor %}
                     <li class="list-group-item">
@@ -105,10 +112,15 @@
                 <div class="modal-body">
                     <p>この記録を削除しますか？</p>
                     <div class="card card-body hstack gap-3 mb-3">
-                        <i class="bi bi-circle-fill" id="subjectColor"></i>
-                        <div id="subject"></div>
-                        <div class="js-studyMinutes" id="studyMinutes"></div>
-                        <div class="text-muted ms-auto" id="datetime"></div>
+                        <span>
+                            <i class="bi bi-circle-fill me-1" id="subjectColor"></i>
+                            <span id="subject"></span>
+                        </span>
+                        <span>
+                            <i class="bi bi-clock me-1"></i>
+                            <span id="studyMinutes"></span>
+                        </span>
+                        <span class="text-muted ms-auto" id="datetime"></span>
                     </div>
                 </div>
                 <div class="modal-footer">

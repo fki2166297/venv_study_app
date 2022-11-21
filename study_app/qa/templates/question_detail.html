@@ -12,6 +12,7 @@
         <div class="card-header hstack gap-3">
             <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
             <div class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</div>
+            <div class="text-muted" style="font-size: 0.9rem;">回答締切：{{ question.deadline|date:'Y/n/j G:i' }}</div>
         </div>
         <div class="card-body mx-3 my-2">
             <div class="hstack gap-2 mb-3">
@@ -67,6 +68,7 @@
         </div>
     </div>
 
+    <h4 class="mb-3">回答</h4>
     {% if answer_list %}
         {% for answer in answer_list %}
             <div class="card mb-3">

@@ -32,12 +32,11 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
             study_time_list = study_time_list.filter(user__in=following, publication='follow')
         context['tab'] = tab
         context['study_time_list'] = study_time_list
-        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'minutes', 'created_at'])
-        today = dt.date.today()
-        # for row in df_goal.itertuples():
 
-        df_goal['remaining_days'] = df_goal['date'] - today
+        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal['remaining_days'] = df_goal['date'] - dt.date.today()
+        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int)
         context['df_goal'] = df_goal
         return context
 
@@ -52,6 +51,13 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         study_time.user = self.request.user
         study_time.save()
+        goal = Goal.objects.filter(user=self.request.user, subject=study_time.subject)
+        for item in goal:
+            item.studied_minutes += study_time.minutes
+            if (item.is_achieved == False) and (item.studied_minutes >= item.goal_minutes):
+                item.is_achieved = True
+                messages.info(self.request, '目標を達成しました。')
+            item.save()
         messages.success(self.request, '記録を作成しました。')
         return super().form_valid(form)
 

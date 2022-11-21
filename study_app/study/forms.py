@@ -26,7 +26,7 @@ class GoalCreateForm(forms.ModelForm):
 
     class Meta:
         model = Goal
-        fields = ['subject', 'text', 'date', 'minutes']
+        fields = ['subject', 'text', 'date', 'goal_minutes']
 
 
 class SubjectCreateForm(forms.ModelForm):

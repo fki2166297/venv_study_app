@@ -20,7 +20,6 @@ class Subject(models.Model):
 
 
 class PublicationChoices(models.TextChoices):
-    PUBLIC = 'public', '全体に公開'
     FOLLOW = 'follow', 'フォローのみに公開'
     PRIVATE = 'private', '非公開'
 
@@ -43,6 +42,8 @@ class Goal(models.Model):
     subject = models.ForeignKey(Subject, verbose_name='教科', on_delete=models.CASCADE)
     text = models.TextField(verbose_name='テキスト', blank=True)
     date = models.DateField(verbose_name='目標日')
-    minutes = models.IntegerField(verbose_name='目標学習時間')
+    goal_minutes = models.IntegerField(verbose_name='目標学習時間', default=15)
+    is_achieved = models.BooleanField(verbose_name='達成済み', default=False)
+    studied_minutes = models.IntegerField(verbose_name='学習済み時間', default=0)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)

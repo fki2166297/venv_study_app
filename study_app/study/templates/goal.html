@@ -12,7 +12,10 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+            <div class="hstack mb-2">
+                <label for="{{ form.subject.id_for_label }}">教科を選択</label>
+                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
+            </div>
             {% render_field form.subject class='form-select' %}
         </div>
         <div class="mb-3">
@@ -24,8 +27,8 @@
             {% render_field form.date class='form-control js-dateTimePicker' %}
         </div>
         <div class="mb-4">
-            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
-            {% render_field form.minutes class='form-control' %}
+            <label class="form-label" for="{{ form.goal_minutes.id_for_label }}">{{ form.goal_minutes.label }}</label>
+            {% render_field form.goal_minutes class='form-control' min='15' max='1200000' step='5' %}
         </div>
         <button type="submit" class="btn btn-primary">作成する</button>
     </form>

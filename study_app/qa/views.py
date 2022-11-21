@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views import generic
 from .models import Question, LikeForQuestion, Answer
 from .forms import QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
+import datetime as dt
 
 
 # Create your views here.
@@ -95,6 +96,8 @@ class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
         question = form.save(commit=False)
         # ログインユーザーのIDを保存
         question.user = self.request.user
+        # 締め切りを一週間後に設定
+        question.deadline = dt.datetime.now() + dt.timedelta(days=7)
         question.save()
         messages.success(self.request, '質問を作成しました。')
         return super().form_valid(form)
