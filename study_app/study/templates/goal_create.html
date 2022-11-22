@@ -4,26 +4,33 @@
 
 {% load widget_tweaks %}
 
-{% block title %}記録の編集 | Study App{% endblock %}
+{% block title %}目標一覧 | Study App{% endblock %}
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
-    <h4 class="mb-3">記録の編集</h4>
+    <h4 class="mb-3">目標の作成</h4>
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label" for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
-            {% render_field form.subject class='form-control' %}
+            <div class="hstack mb-2">
+                <label for="{{ form.subject.id_for_label }}">教科を選択<span class="text-danger">*</span></label>
+                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
+            </div>
+            {% render_field form.subject class='form-select' %}
         </div>
         <div class="mb-3">
-            <label class="form-label" for="{{ form.studied_at.id_for_label }}">{{ form.studied_at.label }}</label>
-            {% render_field form.studied_at class='form-control js-dateTimePicker' %}
+            <label class="form-label" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+            {% render_field form.text class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }}<span class="text-danger">*</span></label>
+            {% render_field form.date class='form-control js-dateTimePicker' %}
         </div>
         <div class="mb-4">
-            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}</label>
-            {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
+            <label class="form-label" for="{{ form.goal_minutes.id_for_label }}">{{ form.goal_minutes.label }}<span class="text-danger">*</span></label>
+            {% render_field form.goal_minutes class='form-control' min='15' max='1200000' step='5' %}
         </div>
-        <button type="submit" class="btn btn-primary">更新</button>
+        <button type="submit" class="btn btn-primary">作成する</button>
     </form>
 </main>
 {% endblock %}
@@ -47,6 +54,7 @@
             },
             components: {
                 decades: false,
+                clock: false,
             },
             theme: 'light',
         },
@@ -69,8 +77,13 @@
             selectTime: '時刻を選択',
             selectDate: '日付を選択',
             locale: 'ja',
-            format: 'yyyy-MM-dd HH:mm',
+            format: 'yyyy-MM-dd',
         },
     });
+
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dateTimePickerEl.value = now.toISOString().slice(0, 10).replace('T', ' ');
 </script>
 {% endblock %}

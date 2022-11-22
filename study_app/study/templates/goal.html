@@ -7,83 +7,34 @@
 {% block title %}目標一覧 | Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 720px;">
-    <h4 class="mb-3">目標の作成</h4>
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <div class="hstack mb-2">
-                <label for="{{ form.subject.id_for_label }}">教科を選択<span class="text-danger">*</span></label>
-                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
-            </div>
-            {% render_field form.subject class='form-select' %}
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
-            {% render_field form.text class='form-control' %}
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }}<span class="text-danger">*</span></label>
-            {% render_field form.date class='form-control js-dateTimePicker' %}
-        </div>
-        <div class="mb-4">
-            <label class="form-label" for="{{ form.goal_minutes.id_for_label }}">{{ form.goal_minutes.label }}<span class="text-danger">*</span></label>
-            {% render_field form.goal_minutes class='form-control' min='15' max='1200000' step='5' %}
-        </div>
-        <button type="submit" class="btn btn-primary">作成する</button>
-    </form>
+<main class="container-md" style="max-width: 960px;">
+    <div class="hstack mb-3">
+        <h4>目標一覧</h4>
+        <a href="{% url 'study:goal_create' %}" class="ms-auto">目標を作成する</a>
+    </div>
+    <ul class="list-group">
+        {% if not df_goal.empty %}
+        {% else %}
+            <li class="list-group-item">目標がありません</li>
+        {% endif %}
+    </ul>
 </main>
 {% endblock %}
 
 {% block script %}
-<!-- Popper.js -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-<!-- Tempus Dominus -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/js/tempus-dominus.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
-
 <script>
-    tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
+    function changeTimeFormat(time) {
+        if (time >= 60) {
+            return ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
+        } else {
+            return time % 60 + '分';
+        }
+    }
 
-    const dateTimePickerEl = document.querySelector('.js-dateTimePicker');
-    new tempusDominus.TempusDominus(dateTimePickerEl, {
-        display: {
-            buttons: {
-                today: true,
-                clear: true,
-            },
-            components: {
-                decades: false,
-                clock: false,
-            },
-            theme: 'light',
-        },
-        useCurrent: false,
-        localization: {
-            today: '今日',
-            clear: 'クリア',
-            selectMonth: '月を選択',
-            previousMonth: '前月',
-            nextMonth: '次月',
-            selectYear: '年を選択',
-            previousYear: '前年',
-            nextYear: '次年',
-            previousDecade: '前期間',
-            nextDecade: '次期間',
-            incrementHour: '1時間増やす',
-            decrementHour: '1時間減らす',
-            incrementMinute: '1分増やす',
-            decrementMinute: '1分減らす',
-            selectTime: '時刻を選択',
-            selectDate: '日付を選択',
-            locale: 'ja',
-            format: 'yyyy-MM-dd',
-        },
+    // 勉強時間の表示形式を変更
+    document.querySelectorAll('.js-studyMinutes').forEach(element => {
+        const time = parseInt(element.innerHTML);
+        element.innerHTML = changeTimeFormat(time);
     });
-
-    const now = new Date();
-    now.setDate(now.getDate() + 7);
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    dateTimePickerEl.value = now.toISOString().slice(0, 10).replace('T', ' ');
 </script>
 {% endblock %}

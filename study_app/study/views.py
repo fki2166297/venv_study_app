@@ -82,8 +82,21 @@ class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
     success_url = reverse_lazy('study:home')
 
 
-class GoalCreateView(LoginRequiredMixin, generic.CreateView):
+class GoalView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'goal.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal['remaining_days'] = df_goal['date'] - dt.date.today()
+        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int)
+        context['df_goal'] = df_goal
+        return context
+
+
+class GoalCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'goal_create.html'
     form_class = GoalCreateForm
     success_url = reverse_lazy('study:home')
 

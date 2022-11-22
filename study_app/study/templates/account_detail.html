@@ -6,6 +6,10 @@
 
 {% block title %}{{ user.get_username }} | Study App{% endblock %}
 
+{% block active_account_detail %}
+{% if account.username == user.username %}active{% endif %}
+{% endblock %}
+
 {% block contents %}
 <main class="container-md">
     <div class="row mt-4">

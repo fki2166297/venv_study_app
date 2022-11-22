@@ -46,19 +46,22 @@
                             <a class="nav-link {% block active_qa %}{% endblock %}" href="{% url 'qa:qa' %}"><i class="bi bi-chat-text mx-1"></i>Q&ampA</a>
                         </li>
                         <li class="nav-item d-sm-none">
-                            <a class="nav-link" href="{% url 'study:account_detail' user.username %}">マイページ</a>
+                            <a class="nav-link {% block active_subject %}{% endblock %}" href="{% url 'study:subject' %}">教科一覧</a>
                         </li>
                         <li class="nav-item d-sm-none">
-                            <a class="nav-link" href="{% url 'study:subject' %}">教科一覧</a>
+                            <a class="nav-link {% block active_goal %}{% endblock %}" href="{% url 'study:goal' %}">目標一覧</a>
+                        </li>
+                        <li class="nav-item d-sm-none">
+                            <a class="nav-link {% block active_account_detail %}{% endblock %}" href="{% url 'study:account_detail' user.username %}">マイページ</a>
                         </li>
                         <li class="nav-item d-sm-none">
                             <a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a>
                         </li>
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav ms-auto d-none d-sm-block">
+                <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
+                        <li class="nav-item d-none d-sm-block">
                             <div class="dropdown">
                                 <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     {% if user.icon %}
@@ -70,6 +73,7 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{% url 'study:account_detail' user.username %}">マイページ</a></li>
                                     <li><a class="dropdown-item" href="{% url 'study:subject' %}">教科一覧</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'study:goal' %}">目標一覧</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'account_logout' %}">ログアウト</a></li>
                                 </ul>
