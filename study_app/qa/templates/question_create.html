@@ -12,18 +12,24 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="{{ form.subject.id_for_label }}" class="form-label">{{ form.subject.label }}</label>
+            <label for="{{ form.subject.id_for_label }}" class="form-label">{{ form.subject.label }}<span class="text-danger">*</span></label>
             {% render_field form.subject class='form-select' %}
         </div>
         <div class="mb-3">
-            <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
+            <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}<span class="text-danger">*</span></label>
             {% render_field form.text class='form-control' %}
         </div>
         <div class="mb-4">
             <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
             {% render_field form.image class='form-control' %}
         </div>
-        <button type="submit" class="btn btn-primary">投稿する</button>
+        <div class="alert alert-info mb-3" role="alert">
+            <ul>
+                <li>回答の募集期間は7日間です。募集期間中に回答がつかなかった場合は自動的に再度質問が投稿されます。</li>
+                <li>一度投稿した質問は編集することができません。（ただし、補足説明の追加は可能です。）<br>内容をよく確認したうえで投稿してください。</li>
+            </ul>
+        </div>
+        <button type="submit" class="btn btn-primary">投稿</button>
     </form>
 </main>
 {% endblock %}

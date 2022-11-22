@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name_plural = 'CustomUser'
 
-#フォローモデル
+
 class Connection(models.Model):
     follower = models.ForeignKey(CustomUser, related_name='follower', on_delete=models.CASCADE)
     following = models.ForeignKey(CustomUser, related_name='following', on_delete=models.CASCADE)

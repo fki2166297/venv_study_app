@@ -26,7 +26,7 @@ class PublicationChoices(models.TextChoices):
 
 class StudyTime(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, verbose_name="教科", null=True, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, verbose_name="教科", on_delete=models.CASCADE)
     studied_at = models.DateTimeField(verbose_name='日時', null=False)
     minutes = models.IntegerField(verbose_name='学習時間', default=30, validators=[MinValueValidator(5), MaxValueValidator(1440)])
     publication = models.CharField(verbose_name='公開設定', max_length=10, choices=PublicationChoices.choices, null=False, default='follow')
@@ -40,7 +40,7 @@ class StudyTime(models.Model):
 class Goal(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, verbose_name='教科', on_delete=models.CASCADE)
-    text = models.TextField(verbose_name='テキスト', blank=True)
+    text = models.TextField(verbose_name='テキスト', max_length=50, blank=True, null=True)
     date = models.DateField(verbose_name='目標日')
     goal_minutes = models.IntegerField(verbose_name='目標学習時間', default=15)
     is_achieved = models.BooleanField(verbose_name='達成済み', default=False)

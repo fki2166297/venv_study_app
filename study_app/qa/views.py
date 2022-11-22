@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views import generic
 from .models import Question, LikeForQuestion, Answer
 from .forms import QuestionCreateForm, AnswerCreateForm, SubjectSelectForm
@@ -62,7 +62,7 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         # questionのIDを保存
         answer.question = Question.objects.get(pk=self.kwargs['pk'])
         answer.save()
-        messages.success(self.request, '回答を作成しました。')
+        messages.success(self.request, '回答を投稿しました。')
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -99,18 +99,23 @@ class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
         # 締め切りを一週間後に設定
         question.deadline = dt.datetime.now() + dt.timedelta(days=7)
         question.save()
-        messages.success(self.request, '質問を作成しました。')
+        messages.success(self.request, '質問を投稿しました。')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, '質問の作成に失敗しました。')
+        messages.error(self.request, '質問の投稿に失敗しました。')
         return super().form_invalid(form)
 
 
 class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'question_update.html'
     model = Question
-    fields = ['is_answered', 'supplement']
+    fields = ['supplement']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
+        return context
 
     def get_success_url(self):
         return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
@@ -122,3 +127,11 @@ class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
     def form_invalid(self, form):
         messages.error(self.request, '質問の更新に失敗しました。')
         return super().form_invalid(form)
+
+
+@login_required
+def question_delete_view(request, *args, **kwargs):
+    question = Question.objects.get(pk=kwargs['pk'])
+    question.delete()
+    messages.success(request, '質問を削除しました。')
+    return HttpResponseRedirect(reverse_lazy('qa:qa'))

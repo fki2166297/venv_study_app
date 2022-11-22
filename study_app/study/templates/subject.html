@@ -8,10 +8,24 @@
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
+    <h5 class="mb-3">教科一覧</h5>
+    <ul class="list-group mb-5">
+        {% if subject_list %}
+            {% for subject in subject_list %}
+                <li class="list-group-item hstack gap-3">
+                    <span><i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.name }}</span>
+                    <a class="btn btn-primary ms-auto" href="{% url 'study:subject_update' subject.id %}" role="button">編集</a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ subject.id }}" data-subject-color="{{ subject.color }}" data-subject="{{ subject.name }}">削除</button>
+                </li>
+            {% endfor %}
+        {% else %}
+                <li class="list-group-item text-center py-5">教科がありません</li>
+        {% endif %}
+    </ul>
     <form method="post">
         {% csrf_token %}
         <h5 class="mb-3">教科の作成</h5>
-        <div class="hstack gap-3 mb-5 align-items-center">
+        <div class="hstack gap-3 align-items-center">
             {% render_field form.name class='form-control me-auto' placeholder='教科名を入力してください' %}
             {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
             <datalist id="color-list">
@@ -32,20 +46,6 @@
             <input type="submit" value="作成する" class="btn btn-primary flex-shrink-0">
         </div>
     </form>
-    <h5 class="mb-3">教科一覧</h5>
-    <ul class="list-group">
-        {% if subject_list %}
-            {% for subject in subject_list %}
-                <li class="list-group-item hstack gap-3">
-                    <span><i class="bi bi-circle-fill mx-3" style="color: {{ subject.color }};"></i>{{ subject.name }}</span>
-                    <a class="btn btn-primary ms-auto" href="{% url 'study:subject_update' subject.id %}" role="button">編集</a>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ subject.id }}" data-subject-color="{{ subject.color }}" data-subject="{{ subject.name }}">削除</button>
-                </li>
-            {% endfor %}
-        {% else %}
-                <li class="list-group-item text-center py-5">教科がありません</li>
-        {% endif %}
-    </ul>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">

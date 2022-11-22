@@ -13,11 +13,29 @@
     <div class="row">
         <div class="col-md-8">
             <form method="get">
-                <div class="input-group mb-4">
+                <div class="input-group mb-3">
                     <input type="search" class="form-control" name="query" placeholder="キーワードを入力">
                     <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined">search</i></button>
                 </div>
             </form>
+            <div class="row g-1 align-items-center mb-3">
+                <div class="col-auto">
+                    <label for="sort-select" class="col-form-label">表示順</label>
+                </div>
+                <div class="col-auto me-3">
+                    <select id="sort-select" class="form-select form-select-sm">
+                        <option selected>投稿日時の新しい順</option>
+                        <option value="1">投稿日時の古い順</option>
+                        <option value="2">いいねの多い順</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label for="{{ subject_select_form.subject.id_for_label }}" class="col-form-label">教科</label>
+                </div>
+                <div class="col-auto">
+                    {% render_field subject_select_form.subject class='form-select form-select-sm' %}
+                </div>
+            </div>
             {% if question_list %}
                 {% for question in question_list %}
                     <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
@@ -77,9 +95,7 @@
         </div>
         <div class="col-md-4 d-none d-md-block mb-3">
             <div style="position: sticky; top: 5rem;">
-                <a class="btn btn-primary col-12 mb-3" href="{% url 'qa:question_create' %}" role="button">投稿する</a>
-                <label class="form-label" for="{{ subject_select_form.subject.id_for_label }}">{{ subject_select_form.subject.label }}</label>
-                {% render_field subject_select_form.subject class='form-select mb-3' %}
+                <a class="btn btn-primary col-12 mb-3" href="{% url 'qa:question_create' %}" role="button">質問する</a>
                 <label class="form-label" for="id_status">回答状況の選択</label>
                 <select class="form-select mb-3" id="id_status">
                     <option value="" selected>---------</option>

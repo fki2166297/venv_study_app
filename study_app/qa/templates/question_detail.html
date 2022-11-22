@@ -8,16 +8,16 @@
 
 {% block contents %}
 <main class="container-md" style="max-width: 960px;">
-    <div class="card mb-3">
+    <div class="card mb-4">
         <div class="card-header hstack gap-3">
             <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
             <div class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</div>
             <div class="text-muted" style="font-size: 0.9rem;">回答締切：{{ question.deadline|date:'Y/n/j G:i' }}</div>
         </div>
-        <div class="card-body mx-3 my-2">
+        <div class="card-body mx-3 my-2 col-md-11 mx-auto">
             <div class="hstack gap-2 mb-3">
                 <a href="{% url 'study:account_detail' question.user.username %}">
-                    {% if user.icon %}
+                    {% if question.user.icon %}
                         <img src="/media/{{ question.user.icon }}" alt="{{ question.user.username }}" width="28" height="28" class="rounded-circle">
                     {% else %}
                         <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
@@ -26,7 +26,19 @@
                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
                 <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
                 {% if question.user_id == user.id %}
-                    <a href="{% url 'qa:question_update' question.id %}" class="btn btn-primary ms-auto">編集</a>
+                    <div class="dropdown ms-auto">
+                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'qa:question_update' question.id %}" role="button">編集</a>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal">削除</button>
+                            </li>
+                        </ul>
+                    </div>
                 {% endif %}
             </div>
             <div class="card-text mb-4">{{ question.text|linebreaksbr }}</div>
@@ -37,7 +49,12 @@
                     </a>
                 </div>
             {% endif %}
-            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
+            {% if question.supplement %}
+                <hr>
+                <strong>補足</strong><br>
+                <span>{{ question.supplement }}</span><br>
+            {% endif %}
+            <hr>
             {% if is_user_liked_for_question %}
                 <button type="button" id="ajax-like-for-question" style="border:none;background:none">
                     <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
@@ -48,12 +65,18 @@
                 </button>
             {% endif %}
             <span id="like-for-question-count">{{ like_for_question_count }}</span>
-            <span>件のイイね</span>
+            <span>件のイイね</span><br>
+
+            {% if question.user_id == user.id %}
+                <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
+            {% else %}
+                <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
+            {% endif %}
         </div>
     </div>
 
     <!-- 回答フォームのカード -->
-    <div class="collapse mb-3" id="collapse">
+    <div class="collapse mb-4" id="collapse">
         <div class="card card-body">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -77,9 +100,18 @@
                     更新日時：{{ answer.updated_at }}
                 </p>
                 <div class="card-body">
-                    <h4>{{ answer.title }}</h4>
+                    <div class="hstack gap-2 mb-3">
+                        <a href="{% url 'study:account_detail' answer.user.username %}">
+                            {% if answer.user.icon %}
+                                <img src="/media/{{ answer.user.icon }}" alt="{{ answer.user.username }}" width="28" height="28" class="rounded-circle">
+                            {% else %}
+                                <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
+                            {% endif %}
+                        </a>
+                        <a class="text-decoration-none me-3" href="{% url 'study:account_detail' answer.user.username %}">@{{ answer.user.username }}</a>
+                    </div>
                     <p class="card-text">
-                        {{ answer.text }}
+                        {{ answer.text|linebreaksbr }}
                     </p>
                 </div>
             </div>
@@ -90,10 +122,32 @@
 
     <div style="height: 80vh;"></div>
 
+    <!-- 画像表示モーダル -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <img class="col-12" id="image" src="/media/{{ question.image }}"/>
+            </div>
+        </div>
+    </div>
+
+    <!-- 記録削除モーダル -->
+    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deletionModalLabel">質問の削除</h1>
+                </div>
+                <div class="modal-body">
+                    <p>この質問を削除しますか？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form method="post" action="{% url 'qa:question_delete' question.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

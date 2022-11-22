@@ -26,11 +26,13 @@
 ~(,,u,,u　~(ou,,uっ~(,,u,,u　　~(ou,,u　 ~(ou,,uっ
 -->
 
-<body class="bg-light bg-opacity-50" style="padding-top: 5rem;">
+<body class="bg-light" style="padding-top: 5rem;">
     <header class="navbar navbar-expand-sm navbar-light bg-light shadow-sm fixed-top">
         <div class="container-fluid px-5">
             <a class="navbar-brand fw-bold" href="{% url 'study:home' %}">Study App</a>
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
@@ -43,9 +45,18 @@
                         <li class="nav-item">
                             <a class="nav-link {% block active_qa %}{% endblock %}" href="{% url 'qa:qa' %}"><i class="bi bi-chat-text mx-1"></i>Q&ampA</a>
                         </li>
+                        <li class="nav-item d-sm-none">
+                            <a class="nav-link" href="{% url 'study:account_detail' user.username %}">マイページ</a>
+                        </li>
+                        <li class="nav-item d-sm-none">
+                            <a class="nav-link" href="{% url 'study:subject' %}">教科一覧</a>
+                        </li>
+                        <li class="nav-item d-sm-none">
+                            <a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a>
+                        </li>
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto d-none d-sm-block">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <div class="dropdown">
