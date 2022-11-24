@@ -183,7 +183,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
 
 <script>
-    function changeTimeFormat(time) {
+    function convertTime(time) {
         if (time >= 60) {
             return ~~(time / 60) + '時間' + ((time % 60) ? (time % 60) + '分' : '');
         } else {
@@ -239,7 +239,7 @@
     // 勉強時間の表示形式を変更
     document.querySelectorAll('.js-studyMinutes').forEach(element => {
         const time = parseInt(element.innerHTML);
-        element.innerHTML = changeTimeFormat(time);
+        element.innerHTML = convertTime(time);
     });
 
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
@@ -248,7 +248,7 @@
         document.getElementById('datetime').innerHTML = targetEl.dataset.datetime;
         document.getElementById('subjectColor').style.color = targetEl.dataset.subjectColor;
         document.getElementById('subject').innerHTML = targetEl.dataset.subject;
-        document.getElementById('studyMinutes').innerHTML = changeTimeFormat(targetEl.dataset.studyMinutes);
+        document.getElementById('studyMinutes').innerHTML = convertTime(targetEl.dataset.studyMinutes);
     });
 </script>
 {% endblock %}
