@@ -81,6 +81,14 @@ class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
     fields = ['subject', 'studied_at', 'minutes', 'publication']
     success_url = reverse_lazy('study:home')
 
+    def form_valid(self, form):
+        messages.success(self.request, '記録を更新しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "記録の更新に失敗しました。")
+        return super().form_invalid(form)
+
 
 class GoalView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'goal.html'

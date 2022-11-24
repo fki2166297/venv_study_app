@@ -14,37 +14,50 @@
         <div class="col-md-8">
             <form method="get">
                 <div class="input-group mb-3">
-                    <input type="search" class="form-control" name="query" placeholder="キーワードを入力">
+                    <input type="search" class="form-control" name="query" placeholder="キーワードを入力" value="{% if request.GET.query %}{{ request.GET.query }}{% endif %}">
                     <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined">search</i></button>
                 </div>
             </form>
-            <div class="row g-1 align-items-center mb-3">
-                <div class="col-auto">
-                    <label for="sort-select" class="col-form-label">表示順</label>
-                </div>
-                <div class="col-auto me-2">
-                    <select id="sort-select" class="form-select form-select-sm">
-                        <option value="0" selected>投稿日時の新しい順</option>
-                        <option value="1">投稿日時の古い順</option>
-                        {% comment %} <option value="2">いいねの多い順</option> {% endcomment %}
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <label for="{{ subject_select_form.subject.id_for_label }}" class="col-form-label">教科</label>
-                </div>
-                <div class="col-auto">
-                    {% render_field subject_select_form.subject class='form-select form-select-sm' %}
-                </div>
-            </div>
-            {% if question_list %}
-                {% for question in question_list %}
-                    <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
-                        <div class="card mb-4">
-                            <div class="card-header d-flex py-1">
-                                <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
-                                <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
-                            </div>
-                            <div class="card-body">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a href="?tab=all{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'all' or not request.GET.tab %}active{% endif %}">すべて</a>
+                </li>
+                <li class="nav-item">
+                    <a href="?tab=not-answered{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'not-answered' %}active{% endif %}">回答募集中</a>
+                </li>
+                <li class="nav-item">
+                    <a href="?tab=answered{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'answered' %}active{% endif %}">解決済み</a>
+                </li>
+            </ul>
+            <ul class="list-group list-group-flush border-bottom">
+                <li class="list-group-item">
+                    <div class="row g-1 align-items-center">
+                        <div class="col-auto">
+                            <label for="sort-select" class="col-form-label">表示順</label>
+                        </div>
+                        <div class="col-auto me-2">
+                            <select id="sort-select" class="form-select form-select-sm">
+                                <option value="0" selected>投稿日時の新しい順</option>
+                                <option value="1">投稿日時の古い順</option>
+                                {% comment %} <option value="2">いいねの多い順</option> {% endcomment %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <label for="{{ subject_select_form.subject.id_for_label }}" class="col-form-label">教科</label>
+                        </div>
+                        <div class="col-auto">
+                            {% render_field subject_select_form.subject class='form-select form-select-sm' %}
+                        </div>
+                    </div>
+                </li>
+                {% if question_list %}
+                    {% for question in question_list %}
+                        <li class="list-group-item">
+                            <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
+                                <div class="d-flex py-1">
+                                    <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
+                                    <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
+                                </div>
                                 <div class="row">
                                     <div class="col">
                                         <span>{{ question.text|truncatechars:200 }}</span>
@@ -55,13 +68,13 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            {% else %}
-                <p class="text-center mt-5">Q&ampAが見つかりませんでした。</p>
-            {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item text-center py-5">Q&ampAが見つかりませんでした。</li>
+                {% endif %}
+            </ul>
 
             <!-- ページネーション -->
             {% if is_paginated %}
@@ -69,7 +82,7 @@
                     <!-- 前ページへのリンク -->
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}">&laquo;</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">&laquo;</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><a class="page-link">&laquo;</a></li>
@@ -79,13 +92,13 @@
                         {% if page_obj.number == page_num %}
                             <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}">{{ page_num }}</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">{{ page_num }}</a></li>
                         {% endif %}
                     {% endfor %}
                     <!-- 次ページへのリンク -->
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}">&raquo;</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">&raquo;</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><a class="page-link">&raquo;</a></li>
@@ -96,12 +109,6 @@
         <div class="col-md-4 d-none d-md-block mb-3">
             <div style="position: sticky; top: 5rem;">
                 <a class="btn btn-primary col-12 mb-3" href="{% url 'qa:question_create' %}" role="button">質問する</a>
-                <label class="form-label" for="id_status">回答状況の選択</label>
-                <select class="form-select mb-3" id="id_status">
-                    <option value="" selected>---------</option>
-                    <option value="answered">回答済み</option>
-                    <option value="not_answered">回答募集中</option>
-                </select>
             </div>
         </div>
     </div>
@@ -128,26 +135,16 @@
     }
 
     const subjectSelect = document.getElementById('id_subject');
-    const statusSelect = document.getElementById('id_status');
 
     subjectOption = getOptionElement(subjectSelect, getParam('subject', window.location.href));
     if (subjectOption) subjectOption.selected = true;
 
-    statusOption = getOptionElement(statusSelect, getParam('status', window.location.href));
-    if (statusOption) statusOption.selected = true;
-
     subjectSelect.onchange = () => {
         const url = new URL(window.location);
         url.searchParams.delete('subject');
+        url.searchParams.delete('page');
         url.searchParams.append('subject', subjectSelect.value);
         window.location.href = url.href;
     };
-
-    statusSelect.onchange = () => {
-        const url = new URL(window.location);
-        url.searchParams.delete('status');
-        url.searchParams.append('status', statusSelect.value);
-        window.location.href = url.href;
-    }
 </script>
 {% endblock %}

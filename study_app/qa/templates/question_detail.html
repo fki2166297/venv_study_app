@@ -25,7 +25,7 @@
                 </a>
                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
                 <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
-                {% if question.user_id == user.id %}
+                {% if question.user.id == user.id %}
                     <div class="dropdown ms-auto">
                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-three-dots"></i>
@@ -55,21 +55,23 @@
                 <span>{{ question.supplement }}</span><br>
             {% endif %}
             <hr>
-            {% if is_user_liked_for_question %}
-                <button type="button" id="ajax-like-for-question" style="border:none;background:none">
-                    <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
-                </button>
-            {% else %}
-                <button type="button" id="ajax-like-for-question" style="border:none;background:none">
-                    <i class="far fa-heart text-danger" id="like-for-question-icon"></i>
-                </button>
+            {% if not question.user.id == user.id %}
+                {% if is_user_liked_for_question %}
+                    <button type="button" id="ajax-like-for-question" style="border:none;background:none">
+                        <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
+                    </button>
+                {% else %}
+                    <button type="button" id="ajax-like-for-question" style="border:none;background:none">
+                        <i class="far fa-heart text-danger" id="like-for-question-icon"></i>
+                    </button>
+                {% endif %}
             {% endif %}
             <span id="like-for-question-count">{{ like_for_question_count }}</span>
             <span>件のイイね</span><br>
 
-            {% if question.user_id == user.id %}
-                <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
-            {% else %}
+            {% if question.user.id == user.id %}
+                {% comment %} <a href="#">自己解決</a> {% endcomment %}
+            {% elif not is_user_answered %}
                 <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
             {% endif %}
         </div>
@@ -80,12 +82,14 @@
         <div class="card card-body">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {% render_field field class='form-control' %}
-                    </div>
-                {% endfor %}
+                <div class="mb-3">
+                    <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}<span class="text-danger">*</span></label>
+                    {% render_field form.text class='form-control' %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                    {% render_field form.image class='form-control' %}
+                </div>
                 <button type="submit" class="btn btn-primary">送信</button>
             </form>
         </div>
@@ -113,6 +117,9 @@
                     <p class="card-text">
                         {{ answer.text|linebreaksbr }}
                     </p>
+                    {% if question.user.id == user.id %}
+                        <button class="btn btn-primary btn-sm">ベストアンサーにする</button>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}

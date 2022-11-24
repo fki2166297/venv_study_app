@@ -13,22 +13,22 @@ import datetime as dt
 # Create your views here.
 class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     template_name = 'qa.html'
-    paginate_by = 10
+    paginate_by = 2
 
     def get_queryset(self):
         queryset = Question.objects.order_by('-created_at')
 
         # GETパラメータを取得
         subject = self.request.GET.get('subject')
-        status = self.request.GET.get('status')
+        tab = self.request.GET.get('tab')
         query = self.request.GET.get('query')
 
         if subject:
             queryset = queryset.filter(subject=subject)
 
-        if status == 'answered':
+        if tab == 'answered':
             queryset = queryset.filter(is_answered=True)
-        elif status == 'not_answered':
+        elif tab == 'not_answered':
             queryset = queryset.filter(is_answered=False)
 
         if query:
@@ -39,6 +39,9 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subject_select_form'] = SubjectSelectForm
+        context['query'] = self.request.GET.get('subject')
+        context['tab'] = self.request.GET.get('tab')
+        context['subject'] = self.request.GET.get('subject')
         return context
 
 
@@ -52,7 +55,12 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['question'] = Question.objects.get(pk=self.kwargs['pk'])
-        context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
+        answer_list = Answer.objects.filter(question=self.kwargs['pk'])
+        if answer_list.filter(user=self.request.user).exists():
+            context['is_user_answered'] = True
+        else:
+            context['is_user_answered'] = False
+        context['answer_list'] = answer_list
         like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
         context['like_for_question_count'] = like_for_question.count()
         if like_for_question.filter(user=self.request.user).exists():
