@@ -127,6 +127,13 @@ class GoalCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
+def convert_time(minutes):
+    if minutes >= 60:
+        return str(minutes // 60) + '時間' + str(minutes % 60) + '分' if minutes % 60 else ''
+    else:
+        return str(minutes) + '分'
+
+
 class ReportView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'report.html'
 
@@ -135,7 +142,17 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
         df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
+        df2 = df.copy() # コピー(仮)
+
+        # studied_atカラムをdatetime型からdate型に変換
+        if not df2.empty:
+            df2['studied_at'] = df2['studied_at'].dt.date
         today = dt.date.today()
+        context['df'] = df2 # 確認用
+        context['today_sum']
+        context['week_sum']
+        context['month_sum']
+        context['total']
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
