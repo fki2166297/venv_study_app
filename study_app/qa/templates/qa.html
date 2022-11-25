@@ -14,19 +14,19 @@
         <div class="col-md-8">
             <form method="get">
                 <div class="input-group mb-3">
-                    <input type="search" class="form-control" name="query" placeholder="キーワードを入力" value="{% if request.GET.query %}{{ request.GET.query }}{% endif %}">
+                    <input type="search" class="form-control" name="query" placeholder="キーワードを入力">
                     <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined">search</i></button>
                 </div>
             </form>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a href="?tab=all{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'all' or not request.GET.tab %}active{% endif %}">すべて</a>
+                    <a href="?tab=all{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'all' %}active{% endif %}">すべて</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?tab=not-answered{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'not-answered' %}active{% endif %}">回答募集中</a>
+                    <a href="?tab=not-answered{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'not-answered' %}active{% endif %}">回答募集中</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?tab=answered{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}" class="nav-link {% if request.GET.tab == 'answered' %}active{% endif %}">解決済み</a>
+                    <a href="?tab=answered{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'answered' %}active{% endif %}">解決済み</a>
                 </li>
             </ul>
             <ul class="list-group list-group-flush border-bottom">
@@ -52,23 +52,30 @@
                 </li>
                 {% if question_list %}
                     {% for question in question_list %}
-                        <li class="list-group-item">
-                            <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
-                                <div class="d-flex py-1">
-                                    <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
-                                    <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
-                                </div>
-                                <div class="clearfix">
-                                    <img src="/media/{{ question.image }}" class="col-6 float-end mb-3 ms-md-3" style="max-height: 100px; object-fit: cover;"/>
-                                    <div class="col">
-                                        <span>{{ question.text|truncatechars:200 }}</span>
-                                    </div>
-                                    {% if question.image %}
-                                        <div class="col-3">
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </a>
+                        {% comment %} <li class="list-group-item position-relative">
+                            <div class="hstack gap-3">
+                                <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
+                                <div class="text-muted">{{ question.created_at|date:'n/j G:i' }}</div>
+                            </div>
+                            <div class="clearfix text-truncate">
+                                {% if question.image %}
+                                    <img src="/media/{{ question.image }}" alt="質問の画像" class="rounded float-end" style="widht: 120px; height: 90px; object-fit: cover;"/>
+                                {% endif %}
+                                <a href="{% url 'qa:question_detail' question.id %}" class="stretched-link text-decoration-none">{{ question.text|truncatechars:100 }}</a>
+                            </div>
+                        </li> {% endcomment %}
+
+                        <li class="list-group-item position-relative">
+                            <div class="hstack gap-3">
+                                <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
+                                <div class="text-muted">{{ question.created_at|date:'n/j G:i' }}</div>
+                            </div>
+                            <div class="clearfix text-truncate">
+                                {% if question.image %}
+                                    <img src="/media/{{ question.image }}" alt="質問の画像" class="rounded float-end" style="widht: 120px; height: 90px; object-fit: cover;"/>
+                                {% endif %}
+                                <a href="{% url 'qa:question_detail' question.id %}" class="stretched-link text-decoration-none">{{ question.text|truncatechars:100 }}</a>
+                            </div>
                         </li>
                     {% endfor %}
                 {% else %}
@@ -82,7 +89,7 @@
                     <!-- 前ページへのリンク -->
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">&laquo;</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if tab %}&tab={{ tab }}{% endif %}{% if subject %}&subject={{ subject }}{% endif %}">&laquo;</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><a class="page-link">&laquo;</a></li>
@@ -92,13 +99,13 @@
                         {% if page_obj.number == page_num %}
                             <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">{{ page_num }}</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if query %}&query={{ query }}{% endif %}{% if tab %}&tab={{ tab }}{% endif %}{% if subject %}&subject={{ subject }}{% endif %}">{{ page_num }}</a></li>
                         {% endif %}
                     {% endfor %}
                     <!-- 次ページへのリンク -->
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.query %}&query={{ request.GET.query }}{% endif %}{% if request.GET.tab %}&tab={{ request.GET.tab }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}">&raquo;</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if tab %}&tab={{ tab }}{% endif %}{% if subject %}&subject={{ subject }}{% endif %}">&raquo;</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><a class="page-link">&raquo;</a></li>

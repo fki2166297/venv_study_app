@@ -17,30 +17,24 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         queryset = Question.objects.order_by('-created_at')
-
-        # GETパラメータを取得
-        subject = self.request.GET.get('subject')
-        tab = self.request.GET.get('tab')
         query = self.request.GET.get('query')
-
+        tab = self.request.GET.get('tab')
+        subject = self.request.GET.get('subject')
         if subject:
             queryset = queryset.filter(subject=subject)
-
         if tab == 'answered':
             queryset = queryset.filter(is_answered=True)
         elif tab == 'not_answered':
             queryset = queryset.filter(is_answered=False)
-
         if query:
             queryset = queryset.filter(text__icontains=query)
-
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subject_select_form'] = SubjectSelectForm
-        context['query'] = self.request.GET.get('subject')
-        context['tab'] = self.request.GET.get('tab')
+        context['query'] = self.request.GET.get('query')
+        context['tab'] = self.request.GET.get('tab') or 'all'
         context['subject'] = self.request.GET.get('subject')
         return context
 

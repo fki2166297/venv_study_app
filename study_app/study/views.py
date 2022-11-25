@@ -149,7 +149,10 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
             df2['studied_at'] = df2['studied_at'].dt.date
         today = dt.date.today()
         context['df'] = df2 # 確認用
-        context['today_sum'] = convert_time(130)
+
+        today_sum = df2.query('studied_at == @today').sum()['minutes']
+
+        context['today_sum'] = convert_time(today_sum) # 今日の合計
         # context['week_sum']
         # context['month_sum']
         # context['total']
