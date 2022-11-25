@@ -8,7 +8,7 @@
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
-    <h4 class="mb-3">質問の投稿</h4>
+    <h4 class="mb-3">質問投稿</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
@@ -23,7 +23,7 @@
             <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
             {% render_field form.image class='form-control' %}
         </div>
-        <div class="alert alert-info mb-3" role="alert">
+        <div class="mb-3 alert alert-info" role="alert">
             <ul>
                 <li>回答の募集期間は7日間です。募集期間中に回答がつかなかった場合は、自動的に再度質問が投稿されます。</li>
                 <li>一度投稿した質問は編集することができません。（ただし、補足説明の追加は可能です。）<br>内容をよく確認したうえで投稿してください。</li>

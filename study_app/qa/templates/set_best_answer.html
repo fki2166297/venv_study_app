@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}ベストアンサーの設定 | Study App{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="form-label" for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
+            {% render_field form.comment class='form-control' %}
+        </div>
+        <div class="mb-3 alert alert-info" role="alert">
+            <ul>
+                <li>ベストアンサーを設定すると、回答の募集を終了します。</li>
+            </ul>
+        </div>
+        <button type="submit" class="btn btn-primary">ベストアンサーに設定する</button>
+    </form>
+</main>
+{% endblock %}

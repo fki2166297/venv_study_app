@@ -13,21 +13,24 @@ import datetime as dt
 # Create your views here.
 class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     template_name = 'qa.html'
-    paginate_by = 2
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Question.objects.order_by('-created_at')
         query = self.request.GET.get('query')
         tab = self.request.GET.get('tab')
+        sort = self.request.GET.get('sort')
         subject = self.request.GET.get('subject')
         if subject:
             queryset = queryset.filter(subject=subject)
-        if tab == 'answered':
-            queryset = queryset.filter(is_answered=True)
-        elif tab == 'not_answered':
-            queryset = queryset.filter(is_answered=False)
+        if tab == 'resolved':
+            queryset = queryset.filter(is_resolved=True)
+        elif tab == 'unresolved':
+            queryset = queryset.filter(is_resolved=False)
         if query:
             queryset = queryset.filter(text__icontains=query)
+        if sort == 'old':
+            queryset = queryset.order_by('created_at')
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -35,6 +38,7 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
         context['subject_select_form'] = SubjectSelectForm
         context['query'] = self.request.GET.get('query')
         context['tab'] = self.request.GET.get('tab') or 'all'
+        context['sort'] = self.request.GET.get('sort') or 'new'
         context['subject'] = self.request.GET.get('subject')
         return context
 
@@ -49,12 +53,7 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['question'] = Question.objects.get(pk=self.kwargs['pk'])
-        answer_list = Answer.objects.filter(question=self.kwargs['pk'])
-        if answer_list.filter(user=self.request.user).exists():
-            context['is_user_answered'] = True
-        else:
-            context['is_user_answered'] = False
-        context['answer_list'] = answer_list
+        context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
         like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
         context['like_for_question_count'] = like_for_question.count()
         if like_for_question.filter(user=self.request.user).exists():
@@ -93,6 +92,31 @@ def like_for_question(request):
         context['method'] = 'create'
     context['like_for_question_count'] = LikeForQuestion.objects.filter(target=question).count()
     return JsonResponse(context)
+
+
+class SetBestAnswerView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'set_best_answer.html'
+    model = Question
+    fields = ['comment']
+    slug_field = 'a_pk'
+    slug_url_kwarg = 'a_pk'
+
+    def get_success_url(self):
+        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        question = form.save(commit=False)
+        question.is_resolved = True
+        question.save()
+        answer = Answer.objects.get(pk=self.kwargs['a_pk'])
+        answer.is_best = True
+        answer.save()
+        messages.success(self.request, 'ベストアンサーを設定しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'ベストアンサーの設定に失敗しました。')
+        return super().form_invalid(form)
 
 
 class QuestionCreateView(LoginRequiredMixin, generic.CreateView):

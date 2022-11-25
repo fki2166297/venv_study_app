@@ -69,10 +69,12 @@
             <span id="like-for-question-count">{{ like_for_question_count }}</span>
             <span>件のイイね</span><br>
 
-            {% if question.user.id == user.id %}
-                {% comment %} <a href="#">自己解決</a> {% endcomment %}
-            {% elif not is_user_answered %}
-                <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
+            {% if not question.is_resolved %}
+                {% if question.user.pk == user.pk %}
+                    <a href="#">自己解決</a>
+                {% elif not is_user_answered %}
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -89,6 +91,11 @@
                 <div class="mb-3">
                     <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                     {% render_field form.image class='form-control' %}
+                </div>
+                <div class="mb-3 alert alert-info" role="alert">
+                    <ul>
+                        <li></li>
+                    </ul>
                 </div>
                 <button type="submit" class="btn btn-primary">送信</button>
             </form>
@@ -117,8 +124,15 @@
                     <p class="card-text">
                         {{ answer.text|linebreaksbr }}
                     </p>
-                    {% if question.user.id == user.id %}
-                        <button class="btn btn-primary btn-sm">ベストアンサーにする</button>
+                    {% if answer.image %}
+                        <div class="col-md-7 mx-auto mb-3">
+                            <a role="button" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ answer.image }}">
+                                <img class="col-12" src="/media/{{ answer.image }}"/>
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% if question.user.id == user.id and not question.is_resolved %}
+                        <a href="{% url 'qa:set_best_answer' question.pk answer.pk %}">ベストアンサーにする</a>
                     {% endif %}
                 </div>
             </div>

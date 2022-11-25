@@ -13,12 +13,13 @@ class SubjectChoices(models.TextChoices):
 
 class Question(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    is_answered = models.BooleanField(verbose_name='回答済み', default=False)
+    is_resolved = models.BooleanField(verbose_name='解決済み', default=False)
     subject = models.CharField(verbose_name='教科', choices=SubjectChoices.choices, max_length=15)
     image = models.ImageField(verbose_name='画像', upload_to='question_images/', null=True, blank=True, default='')
     text = models.TextField(verbose_name='質問文')
     supplement = models.TextField(verbose_name='補足', blank=True)
     deadline = models.DateTimeField(verbose_name='締め切り')
+    comment = models.TextField(verbose_name='お礼コメント')
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
