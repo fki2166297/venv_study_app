@@ -129,7 +129,7 @@ class GoalCreateView(LoginRequiredMixin, generic.CreateView):
 
 def convert_time(minutes):
     if minutes >= 60:
-        return str(minutes // 60) + '時間' + str(minutes % 60) + '分' if minutes % 60 else ''
+        return str(minutes // 60) + '時間' + (str(minutes % 60) + '分' if minutes % 60 else '')
     else:
         return str(minutes) + '分'
 
@@ -149,10 +149,10 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
             df2['studied_at'] = df2['studied_at'].dt.date
         today = dt.date.today()
         context['df'] = df2 # 確認用
-        context['today_sum']
-        context['week_sum']
-        context['month_sum']
-        context['total']
+        context['today_sum'] = convert_time(180)
+        # context['week_sum']
+        # context['month_sum']
+        # context['total']
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
