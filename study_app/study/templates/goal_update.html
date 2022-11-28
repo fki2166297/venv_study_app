@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}目標の更新 | Study App{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px;">
+    <h4 class="mb-3">目標の更新</h4>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.subject.id_for_label }}" class="form-label">{{ form.subject.label }}<span class="text-danger">*</span></label>
+            {% render_field form.subject class='form-select' %}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}<span class="text-danger">*</span></label>
+            {% render_field form.text class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}<span class="text-danger">*</span></label>
+            {% render_field form.date class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.goal_minutes.id_for_label }}" class="form-label">{{ form.goal_minutes.label }}<span class="text-danger">*</span></label>
+            {% render_field form.goal_minutes class='form-control' %}
+        </div>
+        <button type="submit" class="btn btn-primary">更新</button>
+    </form>
+</main>
+{% endblock %}

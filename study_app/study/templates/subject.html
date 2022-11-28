@@ -79,7 +79,7 @@
 {% block script %}
 <script>
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
-        targetEl = event.relatedTarget
+        targetEl = event.relatedTarget;
         const id = targetEl.dataset.id;
         const subjectColor = targetEl.dataset.subjectColor;
         const name = targetEl.dataset.subject;

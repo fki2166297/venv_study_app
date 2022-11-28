@@ -69,17 +69,17 @@
                             // ラベルに表示する勉強時間の形式を変更
                             label: (context) => {
                                 let label = context.dataset.label || '';
-                                if (label) label += ': ';
+
+                                if (label) {
+                                    label += ': ';
+                                }
+
                                 if (context.parsed.y !== null) {
-                                    if (context.parsed.y >= 60) {
-                                        if (context.parsed.y % 60) {
-                                            label += ~~(context.parsed.y / 60) + '時間' + (context.parsed.y % 60) + '分';
-                                        }
-                                        else {
-                                            label += context.parsed.y / 60 + '時間'
-                                        }
-                                    } else if (context.parsed.y != 0) {
-                                        label += context.parsed.y + '分';
+                                    minutes = context.parsed.y;
+                                    if (minutes >= 60) {
+                                        label += ~~(minutes / 60) + '時間' + ((minutes % 60) ? (minutes % 60) + '分' : '');
+                                    } else if (minutes != 0) {
+                                        label += minutes + '分';
                                     }
                                 }
                                 return label;
@@ -154,7 +154,7 @@
         if (barChart) barChart.destroy();
         drawBarChart({{ bar_chart_month|safe }}, {
             display: true,
-            text: (now.getMonth() + 1) + '月'
+            text: (now.getMonth() + 1) + '月',
         });
         setActive(monthBtn, weekBtn, yearBtn);
     }
@@ -163,7 +163,7 @@
         if (barChart) barChart.destroy();
         drawBarChart({{ bar_chart_year|safe }}, {
             display: true,
-            text: now.getFullYear() + '年'
+            text: now.getFullYear() + '年',
         });
         setActive(yearBtn, weekBtn, monthBtn);
     }

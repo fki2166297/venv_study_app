@@ -9,6 +9,7 @@ urlpatterns = [
     path('study-time-update/<int:pk>', views.StudyTimeUpdateView.as_view(), name='study_time_update'),
     path('goal', views.GoalView.as_view(), name='goal'),
     path('goal-create', views.GoalCreateView.as_view(), name='goal_create'),
+    path('goal-update/<int:pk>', views.GoalUpdateView.as_view(), name='goal_update'),
     path('report', views.ReportView.as_view(), name='report'),
     path('subject', views.SubjectView.as_view(), name='subject'),
     path('subject/subject-update/<int:pk>', views.SubjectUpdateView.as_view(), name='subject_update'),

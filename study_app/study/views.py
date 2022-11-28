@@ -11,7 +11,8 @@ from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
 from django_pandas.io import read_frame
-from .helpers import get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
+from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
+
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, generic.CreateView):
@@ -21,22 +22,32 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # ログインユーザーがフォローしているユーザーのIDをすべて取得
+        # ログインユーザーがフォローしているユーザーを取得
         following = Connection.objects.filter(follower=self.request.user).values_list('following')
-        # ログインユーザー、フォローユーザーのデータを取得
-        study_time_list = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).order_by('-studied_at').select_related()
         tab = self.request.GET.get('tab') or 'all'
-        if tab == 'my-record':
-            study_time_list = study_time_list.filter(user=self.request.user)
+        if tab == 'all':
+            # 自分の記録、フォローユーザーの記録（公開設定がfollow）を取得
+            study_times = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).exclude(user__in=following, publication='private').order_by('-studied_at').select_related()
+        elif tab == 'my-record':
+            study_times = StudyTime.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
         elif tab == 'following':
-            study_time_list = study_time_list.filter(user__in=following, publication='follow')
-        context['tab'] = tab
-        context['study_time_list'] = study_time_list
+            study_times = StudyTime.objects.filter(user__in=following, publication='follow').order_by('-studied_at').select_related()
+        # 時間の表示形式を変更
+        for study_time in study_times:
+            study_time.minutes = to_time_str(study_time.minutes)
 
-        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
-        df_goal['remaining_days'] = df_goal['date'] - dt.date.today()
-        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int)
+        goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        # Queryset型からDataFrame型に変換
+        df_goal = read_frame(goals, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
+        today = dt.date.today()
+        for i, goal in df_goal.iterrows():
+            df_goal.at[i, 'goal_minutes'] = to_time_str(goal['goal_minutes']) # 時間の表示形式を変更
+            df_goal.at[i, 'studied_minutes'] = to_time_str(goal['studied_minutes']) # 時間の表示形式を変更
+            df_goal.at[i, 'remaining_days'] = (goal['date'] - today).days # 残り日数
+
+        context['tab'] = tab
+        context['study_time_list'] = study_times
         context['df_goal'] = df_goal
         return context
 
@@ -51,13 +62,15 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         study_time.user = self.request.user
         study_time.save()
-        goal = Goal.objects.filter(user=self.request.user, subject=study_time.subject)
-        for item in goal:
-            item.studied_minutes += study_time.minutes
-            if (item.is_achieved == False) and (item.studied_minutes >= item.goal_minutes):
-                item.is_achieved = True
+
+        # 目標の学習時間を更新
+        goals = Goal.objects.filter(user=self.request.user, subject=study_time.subject)
+        for goal in goals:
+            goal.studied_minutes += study_time.minutes
+            if (not goal.is_achieved) and (goal.studied_minutes >= goal.goal_minutes):
+                goal.is_achieved = True
                 messages.info(self.request, '目標を達成しました。')
-            item.save()
+            goal.save()
         messages.success(self.request, '記録を作成しました。')
         return super().form_valid(form)
 
@@ -95,10 +108,16 @@ class GoalView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        queryset = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        df_goal = read_frame(queryset, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
-        df_goal['remaining_days'] = df_goal['date'] - dt.date.today()
-        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int)
+        goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
+        # Queryset型からDataFrame型に変換
+        df_goal = read_frame(goals, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
+        today = dt.date.today()
+        for i, goal in df_goal.iterrows():
+            df_goal.at[i, 'goal_minutes'] = to_time_str(goal['goal_minutes'])
+            df_goal.at[i, 'studied_minutes'] = to_time_str(goal['studied_minutes'])
+            df_goal.at[i, 'remaining_days'] = (goal['date'] - today).days # 残り日数
+
         context['df_goal'] = df_goal
         return context
 
@@ -119,6 +138,7 @@ class GoalCreateView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         goal.user = self.request.user
         goal.save()
+
         messages.success(self.request, '目標を作成しました。')
         return super().form_valid(form)
 
@@ -127,11 +147,19 @@ class GoalCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
-def convert_time(minutes):
-    if minutes >= 60:
-        return str(minutes // 60) + '時間' + (str(minutes % 60) + '分' if minutes % 60 else '')
-    else:
-        return str(minutes) + '分'
+class GoalUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'goal_update.html'
+    model = Goal
+    fields = ['subject', 'text', 'date', 'goal_minutes']
+    success_url = reverse_lazy('study:goal')
+
+    def form_valid(self, form):
+        messages.success(self.request, '目標を更新しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '目標の更新に失敗しました。')
+        return super().form_invalid(form)
 
 
 class ReportView(LoginRequiredMixin, generic.TemplateView):
@@ -152,7 +180,7 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
         today_sum = df2.query('studied_at == @today').sum()['minutes']
 
-        context['today_sum'] = convert_time(today_sum) # 今日の合計
+        context['today_sum'] = to_time_str(today_sum) # 今日の合計
         # context['week_sum']
         # context['month_sum']
         # context['total']
@@ -170,7 +198,7 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subject_list'] = Subject.objects.filter(user=self.request.user, is_disable=False).order_by('created_at')
+        context['subject_list'] = Subject.objects.filter(user=self.request.user, is_available=True).order_by('created_at')
         return context
 
     def form_valid(self, form):
@@ -178,6 +206,7 @@ class SubjectView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         subject.user = self.request.user
         subject.save()
+
         messages.success(self.request, '教科を作成しました。')
         return super().form_valid(form)
 
@@ -205,8 +234,9 @@ class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
 def subject_delete_view(request, *args, **kwargs):
     subject = Subject.objects.get(pk=kwargs['pk'])
     # 教科を使用不可に設定
-    subject.is_disable = True
+    subject.is_available = False
     subject.save()
+
     messages.success(request, '教科を削除しました。')
     return HttpResponseRedirect(reverse_lazy('study:subject'))
 
@@ -219,7 +249,6 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # URLパラメータのusernameを取得
         username = self.kwargs['username']
         account = CustomUser.objects.get(username=username)
         context['account'] = account

@@ -1,9 +1,10 @@
-from django.contrib.sessions.models import Session
-from .models import CustomUser
 import datetime as dt
-from dateutil.relativedelta import relativedelta
 import calendar
 
+
+def to_time_str(minutes):
+    h, m = divmod(minutes, 60)
+    return (str(h) + '時間' if h else '') + (str(m) + '分' if m else '')
 
 def get_bar_chart_week(df, today):
     data = {'labels': [], 'datasets': []}

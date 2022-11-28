@@ -25,14 +25,14 @@
                 </a>
                 <a class="text-decoration-none me-3" href="{% url 'study:account_detail' question.user.username %}">@{{ question.user.username }}</a>
                 <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
-                {% if question.user.id == user.id %}
+                {% if question.user.pk == user.pk %}
                     <div class="dropdown ms-auto">
                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-three-dots"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="{% url 'qa:question_update' question.id %}" role="button">編集</a>
+                                <a class="dropdown-item" href="{% url 'qa:question_update' question.pk %}" role="button">編集</a>
                             </li>
                             <li>
                                 <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal">削除</button>
@@ -55,7 +55,7 @@
                 <span>{{ question.supplement }}</span><br>
             {% endif %}
             <hr>
-            {% if not question.user.id == user.id %}
+            {% if not question.user.pk == user.pk %}
                 {% if is_user_liked_for_question %}
                     <button type="button" id="ajax-like-for-question" style="border:none;background:none">
                         <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
@@ -71,8 +71,8 @@
 
             {% if not question.is_resolved %}
                 {% if question.user.pk == user.pk %}
-                    <a href="#">自己解決</a>
-                {% elif not is_user_answered %}
+                    <a class="btn btn-secondary" href="{% url 'qa:self_resolution' question.pk %}" role="button">自己解決</a>
+                {% else %}
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
                 {% endif %}
             {% endif %}
@@ -101,6 +101,11 @@
             </form>
         </div>
     </div>
+
+    {% if question.text_self_resolution %}
+        <h4 class="mb-3">自己解決</h4>
+        {{ question.text_self_resolution }}
+    {% endif %}
 
     <h4 class="mb-3">回答</h4>
     {% if answer_list %}
@@ -131,7 +136,7 @@
                             </a>
                         </div>
                     {% endif %}
-                    {% if question.user.id == user.id and not question.is_resolved %}
+                    {% if question.user.pk == user.pk and not question.is_resolved %}
                         <a href="{% url 'qa:set_best_answer' question.pk answer.pk %}">ベストアンサーにする</a>
                     {% endif %}
                 </div>
@@ -164,7 +169,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <form method="post" action="{% url 'qa:question_delete' question.id %}">
+                    <form method="post" action="{% url 'qa:question_delete' question.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">削除する</button>
                     </form>
@@ -178,7 +183,7 @@
 {% block script %}
 <script>
     document.getElementById('imageModal').addEventListener('show.bs.modal', event => {
-        targetEl = event.relatedTarget
+        targetEl = event.relatedTarget;
         const image = targetEl.dataset.image;
         document.getElementById('image').setAttribute('src', '/media/' + image);
     });
@@ -199,18 +204,18 @@
         }).then(response => {
             console.log(response);
             // いいね数を書き換える
-            const counter = document.getElementById('like-for-question-count')
+            const counter = document.getElementById('like-for-question-count');
             counter.textContent = response.like_for_question_count;
-            const icon = document.getElementById('like-for-question-icon')
+            const icon = document.getElementById('like-for-question-icon');
             // 作成した場合はハートを塗る
             if (response.method == 'create') {
-                icon.classList.remove('far')
-                icon.classList.add('fas')
-                icon.id = 'like-for-question-icon'
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.id = 'like-for-question-icon';
             } else {
-                icon.classList.remove('fas')
-                icon.classList.add('far')
-                icon.id = 'like-for-question-icon'
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.id = 'like-for-question-icon';
             }
         }).catch(error => {
             console.log(error);

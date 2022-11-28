@@ -22,11 +22,11 @@
                 {% endif %}
                 <h6 class="mb-3">{{ account.username }}</h6>
                 {% if account.username == user.username %}
-                    <a href="{% url 'study:account_update' account.username %}" class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3">プロフィール編集</a>
+                    <a class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:account_update' account.username %}" role="button">プロフィール編集</a>
                 {% elif connected %}
-                    <a href="{% url 'study:unfollow' account.username %}" class="btn btn-secondary rounded-pill col-6 mx-auto mb-3" role="button">フォロー解除</a>
+                    <a class="btn btn-secondary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:unfollow' account.username %}" role="button">フォロー解除</a>
                 {% else %}
-                    <a href="{% url 'study:follow' account.username %}" class="btn btn-primary rounded-pill col-6 mx-auto mb-3" role="button">フォロー</a>
+                    <a class="btn btn-primary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:follow' account.username %}" role="button">フォロー</a>
                 {% endif %}
                 <div class="hstack gap-3 mx-auto">
                     <div class="fw-light" style="font-size: 0.9rem;">フォロー : {{ following }}</div>

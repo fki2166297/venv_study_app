@@ -8,7 +8,7 @@ class Subject(models.Model):
     name = models.CharField(verbose_name='教科', max_length=30)
     color = models.CharField(verbose_name='色', max_length=7, default='#ffa8a8')
     is_learned = models.BooleanField(verbose_name='学習済み', default=False)
-    is_disable = models.BooleanField(verbose_name='使用不可', default=False)
+    is_available = models.BooleanField(verbose_name='使用可能', default=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

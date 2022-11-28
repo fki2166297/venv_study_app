@@ -8,7 +8,7 @@ class StudyTimeForm(forms.ModelForm):
 
     # ログインユーザーの教科を選択肢にする
     def __init__(self, user=None, *args, **kwargs):
-        self.base_fields['subject'].queryset = Subject.objects.filter(user=user, is_disable=False)
+        self.base_fields['subject'].queryset = Subject.objects.filter(user=user, is_available=True)
         super().__init__(*args, **kwargs)
 
     class Meta:

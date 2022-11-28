@@ -20,13 +20,13 @@
             </form>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a href="?tab=all{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'all' %}active{% endif %}">すべて</a>
+                    <a class="nav-link {% if tab == 'all' %}active{% endif %}" href="?tab=all{% if query %}&query={{ query }}{% endif %}">すべて</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?tab=unresolved{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'unresolved' %}active{% endif %}">回答募集中</a>
+                    <a class="nav-link {% if tab == 'unresolved' %}active{% endif %}" href="?tab=unresolved{% if query %}&query={{ query }}{% endif %}">回答募集中</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?tab=resolved{% if query %}&query={{ query }}{% endif %}" class="nav-link {% if tab == 'resolved' %}active{% endif %}">解決済み</a>
+                    <a class="nav-link {% if tab == 'resolved' %}active{% endif %}" href="?tab=resolved{% if query %}&query={{ query }}{% endif %}">解決済み</a>
                 </li>
             </ul>
             <ul class="list-group list-group-flush border-bottom">
@@ -55,7 +55,7 @@
                         <li class="list-group-item position-relative">
                             <div class="d-flex align-item-center">
                                 <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                    <a href="{% url 'qa:question_detail' question.id %}" class="stretched-link text-decoration-none">{{ question.text|truncatechars:100 }}</a>
+                                    <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
                                     <div class="hstack gap-3">
                                         <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
                                         {% if question.is_resolved %}

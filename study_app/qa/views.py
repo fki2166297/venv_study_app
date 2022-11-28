@@ -16,30 +16,35 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Question.objects.order_by('-created_at')
         query = self.request.GET.get('query')
         tab = self.request.GET.get('tab')
         sort = self.request.GET.get('sort')
         subject = self.request.GET.get('subject')
-        if subject:
-            queryset = queryset.filter(subject=subject)
+
+        queryset = Question.objects.order_by('-created_at')
+        if query:
+            queryset = queryset.filter(text__icontains=query)
+
         if tab == 'resolved':
             queryset = queryset.filter(is_resolved=True)
         elif tab == 'unresolved':
             queryset = queryset.filter(is_resolved=False)
-        if query:
-            queryset = queryset.filter(text__icontains=query)
+
+        if subject:
+            queryset = queryset.filter(subject=subject)
+
         if sort == 'old':
             queryset = queryset.order_by('created_at')
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subject_select_form'] = SubjectSelectForm
         context['query'] = self.request.GET.get('query')
         context['tab'] = self.request.GET.get('tab') or 'all'
         context['sort'] = self.request.GET.get('sort') or 'new'
         context['subject'] = self.request.GET.get('subject')
+
+        context['subject_select_form'] = SubjectSelectForm
         return context
 
 
@@ -54,6 +59,7 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
         context['question'] = Question.objects.get(pk=self.kwargs['pk'])
         context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
+
         like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
         context['like_for_question_count'] = like_for_question.count()
         if like_for_question.filter(user=self.request.user).exists():
@@ -69,6 +75,12 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
         # questionのIDを保存
         answer.question = Question.objects.get(pk=self.kwargs['pk'])
         answer.save()
+
+        question = Question.objects.get(pk=self.kwargs['pk'])
+        if not question.is_answered:
+            question.is_answered = True
+            question.save()
+
         messages.success(self.request, '回答を投稿しました。')
         return super().form_valid(form)
 
@@ -94,6 +106,27 @@ def like_for_question(request):
     return JsonResponse(context)
 
 
+class SelfResolutionView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'self_resolution.html'
+    model = Question
+    fields = ['text_self_resolution']
+
+    def get_success_url(self):
+        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        question = form.save(commit=False)
+        question.is_resolved = True
+        question.save()
+
+        messages.success(self.request, '質問を自己解決に設定しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '自己解決の設定に失敗しました。')
+        return super().form_invalid(form)
+
+
 class SetBestAnswerView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'set_best_answer.html'
     model = Question
@@ -108,9 +141,11 @@ class SetBestAnswerView(LoginRequiredMixin, generic.UpdateView):
         question = form.save(commit=False)
         question.is_resolved = True
         question.save()
+
         answer = Answer.objects.get(pk=self.kwargs['a_pk'])
         answer.is_best = True
         answer.save()
+
         messages.success(self.request, 'ベストアンサーを設定しました。')
         return super().form_valid(form)
 
@@ -129,8 +164,10 @@ class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
         # ログインユーザーのIDを保存
         question.user = self.request.user
         # 締め切りを一週間後に設定
-        question.deadline = dt.datetime.now() + dt.timedelta(days=7)
+        deadline = dt.datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0) + dt.timedelta(days=8)
+        question.deadline = deadline
         question.save()
+
         messages.success(self.request, '質問を投稿しました。')
         return super().form_valid(form)
 
