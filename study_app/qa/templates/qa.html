@@ -15,18 +15,18 @@
             <form method="get">
                 <div class="input-group mb-3">
                     <input type="search" class="form-control" name="query" placeholder="キーワードを入力">
-                    <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined">search</i></button>
+                    <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined align-middle">search</i></button>
                 </div>
             </form>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link {% if tab == 'all' %}active{% endif %}" href="?tab=all{% if query %}&query={{ query }}{% endif %}">すべて</a>
+                    <a class="nav-link {% if tab == 'all' %}active{% endif %}" {% if tab == 'all' %}aria-current="page"{% endif %} href="?tab=all{% if query %}&query={{ query }}{% endif %}">すべて</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if tab == 'unresolved' %}active{% endif %}" href="?tab=unresolved{% if query %}&query={{ query }}{% endif %}">回答募集中</a>
+                    <a class="nav-link {% if tab == 'unresolved' %}active{% endif %}" {% if tab == 'unresolved' %}aria-current="page"{% endif %} href="?tab=unresolved{% if query %}&query={{ query }}{% endif %}">回答募集中</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if tab == 'resolved' %}active{% endif %}" href="?tab=resolved{% if query %}&query={{ query }}{% endif %}">解決済み</a>
+                    <a class="nav-link {% if tab == 'resolved' %}active{% endif %}" {% if tab == 'resolved' %}aria-current="page"{% endif %} href="?tab=resolved{% if query %}&query={{ query }}{% endif %}">解決済み</a>
                 </li>
             </ul>
             <ul class="list-group list-group-flush border-bottom">
@@ -75,7 +75,7 @@
                         </li>
                     {% endfor %}
                 {% else %}
-                    <li class="list-group-item text-center py-5">Q&ampAが見つかりませんでした。</li>
+                    <li class="list-group-item text-center py-5">質問がありません。</li>
                 {% endif %}
             </ul>
 

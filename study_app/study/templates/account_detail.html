@@ -37,61 +37,75 @@
         <div class="col-lg-8">
             <div class="card card-body mb-3">
                 <h4 class="mb-3">学習時間</h4>
-                {% comment %} <table class="table table-bordered mb-4" style="table-layout: fixed;">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" scope="col">今日</th>
-                            <th class="text-center" scope="col">今週</th>
-                            <th class="text-center" scope="col">今月</th>
-                            <th class="text-center" scope="col">総計</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="bg-white">
-                            <td class="text-center">時間</td>
-                            <td class="text-center">時間</td>
-                            <td class="text-center">時間</td>
-                            <td class="text-center">時間</td>
-                        </tr>
-                    </tbody>
-                </table> {% endcomment %}
             </div>
             <div class="card card-body">
                 <h4>質問・回答</h4>
-                <ul class="nav mb-3">
+                <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a href="?tab=question" class="nav-link active">質問</a>
+                        <a class="nav-link {% if tab == 'question' %}active{% endif %}" {% if tab == 'question' %}aria-current="page"{% endif %} href="?tab=question">質問</a>
                     </li>
                     <li class="nav-item">
-                        <a href="?tab=answer" class="nav-link">回答</a>
+                        <a class="nav-link {% if tab == 'answer' %}active{% endif %}" {% if tab == 'answer' %}aria-current="page"{% endif %} href="?tab=answer">回答</a>
                     </li>
                 </ul>
-                {% comment %} {% if question_list %}
-                    {% for question in question_list %}
-                        <a href="{% url 'qa:question_detail' question.id %}" class="text-reset text-decoration-none">
-                            <div class="card mb-4">
-                                <div class="card-header d-flex py-1">
-                                    <span class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</span>
-                                    <span class="ms-auto text-muted">{{ question.created_at|date:'n/j G:i' }}</span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <span>{{ question.text|truncatechars:200 }}</span>
+                <ul class="list-group list-group-flush border-bottom border-top-0">
+                    {% if tab == 'question' %}
+                        {% if question_list %}
+                            {% for question in question_list %}
+                                <li class="list-group-item position-relative">
+                                    <div class="d-flex align-item-center">
+                                        <div class="d-flex flex-column justify-content-evenly text-truncate">
+                                            <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
+                                            <div class="hstack gap-3">
+                                                <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
+                                                {% if question.is_resolved %}
+                                                    <small class="text-muted">解決済み</small>
+                                                {% else %}
+                                                    <small class="text-muted">回答募集中</small>
+                                                {% endif %}
+                                                <small class="text-muted">{{ question.get_subject_display }}</small>
+                                            </div>
                                         </div>
                                         {% if question.image %}
-                                            <div class="col-3">
-                                                <img class="col-12" src="/media/{{ question.image }}" style="max-height: 100px; object-fit: cover;"/>
+                                            <div class="ms-auto">
+                                                <img src="/media/{{ question.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
                                             </div>
                                         {% endif %}
                                     </div>
-                                </div>
-                            </div>
-                        </a>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-center">質問が見つかりませんでした。</p>
-                {% endif %} {% endcomment %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-center py-5">Q&ampAが見つかりませんでした。</li>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if tab == 'answer' %}
+                        {% if answer_list %}
+                            {% for answer in answer_list %}
+                                <li class="list-group-item position-relative">
+                                    <div class="d-flex align-item-center">
+                                        <div class="d-flex flex-column justify-content-evenly text-truncate">
+                                            <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' answer.question.id %}">{{ answer.text|truncatechars:100 }}</a>
+                                            <div class="hstack gap-3">
+                                                <small class="text-muted">{{ answer.created_at|date:'n/j G:i' }}</small>
+                                                {% if answer.is_best %}
+                                                    <small class="text-muted">ベストアンサー</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if answer.image %}
+                                            <div class="ms-auto">
+                                                <img src="/media/{{ answer.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-center py-5">回答がありません。</li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>

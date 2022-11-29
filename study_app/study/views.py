@@ -7,6 +7,7 @@ from django.views import generic
 from .models import StudyTime, Goal, Subject
 from accounts.models import CustomUser, Connection
 from qa.models import Question, Answer
+from qa.forms import SubjectSelectForm
 from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
@@ -254,10 +255,16 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
         context['account'] = account
         context['following'] = Connection.objects.filter(follower__username=username).count()
         context['follower'] = Connection.objects.filter(following__username=username).count()
-        context['question_list'] = Question.objects.filter(user=account.id)
         if username is not self.request.user.username:
             result = Connection.objects.filter(follower__username=self.request.user.username).filter(following__username=username)
             context['connected'] = True if result else False
+        tab = self.request.GET.get('tab') or 'question'
+        if tab == 'question':
+            context['question_list'] = Question.objects.filter(user=account)
+        elif tab == 'answer':
+            context['answer_list'] = Answer.objects.filter(user=account)
+        context['tab'] = tab
+        context['subject_select_form'] = SubjectSelectForm
         return context
 
 
