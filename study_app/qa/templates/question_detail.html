@@ -11,10 +11,10 @@
     <div class="card mb-4">
         <div class="card-header hstack gap-3">
             <div class="badge rounded-pill bg-white text-dark border">{{ question.get_subject_display }}</div>
-            <div class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</div>
-            <div class="text-muted" style="font-size: 0.9rem;">回答締切：{{ question.deadline|date:'Y/n/j G:i' }}</div>
+            <span class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</span>
+            <span class="text-muted" style="font-size: 0.9rem;">回答締切：{{ question.deadline|date:'Y/n/j G:i' }}</span>
         </div>
-        <div class="card-body mx-3 my-2 col-md-11 mx-auto">
+        <div class="card-body mx-md-5 my-2">
             <div class="hstack gap-2 mb-3">
                 <a href="{% url 'study:account_detail' question.user.username %}">
                     {% if question.user.icon %}
@@ -31,9 +31,11 @@
                             <i class="bi bi-three-dots"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'qa:question_update' question.pk %}" role="button">編集</a>
-                            </li>
+                            {% if not question.supplement %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'qa:question_update' question.pk %}" role="button">編集</a>
+                                </li>
+                            {% endif %}
                             <li>
                                 <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal">削除</button>
                             </li>
@@ -50,9 +52,10 @@
                 </div>
             {% endif %}
             {% if question.supplement %}
-                <hr>
-                <strong>補足</strong><br>
-                <span>{{ question.supplement }}</span><br>
+                <div class="card card-body bg-light">
+                    <strong>補足</strong>
+                    <span>{{ question.supplement }}</span>
+                </div>
             {% endif %}
             <hr>
             {% if not question.user.pk == user.pk %}
@@ -103,19 +106,24 @@
     </div>
 
     {% if question.text_self_resolution %}
-        <h4 class="mb-3">自己解決</h4>
-        {{ question.text_self_resolution }}
+        <div class="card card-body mb-4">
+            <h4 class="mb-3">自己解決</h4>
+            <span>{{ question.text_self_resolution|linebreaksbr }}</span>
+        </div>
     {% endif %}
 
     <h4 class="mb-3">回答</h4>
     {% if answer_list %}
         {% for answer in answer_list %}
             <div class="card mb-3">
-                <p class="card-header">
-                    作成日時：{{ answer.created_at }}
-                    更新日時：{{ answer.updated_at }}
-                </p>
-                <div class="card-body">
+                <div class="card-header hstack gap-3">
+                    {% if answer.is_best %}
+                        <span>ベストアンサー</span>
+                    {% endif %}
+                    <span class="text-muted ms-auto" style="font-size: 0.9rem;">作成日時：{{ answer.created_at }}</span>
+                    <span class="text-muted" style="font-size: 0.9rem;">更新日時：{{ answer.updated_at }}</span>
+                </div>
+                <div class="card-body mx-md-5 my-2">
                     <div class="hstack gap-2 mb-3">
                         <a href="{% url 'study:account_detail' answer.user.username %}">
                             {% if answer.user.icon %}
@@ -188,7 +196,7 @@
         document.getElementById('image').setAttribute('src', '/media/' + image);
     });
 
-    /* ポストに対するイイね */
+    /* 質問に対するイイね */
     document.getElementById('ajax-like-for-question').addEventListener('click', e => {
         e.preventDefault();
         const url = '{% url "qa:like_for_question" %}';

@@ -3,6 +3,8 @@ import calendar
 
 
 def to_time_str(minutes):
+    if not minutes:
+        return '0分'
     h, m = divmod(minutes, 60)
     return (str(h) + '時間' if h else '') + (str(m) + '分' if m else '')
 

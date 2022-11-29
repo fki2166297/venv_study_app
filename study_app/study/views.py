@@ -38,7 +38,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
         goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
         # Queryset型からDataFrame型に変換
-        df_goal = read_frame(goals, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal = read_frame(goals, fieldnames=['pk', 'subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
         df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
         today = dt.date.today()
         for i, goal in df_goal.iterrows():
@@ -110,7 +110,7 @@ class GoalView(LoginRequiredMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
         goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
         # Queryset型からDataFrame型に変換
-        df_goal = read_frame(goals, fieldnames=['subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
+        df_goal = read_frame(goals, fieldnames=['pk', 'subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
         df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
         today = dt.date.today()
         for i, goal in df_goal.iterrows():
@@ -167,9 +167,9 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        queryset = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        study_times = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
-        df = read_frame(queryset, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
+        df = read_frame(study_times, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
         df2 = df.copy() # コピー(仮)
 
         # studied_atカラムをdatetime型からdate型に変換

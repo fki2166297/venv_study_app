@@ -138,21 +138,21 @@
                     <div class="modal-body">
                         <div class="mb-4">
                             <div class="hstack mb-2">
-                                <label for="{{ form.subject.id_for_label }}">{{ form.subject.label }}<span class="text-danger">*</span></label>
+                                <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
                                 <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
                             </div>
                             {% render_field form.subject class='form-select mb-2' %}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.studied_at.id_for_label }}">{{ form.studied_at.label }}<span class="text-danger">*</span></label>
+                            <label class="form-label" for="{{ form.studied_at.id_for_label }}">日時<span class="text-danger">*</span></label>
                             {% render_field form.studied_at class='form-control js-dateTimePicker' %}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.minutes.id_for_label }}">{{ form.minutes.label }}<span class="text-danger">*</span></label>
+                            <label class="form-label" for="{{ form.minutes.id_for_label }}">学習時間（分）<span class="text-danger">*</span></label>
                             {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.publication.id_for_label }}">{{ form.publication.label }}<span class="text-danger">*</span></label>
+                            <label class="form-label" for="{{ form.publication.id_for_label }}">公開設定<span class="text-danger">*</span></label>
                             {% render_field form.publication class='form-select' %}
                         </div>
                     </div>

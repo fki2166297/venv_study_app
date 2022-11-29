@@ -13,21 +13,21 @@
         {% csrf_token %}
         <div class="mb-3">
             <div class="hstack mb-2">
-                <label for="{{ form.subject.id_for_label }}">教科を選択<span class="text-danger">*</span></label>
+                <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
                 <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
             </div>
             {% render_field form.subject class='form-select' %}
         </div>
         <div class="mb-3">
-            <label class="form-label" for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
+            <label class="form-label" for="{{ form.text.id_for_label }}">コメント</label>
             {% render_field form.text class='form-control' %}
         </div>
         <div class="mb-3">
-            <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }}<span class="text-danger">*</span></label>
+            <label class="form-label" for="{{ form.date.id_for_label }}">目標日<span class="text-danger">*</span></label>
             {% render_field form.date class='form-control js-dateTimePicker' %}
         </div>
         <div class="mb-4">
-            <label class="form-label" for="{{ form.goal_minutes.id_for_label }}">{{ form.goal_minutes.label }}<span class="text-danger">*</span></label>
+            <label class="form-label" for="{{ form.goal_minutes.id_for_label }}">目標学習時間（分）<span class="text-danger">*</span></label>
             {% render_field form.goal_minutes class='form-control' min='15' max='1200000' step='5' %}
         </div>
         <button type="submit" class="btn btn-primary">作成する</button>

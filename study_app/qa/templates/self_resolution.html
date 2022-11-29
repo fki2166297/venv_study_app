@@ -11,10 +11,10 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-4">
-            <label class="form-label" for="{{ form.text_self_resolution.id_for_label }}">{{ form.text_self_resolution.label }}</label>
+            <label class="form-label" for="{{ form.text_self_resolution.id_for_label }}">コメント</label>
             {% render_field form.text_self_resolution class='form-control' %}
         </div>
-        <button type="submit" class="btn btn-primary">自己解決に設定する</button>
+        <button type="submit" class="btn btn-primary">送信</button>
     </form>
 </main>
 {% endblock %}

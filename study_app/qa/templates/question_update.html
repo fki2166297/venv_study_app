@@ -10,12 +10,12 @@
 <main class="container-md" style="max-width: 720px;">
     <div class="mb-4">
         <p>質問文</p>
-        <span>{{ question.text }}</span>
+        <span>{{ question.text|linebreaksbr }}</span>
     </div>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-4">
-            <label class="form-label" for="{{ form.supplement.id_for_label }}">{{ form.supplement.label }}</label>
+            <label class="form-label" for="{{ form.supplement.id_for_label }}">補足</label>
             {% render_field form.supplement class='form-control' %}
         </div>
         <button type="submit" class="btn btn-primary">更新</button>

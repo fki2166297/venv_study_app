@@ -8,15 +8,17 @@
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
+    <h4 class="mb-3">ベストアンサーの設定</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-4">
-            <label class="form-label" for="{{ form.comment.id_for_label }}">{{ form.comment.label }}</label>
+            <label class="form-label" for="{{ form.comment.id_for_label }}">お礼コメント</label>
             {% render_field form.comment class='form-control' %}
         </div>
         <div class="mb-3 alert alert-info" role="alert">
             <ul>
-                <li>ベストアンサーを設定すると、回答の募集を終了します。</li>
+                <li>お礼コメントは編集することができません。内容をよく確認してください。</li>
+                <li>ベストアンサーを設定すると、解決済みの質問となり、回答の募集を終了します。</li>
             </ul>
         </div>
         <button type="submit" class="btn btn-primary">ベストアンサーに設定する</button>
