@@ -37,19 +37,17 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         for study_time in study_times:
             study_time.minutes = to_time_str(study_time.minutes)
 
-        goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        # Queryset型からDataFrame型に変換
-        df_goal = read_frame(goals, fieldnames=['pk', 'subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
-        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
-        today = dt.date.today()
-        for i, goal in df_goal.iterrows():
-            df_goal.at[i, 'goal_minutes'] = to_time_str(goal['goal_minutes']) # 時間の表示形式を変更
-            df_goal.at[i, 'studied_minutes'] = to_time_str(goal['studied_minutes']) # 時間の表示形式を変更
-            df_goal.at[i, 'remaining_days'] = (goal['date'] - today).days # 残り日数
-
         context['tab'] = tab
         context['study_time_list'] = study_times
-        context['df_goal'] = df_goal
+
+        goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
+        now = dt.datetime.now().astimezone()
+        for goal in goals:
+            goal.remaining_days = to_time_str(int((goal.datetime - now).total_seconds() // 60), use_h=False, use_m=False)
+            goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
+            goal.goal_minutes = to_time_str(goal.goal_minutes)
+            goal.studied_minutes = to_time_str(goal.studied_minutes)
+        context['goal_list'] = goals
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -109,17 +107,15 @@ class GoalView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        goals = Goal.objects.filter(user=self.request.user).order_by('-created_at')
-        # Queryset型からDataFrame型に変換
-        df_goal = read_frame(goals, fieldnames=['pk', 'subject', 'subject__color', 'text', 'date', 'goal_minutes', 'studied_minutes', 'created_at'])
-        df_goal['achievement_rate'] = (df_goal['studied_minutes'] * 100 / df_goal['goal_minutes']).astype(int) # 達成率
-        today = dt.date.today()
-        for i, goal in df_goal.iterrows():
-            df_goal.at[i, 'goal_minutes'] = to_time_str(goal['goal_minutes'])
-            df_goal.at[i, 'studied_minutes'] = to_time_str(goal['studied_minutes'])
-            df_goal.at[i, 'remaining_days'] = (goal['date'] - today).days # 残り日数
+        goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
+        now = dt.datetime.now().astimezone()
+        for goal in goals:
+            goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
+            goal.remaining_days = int((goal.datetime - now).days) # 残り日数
+            goal.goal_minutes = to_time_str(goal.goal_minutes)
+            goal.studied_minutes = to_time_str(goal.studied_minutes)
 
-        context['df_goal'] = df_goal
+        context['goal_list'] = goals
         return context
 
 

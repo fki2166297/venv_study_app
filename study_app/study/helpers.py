@@ -2,11 +2,17 @@ import datetime as dt
 import calendar
 
 
-def to_time_str(minutes):
-    if not minutes:
-        return '0分'
-    h, m = divmod(minutes, 60)
-    return (str(h) + '時間' if h else '') + (str(m) + '分' if m else '')
+def to_time_str(minutes, use_d=True, use_h=True, use_m=True):
+    d, m = divmod(minutes, 60 * 24)
+    h, m = divmod(m, 60)
+    time_str = ''
+    if use_d:
+        time_str += (str(d) + '日' if d else '')
+    if use_h:
+        time_str += (str(h) + '時間' if h else '')
+    if use_m:
+        time_str += (str(m) + '分' if m else '')
+    return time_str
 
 def get_bar_chart_week(df, today):
     data = {'labels': [], 'datasets': []}

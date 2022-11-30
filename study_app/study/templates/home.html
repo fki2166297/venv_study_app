@@ -75,14 +75,16 @@
                     <li class="list-group-item bg-light">
                         <h5 class="my-auto">目標</h5>
                     </li>
-                    {% for goal in df_goal.itertuples %}
+                    {% for goal in goal_list %}
                         <li class="list-group-item">
                             <a class="text-reset text-decoration-none" href="{% url 'study:goal_update' goal.pk %}">
                                 <div class="hstack gap-2 mb-1">
-                                    <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject__color }};"></i>{{ goal.subject }}</span>
+                                    {% if goal.subject %}
+                                        <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
+                                    {% endif %}
                                     <span>{{ goal.goal_minutes }}</span>
                                     <span>学習済み : <span class="me-1">{{ goal.studied_minutes }}</span>({{ goal.achievement_rate }}%)</span>
-                                    <span class="ms-auto">残り{{ goal.remaining_days }}日</span>
+                                    <span class="ms-auto">残り{{ goal.remaining_days }}</span>
                                 </div>
                                 <small class="text-muted text-break">{{ goal.text }}</small>
                             </a>

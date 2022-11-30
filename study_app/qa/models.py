@@ -25,10 +25,10 @@ class Question(models.Model):
     subject = models.CharField(verbose_name='教科', choices=SubjectChoices.choices, max_length=30)
     image = models.ImageField(verbose_name='画像', upload_to='question_images/', null=True, blank=True, default='')
     text = models.TextField(verbose_name='質問文')
-    text_self_resolution = models.TextField(verbose_name='自己解決')
+    text_self_resolution = models.TextField(verbose_name='自己解決', blank=True)
     supplement = models.TextField(verbose_name='補足', blank=True)
     deadline = models.DateTimeField(verbose_name='締め切り')
-    comment = models.TextField(verbose_name='お礼コメント')
+    comment = models.TextField(verbose_name='お礼コメント', blank=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 

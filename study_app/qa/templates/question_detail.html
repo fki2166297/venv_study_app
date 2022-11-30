@@ -55,6 +55,12 @@
                     <span>{{ question.supplement }}</span>
                 </div>
             {% endif %}
+            {% if question.comment %}
+                <div class="card card-body bg-light">
+                    <strong>お礼</strong>
+                    <span>{{ question.comment }}</span>
+                </div>
+            {% endif %}
             <hr>
             {% if not question.user.pk == user.pk %}
                 {% if is_user_liked_for_question %}
