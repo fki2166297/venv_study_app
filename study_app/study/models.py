@@ -62,18 +62,3 @@ class Answer(models.Model):
 #     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 #     target = models.ForeignKey(Answer, on_delete=models.CASCADE)
 #     created_at = models.DateTimeField(auto_now_add=True)
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-venv_study_app/models.py at dev_kutsukake · fki2166297/venv_study_app
