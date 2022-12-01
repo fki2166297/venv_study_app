@@ -19,10 +19,6 @@
             {% render_field form.subject class='form-select' %}
         </div>
         <div class="mb-3">
-            <label class="form-label" for="{{ form.text.id_for_label }}">コメント</label>
-            {% render_field form.text class='form-control' %}
-        </div>
-        <div class="mb-3">
             <label class="form-label" for="{{ form.datetime.id_for_label }}">目標日時<span class="text-danger">*</span></label>
             {% render_field form.datetime class='form-control js-dateTimePicker' %}
         </div>

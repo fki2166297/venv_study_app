@@ -81,14 +81,13 @@
                                 <div class="hstack gap-3">
                                     <span><i class="bi bi-clock-history me-1"></i>{{ goal.goal_minutes }}</span>
                                     {% if goal.subject %}
-                                    <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
+                                        <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
                                     {% endif %}
                                     <span class="ms-auto">残り{{ goal.remaining_days }}</span>
                                 </div>
                                 <div class="hstack gap-3">
                                     <small class="text-muted"><span class="me-1">{{ goal.studied_minutes }}</span>({{ goal.achievement_rate }}%)</small>
                                 </div>
-                                <small class="text-muted text-break">{{ goal.text }}</small>
                             </a>
                         </li>
                     {% endfor %}

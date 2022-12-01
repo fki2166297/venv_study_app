@@ -63,7 +63,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         study_time.save()
 
         # 目標の学習時間を更新
-        goals = Goal.objects.filter(user=self.request.user, subject=study_time.subject)
+        goals = Goal.objects.filter(user=self.request.user).filter(Q(subject=study_time.subject)|Q(subject=null))
         for goal in goals:
             goal.studied_minutes += study_time.minutes
             if (not goal.is_achieved) and (goal.studied_minutes >= goal.goal_minutes):
