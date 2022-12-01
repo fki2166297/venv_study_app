@@ -12,7 +12,7 @@ from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
 from django_pandas.io import read_frame
-from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
+from .helpers import to_remaining_time_str, to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
 
 
 # Create your views here.
@@ -43,7 +43,7 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
         now = dt.datetime.now().astimezone()
         for goal in goals:
-            goal.remaining_days = to_time_str(int((goal.datetime - now).total_seconds() // 60), use_h=False, use_m=False)
+            goal.remaining_days = to_remaining_time_str(now, goal.datetime)
             goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
             goal.goal_minutes = to_time_str(goal.goal_minutes)
             goal.studied_minutes = to_time_str(goal.studied_minutes)
@@ -110,8 +110,8 @@ class GoalView(LoginRequiredMixin, generic.TemplateView):
         goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
         now = dt.datetime.now().astimezone()
         for goal in goals:
+            goal.remaining_days = to_remaining_time_str(now, goal.datetime)
             goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
-            goal.remaining_days = int((goal.datetime - now).days) # 残り日数
             goal.goal_minutes = to_time_str(goal.goal_minutes)
             goal.studied_minutes = to_time_str(goal.studied_minutes)
 
@@ -147,7 +147,7 @@ class GoalCreateView(LoginRequiredMixin, generic.CreateView):
 class GoalUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'goal_update.html'
     model = Goal
-    fields = ['subject', 'text', 'date', 'goal_minutes']
+    fields = ['subject', 'text', 'datetime', 'goal_minutes']
     success_url = reverse_lazy('study:goal')
 
     def form_valid(self, form):

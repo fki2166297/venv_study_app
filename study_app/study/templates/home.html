@@ -37,14 +37,14 @@
                                     {% endif %}
                                 </a>
                                 <a href="{% url 'study:account_detail' study_time.user.username %}" class="text-decoration-none me-3">@{{ study_time.user.username }}</a>
-                                {% if study_time.user.id == user.id %}
+                                {% if study_time.user.pk == user.pk %}
                                     <div class="dropdown ms-auto">
                                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-three-dots"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" href="{% url 'study:study_time_update' study_time.id %}" role="button">編集</a>
+                                                <a class="dropdown-item" href="{% url 'study:study_time_update' study_time.pk %}" role="button">編集</a>
                                             </li>
                                             <li>
                                                 <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ study_time.id }}" data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}" data-subject-color="{{ study_time.subject.color }}" data-subject="{{ study_time.subject }}" data-study-minutes="{{ study_time.minutes }}">削除</button>
@@ -73,18 +73,20 @@
                 <button type="button" class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
                 <ul class="list-group">
                     <li class="list-group-item bg-light">
-                        <h5 class="my-auto">目標</h5>
+                        <h5 class="my-auto">未達成の目標</h5>
                     </li>
                     {% for goal in goal_list %}
                         <li class="list-group-item">
                             <a class="text-reset text-decoration-none" href="{% url 'study:goal_update' goal.pk %}">
-                                <div class="hstack gap-2 mb-1">
+                                <div class="hstack gap-3">
+                                    <span><i class="bi bi-clock-history me-1"></i>{{ goal.goal_minutes }}</span>
                                     {% if goal.subject %}
-                                        <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
+                                    <span><i class="bi bi-circle-fill me-1" style="color: {{ goal.subject.color }};"></i>{{ goal.subject }}</span>
                                     {% endif %}
-                                    <span>{{ goal.goal_minutes }}</span>
-                                    <span>学習済み : <span class="me-1">{{ goal.studied_minutes }}</span>({{ goal.achievement_rate }}%)</span>
                                     <span class="ms-auto">残り{{ goal.remaining_days }}</span>
+                                </div>
+                                <div class="hstack gap-3">
+                                    <small class="text-muted"><span class="me-1">{{ goal.studied_minutes }}</span>({{ goal.achievement_rate }}%)</small>
                                 </div>
                                 <small class="text-muted text-break">{{ goal.text }}</small>
                             </a>
@@ -97,7 +99,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="btn btn-primary rounded-circle p-3 d-lg-none position-fixed bottom-0 end-0 m-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal"><span class="material-symbols-outlined">add</span></button>
+    <button type="button" class="btn btn-primary rounded-circle d-lg-none position-fixed bottom-0 end-0 m-3 js-creationBtn" style="width: 64px; height: 64px;" data-bs-toggle="modal" data-bs-target="#creationModal"><span class="material-symbols-outlined align-middle">add</span></button>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
