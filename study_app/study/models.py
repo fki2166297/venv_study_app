@@ -35,15 +35,3 @@ class StudyTime(models.Model):
 
     class Meta:
         verbose_name_plural = 'StudyTime'
-
-
-class Goal(models.Model):
-    user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
-    title = models.CharField(verbose_name='title', max_length=20)
-    subject = models.ForeignKey(Subject, verbose_name='教科', null=True, blank=True, on_delete=models.CASCADE)
-    datetime = models.DateTimeField(verbose_name='目標日時')
-    goal_minutes = models.IntegerField(verbose_name='目標学習時間', default=15)
-    is_achieved = models.BooleanField(verbose_name='達成済み', default=False)
-    studied_minutes = models.IntegerField(verbose_name='学習済み時間', default=0)
-    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
-    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)

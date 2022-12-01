@@ -4,15 +4,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
-from .models import StudyTime, Goal, Subject
+from .models import StudyTime, Subject
 from accounts.models import CustomUser, Connection
 from qa.models import Question, Answer
 from qa.forms import SubjectSelectForm
-from .forms import StudyTimeForm, GoalCreateForm, SubjectCreateForm
+from .forms import StudyTimeForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
 from django_pandas.io import read_frame
-from .helpers import to_remaining_time_str, to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
+from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
 
 
 # Create your views here.
@@ -39,15 +39,6 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
 
         context['tab'] = tab
         context['study_time_list'] = study_times
-
-        goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
-        now = dt.datetime.now().astimezone()
-        for goal in goals:
-            goal.remaining_days = to_remaining_time_str(now, goal.datetime)
-            goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
-            goal.goal_minutes = to_time_str(goal.goal_minutes)
-            goal.studied_minutes = to_time_str(goal.studied_minutes)
-        context['goal_list'] = goals
         return context
 
     # StudyTimeFormにログインユーザーIDを渡す
@@ -62,14 +53,6 @@ class HomeView(LoginRequiredMixin, generic.CreateView):
         study_time.user = self.request.user
         study_time.save()
 
-        # 目標の学習時間を更新
-        goals = Goal.objects.filter(user=self.request.user).filter(Q(subject=study_time.subject)|Q(subject=null))
-        for goal in goals:
-            goal.studied_minutes += study_time.minutes
-            if (not goal.is_achieved) and (goal.studied_minutes >= goal.goal_minutes):
-                goal.is_achieved = True
-                messages.info(self.request, '目標を達成しました。')
-            goal.save()
         messages.success(self.request, '記録を作成しました。')
         return super().form_valid(form)
 
@@ -99,63 +82,6 @@ class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
 
     def form_invalid(self, form):
         messages.error(self.request, "記録の更新に失敗しました。")
-        return super().form_invalid(form)
-
-
-class GoalView(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'goal.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        goals = Goal.objects.filter(user=self.request.user).order_by('datetime')
-        now = dt.datetime.now().astimezone()
-        for goal in goals:
-            goal.remaining_days = to_remaining_time_str(now, goal.datetime)
-            goal.achievement_rate = int(goal.studied_minutes * 100 / goal.goal_minutes) # 達成率
-            goal.goal_minutes = to_time_str(goal.goal_minutes)
-            goal.studied_minutes = to_time_str(goal.studied_minutes)
-
-        context['goal_list'] = goals
-        return context
-
-
-class GoalCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'goal_create.html'
-    form_class = GoalCreateForm
-    success_url = reverse_lazy('study:home')
-
-    # StudyTimeFormにログインユーザーIDを渡す
-    def get_form_kwargs(self):
-        kwargs = super(GoalCreateView, self).get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
-
-    def form_valid(self, form):
-        goal = form.save(commit=False)
-        # ログインユーザーのIDを保存
-        goal.user = self.request.user
-        goal.save()
-
-        messages.success(self.request, '目標を作成しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, "目標の作成に失敗しました。")
-        return super().form_invalid(form)
-
-
-class GoalUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'goal_update.html'
-    model = Goal
-    fields = ['subject', 'text', 'datetime', 'goal_minutes']
-    success_url = reverse_lazy('study:goal')
-
-    def form_valid(self, form):
-        messages.success(self.request, '目標を更新しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '目標の更新に失敗しました。')
         return super().form_invalid(form)
 
 

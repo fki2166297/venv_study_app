@@ -2,12 +2,6 @@ import datetime as dt
 import calendar
 
 
-def to_remaining_time_str(start, end):
-    minutes = int((end - start).total_seconds() / 60)
-    d, m = divmod(minutes, 60 * 24)
-    h, m = divmod(m, 60)
-    return str(d)+'日' if d else (str(h) + '時間' if h else '') + (str(m) + '分' if m else '')
-
 def to_time_str(minutes):
     if minutes == 0:
         return '0分'

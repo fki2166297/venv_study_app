@@ -41,10 +41,7 @@
                             <a class="nav-link {% block active_qa %}{% endblock %}" href="{% url 'qa:qa' %}"><i class="bi bi-chat-text mx-1"></i>Q&ampA</a>
                         </li>
                         <li class="nav-item d-sm-none">
-                            <a class="nav-link {% block active_subject %}{% endblock %}" href="{% url 'study:subject' %}">教科一覧</a>
-                        </li>
-                        <li class="nav-item d-sm-none">
-                            <a class="nav-link {% block active_goal %}{% endblock %}" href="{% url 'study:goal' %}">目標一覧</a>
+                            <a class="nav-link {% block active_subject %}{% endblock %}" href="{% url 'study:subject' %}"><i class="bi bi-book mx-1"></i>教科一覧</a>
                         </li>
                         <li class="nav-item d-sm-none">
                             <a class="nav-link {% block active_account_detail %}{% endblock %}" href="{% url 'study:account_detail' user.username %}">マイページ</a>
@@ -68,7 +65,6 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{% url 'study:account_detail' user.username %}">マイページ</a></li>
                                     <li><a class="dropdown-item" href="{% url 'study:subject' %}">教科一覧</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'study:goal' %}">目標一覧</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'account_logout' %}">ログアウト</a></li>
                                 </ul>
