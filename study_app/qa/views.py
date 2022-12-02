@@ -13,7 +13,7 @@ import datetime as dt
 # Create your views here.
 class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
     template_name = 'qa.html'
-    paginate_by = 10
+    paginate_by = 30
 
     def get_queryset(self):
         query = self.request.GET.get('query')
@@ -48,16 +48,12 @@ class QuestionAndAnswerView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
+class QuestionDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = 'question_detail.html'
-    form_class = AnswerCreateForm
-
-    def get_success_url(self):
-        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
+    model = Question
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
         context['answer_list'] = Answer.objects.filter(question=self.kwargs['pk'])
 
         like_for_question = LikeForQuestion.objects.filter(target=self.kwargs['pk'])
@@ -66,6 +62,72 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
             context['is_user_liked_for_question'] = True
         else:
             context['is_user_liked_for_question'] = False
+        return context
+
+
+class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'question_create.html'
+    form_class = QuestionCreateForm
+    success_url = reverse_lazy('qa:qa')
+
+    def form_valid(self, form):
+        question = form.save(commit=False)
+        # ログインユーザーのIDを保存
+        question.user = self.request.user
+        # 締め切りを一週間後に設定
+        deadline = dt.datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0) + dt.timedelta(days=8)
+        question.deadline = deadline
+        question.save()
+
+        messages.success(self.request, '質問を投稿しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '質問の投稿に失敗しました。')
+        return super().form_invalid(form)
+
+
+class AddSupplementView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'add_supplement.html'
+    model = Question
+    fields = ['supplement']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        messages.success(self.request, '質問を更新しました。')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, '質問の更新に失敗しました。')
+        return super().form_invalid(form)
+
+
+@login_required
+def question_delete_view(request, *args, **kwargs):
+    question = Question.objects.get(pk=kwargs['pk'])
+    question.delete()
+    messages.success(request, '質問を削除しました。')
+    return HttpResponseRedirect(reverse_lazy('qa:qa'))
+
+
+class AnswerCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'answer_create.html'
+    form_class = AnswerCreateForm
+    success_url = reverse_lazy('qa:qa')
+
+    def get_success_url(self):
+        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
         return context
 
     def form_valid(self, form):
@@ -87,7 +149,6 @@ class QuestionDetailView(LoginRequiredMixin, generic.CreateView):
     def form_invalid(self, form):
         messages.error(self.request, '回答の作成に失敗しました。')
         return super().form_invalid(form)
-
 
 @login_required
 def like_for_question(request):
@@ -152,55 +213,3 @@ class SetBestAnswerView(LoginRequiredMixin, generic.UpdateView):
     def form_invalid(self, form):
         messages.error(self.request, 'ベストアンサーの設定に失敗しました。')
         return super().form_invalid(form)
-
-
-class QuestionCreateView(LoginRequiredMixin, generic.CreateView):
-    template_name = 'question_create.html'
-    form_class = QuestionCreateForm
-    success_url = reverse_lazy('qa:qa')
-
-    def form_valid(self, form):
-        question = form.save(commit=False)
-        # ログインユーザーのIDを保存
-        question.user = self.request.user
-        # 締め切りを一週間後に設定
-        deadline = dt.datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0) + dt.timedelta(days=8)
-        question.deadline = deadline
-        question.save()
-
-        messages.success(self.request, '質問を投稿しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '質問の投稿に失敗しました。')
-        return super().form_invalid(form)
-
-
-class QuestionUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'question_update.html'
-    model = Question
-    fields = ['supplement']
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['question'] = Question.objects.get(pk=self.kwargs['pk'])
-        return context
-
-    def get_success_url(self):
-        return reverse_lazy('qa:question_detail', kwargs={'pk': self.kwargs['pk']})
-
-    def form_valid(self, form):
-        messages.success(self.request, '質問を更新しました。')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, '質問の更新に失敗しました。')
-        return super().form_invalid(form)
-
-
-@login_required
-def question_delete_view(request, *args, **kwargs):
-    question = Question.objects.get(pk=kwargs['pk'])
-    question.delete()
-    messages.success(request, '質問を削除しました。')
-    return HttpResponseRedirect(reverse_lazy('qa:qa'))

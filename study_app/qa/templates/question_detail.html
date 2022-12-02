@@ -7,7 +7,7 @@
 {% block title %}Study App{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 960px;">
+<main class="container-md" style="max-width: 960px; margin-bottom: 10rem;">
     <div class="card mb-4">
         <div class="card-body mx-md-5 my-3">
             <div class="hstack gap-3 mb-3">
@@ -31,7 +31,7 @@
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if not question.supplement %}
                                 <li>
-                                    <a class="dropdown-item" href="{% url 'qa:question_update' question.pk %}" role="button">編集</a>
+                                    <a class="dropdown-item" href="{% url 'qa:add_supplement' question.pk %}" role="button">補足説明の追加</a>
                                 </li>
                             {% endif %}
                             <li>
@@ -41,11 +41,11 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="card-text mb-4">{{ question.text|linebreaksbr }}</div>
+            <p class="card-text">{{ question.text|linebreaksbr }}</p>
             {% if question.image %}
-                <div class="col-md-7 mx-auto mb-3">
+                <div class="mb-3">
                     <a role="button" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ question.image }}">
-                        <img class="col-12" src="/media/{{ question.image }}"/>
+                        <img src="/media/{{ question.image }}" class="rounded mx-auto d-block" style="object-fit: cover;" width="320" height="240"/>
                     </a>
                 </div>
             {% endif %}
@@ -55,57 +55,35 @@
                     <span>{{ question.supplement }}</span>
                 </div>
             {% endif %}
+            <hr>
+            <div class="hstack">
+                {% if not question.user.pk == user.pk %}
+                    {% if is_user_liked_for_question %}
+                        <button type="button" id="ajax-like-for-question" style="border:none;background:none">
+                            <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
+                        </button>
+                    {% else %}
+                        <button type="button" id="ajax-like-for-question" style="border:none;background:none">
+                            <i class="far fa-heart text-danger" id="like-for-question-icon"></i>
+                        </button>
+                    {% endif %}
+                {% endif %}
+                <span id="like-for-question-count">{{ like_for_question_count }}</span>
+                <span>件のイイね</span>
+                {% if not question.is_resolved %}
+                    {% if question.user.pk == user.pk %}
+                        <a class="btn btn-secondary ms-auto" href="{% url 'qa:self_resolution' question.pk %}" role="button">自己解決に設定する</a>
+                    {% else %}
+                        <a class="btn btn-primary ms-auto" href="{% url 'qa:answer-create' question.pk %}" role="button">回答する</a>
+                    {% endif %}
+                {% endif %}
+            </div>
             {% if question.comment %}
-                <div class="card card-body bg-light">
-                    <strong>お礼</strong>
+                <div class="card card-body bg-light mt-3">
+                    <strong>お礼コメント</strong>
                     <span>{{ question.comment }}</span>
                 </div>
             {% endif %}
-            <hr>
-            {% if not question.user.pk == user.pk %}
-                {% if is_user_liked_for_question %}
-                    <button type="button" id="ajax-like-for-question" style="border:none;background:none">
-                        <i class="fas fa-heart text-danger" id="like-for-question-icon"></i>
-                    </button>
-                {% else %}
-                    <button type="button" id="ajax-like-for-question" style="border:none;background:none">
-                        <i class="far fa-heart text-danger" id="like-for-question-icon"></i>
-                    </button>
-                {% endif %}
-            {% endif %}
-            <span id="like-for-question-count">{{ like_for_question_count }}</span>
-            <span>件のイイね</span><br>
-
-            {% if not question.is_resolved %}
-                {% if question.user.pk == user.pk %}
-                    <a class="btn btn-secondary" href="{% url 'qa:self_resolution' question.pk %}" role="button">自己解決</a>
-                {% else %}
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapse" role="button" aria-expanded="false" aria-controls="collapse">回答する</a>
-                {% endif %}
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- 回答フォームのカード -->
-    <div class="collapse mb-4" id="collapse">
-        <div class="card card-body">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}<span class="text-danger">*</span></label>
-                    {% render_field form.text class='form-control' %}
-                </div>
-                <div class="mb-3">
-                    <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
-                    {% render_field form.image class='form-control' %}
-                </div>
-                <div class="mb-3 alert alert-info" role="alert">
-                    <ul>
-                        <li></li>
-                    </ul>
-                </div>
-                <button type="submit" class="btn btn-primary">送信</button>
-            </form>
         </div>
     </div>
 
@@ -157,8 +135,6 @@
     {% else %}
         <p>回答がありません</p>
     {% endif %}
-
-    <div style="height: 80vh;"></div>
 
     <!-- 画像表示モーダル -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel">

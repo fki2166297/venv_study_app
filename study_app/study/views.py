@@ -12,12 +12,13 @@ from .forms import StudyTimeForm, SubjectCreateForm
 from django.db.models import Q
 import datetime as dt
 from django_pandas.io import read_frame
-from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data
+from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_bar_chart_year, get_pie_chart_data, get_today_sum, get_week_sum, get_month_sum, get_total
 
 
 # Create your views here.
 class HomeView(LoginRequiredMixin, generic.ListView):
     template_name = 'home.html'
+    paginate_by = 30
 
     def get_queryset(self):
         # ログインユーザーがフォローしているユーザーを取得
@@ -105,38 +106,27 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
         context['pie_chart'] = get_pie_chart_data(df.copy())
-        today_sum = week_sum = month_sum = total = 0
-        if not df.empty:
-            df['month'] = df['studied_at'].dt.month
-            df['year'] = df['studied_at'].dt.year
-            df['studied_at'] = df['studied_at'].dt.date
 
-            today_sum = df.query('studied_at == @today')['minutes'].sum()
-
-            weekday = today.isoweekday() % 7
-            week_start = today + dt.timedelta(days=-weekday)
-            week_end = today + dt.timedelta(days=(6 - weekday))
-            week_sum = df.query('@week_start <= studied_at <= @week_end')['minutes'].sum()
-
-            month_sum = df.query('month == @today.month')['minutes'].sum()
-
-            total = df['minutes'].sum()
-        context['today_sum'] = to_time_str(today_sum) # 今日の合計
-        context['week_sum'] = to_time_str(week_sum) # 今週の合計
-        context['month_sum'] = to_time_str(month_sum) # 今月の合計
-        context['total'] = to_time_str(total) # 全体の合計
+        context['today_sum'] = to_time_str(get_today_sum(df.copy(), today))
+        context['week_sum'] = to_time_str(get_week_sum(df.copy(), today))
+        context['month_sum'] = to_time_str(get_month_sum(df.copy(), today))
+        context['total'] = to_time_str(get_total(df.copy(), today))
         return context
 
 
-class SubjectView(LoginRequiredMixin, generic.CreateView):
+class SubjectView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'subject.html'
-    form_class = SubjectCreateForm
-    success_url = reverse_lazy('study:subject')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subject_list'] = Subject.objects.filter(user=self.request.user, is_available=True).order_by('created_at')
         return context
+
+
+class SubjectCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'subject_create.html'
+    form_class = SubjectCreateForm
+    success_url = reverse_lazy('study:subject')
 
     def form_valid(self, form):
         subject = form.save(commit=False)
@@ -182,11 +172,12 @@ class AccountSearchView(LoginRequiredMixin, generic.ListView):
     template_name = 'accout_search.html'
 
     def get_queryset(self):
-        queryset = CustomUser.objects.all()
+        queryset = CustomUser.objects.none()
         query = self.request.GET.get('query')
         if query:
             queryset = CustomUser.objects.filter(username__icontains=query)
         return queryset
+
 
 class AccountDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = 'account_detail.html'
@@ -198,17 +189,32 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         username = self.kwargs['username']
         account = CustomUser.objects.get(username=username)
+
         context['account'] = account
         context['following'] = Connection.objects.filter(follower__username=username).count()
         context['follower'] = Connection.objects.filter(following__username=username).count()
+
         if username is not self.request.user.username:
             result = Connection.objects.filter(follower__username=self.request.user.username).filter(following__username=username)
             context['connected'] = True if result else False
+
+        studytimes = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        # Queryset型からDataFrame型に変換
+        df = read_frame(studytimes, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
+
+        today = dt.date.today()
+
+        context['today_sum'] = to_time_str(get_today_sum(df.copy(), today))
+        context['week_sum'] = to_time_str(get_week_sum(df.copy(), today))
+        context['month_sum'] = to_time_str(get_month_sum(df.copy(), today))
+        context['total'] = to_time_str(get_total(df.copy(), today))
+
         tab = self.request.GET.get('tab') or 'question'
         if tab == 'question':
             context['question_list'] = Question.objects.filter(user=account)
         elif tab == 'answer':
             context['answer_list'] = Answer.objects.filter(user=account)
+
         context['tab'] = tab
         context['subject_select_form'] = SubjectSelectForm
         return context

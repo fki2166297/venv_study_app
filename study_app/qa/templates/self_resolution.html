@@ -4,10 +4,11 @@
 
 {% load widget_tweaks %}
 
-{% block title %}Study App{% endblock %}
+{% block title %}自己解決に設定 | Study App{% endblock %}
 
 {% block contents %}
 <main class="container-md" style="max-width: 720px;">
+    <h4 class="mb-3">自己解決に設定</h4>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-4">

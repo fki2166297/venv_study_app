@@ -16,7 +16,7 @@
         <div class="mb-3">
             <div class="hstack mb-2">
                 <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
-                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
+                <a class="ms-auto" href="{% url 'study:subject_create' %}">教科を作成する</a>
             </div>
             {% render_field form.subject class='form-select mb-2' %}
         </div>
@@ -84,6 +84,5 @@
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     dateTimePickerEl.value = now.toISOString().slice(0, -8).replace('T', ' ');
-
 </script>
 {% endblock %}

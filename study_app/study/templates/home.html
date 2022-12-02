@@ -9,7 +9,7 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-lg">
+<main class="container-lg" style="margin-bottom: 10rem;">
     <div class="row">
         <div class="col-lg-8">
             <!-- タブ -->
@@ -36,7 +36,7 @@
                                         <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
                                     {% endif %}
                                 </a>
-                                <a href="{% url 'study:account_detail' studytime.user.username %}" class="text-decoration-none me-3">@{{ studytime.user.username }}</a>
+                                <a class="text-decoration-none me-3" href="{% url 'study:account_detail' studytime.user.username %}">@{{ studytime.user.username }}</a>
                                 {% if studytime.user.pk == user.pk %}
                                     <div class="dropdown ms-auto">
                                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -67,6 +67,36 @@
                     <li class="list-group-item text-center py-5">記録がありません</li>
                 {% endif %}
             </ul>
+
+            <!-- ページネーション -->
+            {% if is_paginated %}
+                <ul class="pagination justify-content-center" style="margin-top: 3rem;">
+                    <!-- 前ページへのリンク -->
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if tab %}&tab={{ tab }}{% endif %}">&laquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link">&laquo;</a></li>
+                    {% endif %}
+                    <!-- ページ数表示 -->
+                    {% for page_num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == page_num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_num }}{% if tab %}&tab={{ tab }}{% endif %}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    <!-- 次ページへのリンク -->
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if tab %}&tab={{ tab }}{% endif %}">&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            {% endif %}
         </div>
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">

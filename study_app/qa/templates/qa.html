@@ -9,7 +9,7 @@
 {% block active_qa %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md">
+<main class="container-md" style="margin-bottom: 10rem;">
     <div class="row">
         <div class="col-md-8">
             <form method="get">
@@ -68,7 +68,7 @@
                                 </div>
                                 {% if question.image %}
                                     <div class="ms-auto">
-                                        <img src="/media/{{ question.image }}" alt="質問の画像"  width="96" height="72" class="rounded ms-3" style="object-fit: cover;"/>
+                                        <img src="/media/{{ question.image }}" alt="質問の画像" width="96" height="72" class="rounded ms-3" style="object-fit: cover;"/>
                                     </div>
                                 {% endif %}
                             </div>
@@ -81,7 +81,7 @@
 
             <!-- ページネーション -->
             {% if is_paginated %}
-                <ul class="pagination justify-content-center" style="margin-top: 3rem; margin-bottom: 10rem;">
+                <ul class="pagination justify-content-center" style="margin-top: 3rem;">
                     <!-- 前ページへのリンク -->
                     {% if page_obj.has_previous %}
                         <li class="page-item">

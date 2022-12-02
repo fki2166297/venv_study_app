@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}回答の投稿 | Study App{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px; margin-bottom: 10rem;">
+    <h4 class="mb-3">回答投稿</h4>
+    <div class="card card-body mb-4">
+        <h5 class="card-title">質問内容</h5>
+        <p class="card-text">{{ question.text|linebreaksbr }}</p>
+        {% if question.image %}
+            <div class="mb-3">
+                <a role="button" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ question.image }}">
+                    <img src="/media/{{ question.image }}" class="rounded mx-auto d-block" style="object-fit: cover;" width="320" height="240"/>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}<span class="text-danger">*</span></label>
+            {% render_field form.text class='form-control' %}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+            {% render_field form.image class='form-control' %}
+        </div>
+        <div class="mb-3 alert alert-info" role="alert">
+            <ul>
+                <li></li>
+            </ul>
+        </div>
+        <button type="submit" class="btn btn-primary">送信</button>
+    </form>
+
+    <!-- 画像表示モーダル -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <img class="col-12" id="image" src="/media/{{ question.image }}"/>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.getElementById('imageModal').addEventListener('show.bs.modal', event => {
+        targetEl = event.relatedTarget;
+        const image = targetEl.dataset.image;
+        document.getElementById('image').setAttribute('src', '/media/' + image);
+    });
+</script>
+{% endblock %}

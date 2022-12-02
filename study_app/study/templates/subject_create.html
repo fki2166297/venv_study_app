@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}教科一覧 | Study App{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px; margin-bottom: 10rem;">
+    <form method="post">
+        {% csrf_token %}
+        <h4 class="mb-3">教科の作成</h4>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.name.id_for_label }}">教科名<span class="text-danger">*</span></label>
+            {% render_field form.name class='form-control' %}
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="{{ form.color.id_for_label }}">教科の色<span class="text-danger">*</span></label>
+            {% render_field form.color type='color' class='form-control form-control-color' list='color-list' %}
+        </div>
+        <datalist id="color-list">
+            <option value="#ffa8a8"></option>
+            <option value="#ffa8d3"></option>
+            <option value="#ffa8ff"></option>
+            <option value="#d3a8ff"></option>
+            <option value="#a8a8ff"></option>
+            <option value="#a8d3ff"></option>
+            <option value="#a8ffff"></option>
+            <option value="#a8ffd3"></option>
+            <option value="#a8ffa8"></option>
+            <option value="#d3ffa8"></option>
+            <option value="#ffffa8"></option>
+            <option value="#ffd3a8"></option>
+        </datalist>
+        <button type="submit" class="btn btn-primary">作成</button>
+    </form>
+</main>
+{% endblock %}

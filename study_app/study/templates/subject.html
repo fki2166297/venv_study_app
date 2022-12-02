@@ -9,7 +9,7 @@
 {% block active_subject %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 720px;">
+<main class="container-md" style="max-width: 720px; margin-bottom: 10rem;">
     <h5 class="mb-3">教科一覧</h5>
     <ul class="list-group mb-5">
         {% if subject_list %}
@@ -23,31 +23,10 @@
         {% else %}
             <li class="list-group-item text-center py-5">教科がありません</li>
         {% endif %}
+        <li class="list-group-item text-center">
+            <a href="{% url 'study:subject_create' %}">教科を作成する</a>
+        </li>
     </ul>
-    <form method="post">
-        {% csrf_token %}
-        <h5 class="mb-3">教科の作成</h5>
-        <div class="hstack gap-3 align-items-center">
-            {% render_field form.name class='form-control me-auto' placeholder='教科名を入力してください' %}
-            {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
-            <datalist id="color-list">
-                <option value="#ffa8a8"></option>
-                <option value="#ffa8d3"></option>
-                <option value="#ffa8ff"></option>
-                <option value="#d3a8ff"></option>
-                <option value="#a8a8ff"></option>
-                <option value="#a8d3ff"></option>
-                <option value="#a8ffff"></option>
-                <option value="#a8ffd3"></option>
-                <option value="#a8ffa8"></option>
-                <option value="#d3ffa8"></option>
-                <option value="#ffffa8"></option>
-                <option value="#ffd3a8"></option>
-            </datalist>
-            <div class="vr"></div>
-            <input type="submit" value="作成する" class="btn btn-primary flex-shrink-0">
-        </div>
-    </form>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
