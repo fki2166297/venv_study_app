@@ -1,6 +1,18 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import datetime as dt
 import calendar
 
+
+def paginate_queryset(request, queryset, count):
+    paginator = Paginator(queryset, count)
+    page = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    return page_obj
 
 def to_time_str(minutes):
     if minutes == 0:

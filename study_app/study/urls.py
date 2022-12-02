@@ -5,8 +5,9 @@ from . import views
 app_name = 'study'
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
-    path('study-time-delete/<int:pk>', views.StudyTimeDeleteView.as_view(), name='study_time_delete'),
-    path('study-time-update/<int:pk>', views.StudyTimeUpdateView.as_view(), name='study_time_update'),
+    path('studytime-create', views.StudyTimeCreateView.as_view(), name='studytime_create'),
+    path('studytime-update/<int:pk>', views.StudyTimeUpdateView.as_view(), name='studytime_update'),
+    path('studytime-delete/<int:pk>', views.StudyTimeDeleteView.as_view(), name='studytime_delete'),
     path('report', views.ReportView.as_view(), name='report'),
     path('subject', views.SubjectView.as_view(), name='subject'),
     path('subject/subject-update/<int:pk>', views.SubjectUpdateView.as_view(), name='subject_update'),

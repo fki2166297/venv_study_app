@@ -24,42 +24,42 @@
                     <a class="nav-link {% if tab == 'following' %}active{% endif %}" {% if tab == 'following' %}aria-current="page"{% endif %} href="?tab=following">フォロー</a>
                 </li>
             </ul>
-            <ul class="list-group list-group-flush border-bottom">
-                {% if study_time_list %}
-                    {% for study_time in study_time_list %}
+            <ul class="list-group list-group-flush border-bottom mb-5">
+                {% if studytime_list %}
+                    {% for studytime in studytime_list %}
                         <li class="list-group-item py-3">
                             <div class="hstack gap-2 mb-3">
-                                <a href="{% url 'study:account_detail' study_time.user.username %}">
-                                    {% if study_time.user.icon %}
-                                        <img src="/media/{{ study_time.user.icon }}" alt="{{ study_time.user.username }}" width="28" height="28" class="rounded-circle">
+                                <a href="{% url 'study:account_detail' studytime.user.username %}">
+                                    {% if studytime.user.icon %}
+                                        <img src="/media/{{ studytime.user.icon }}" alt="{{ studytime.user.username }}" width="28" height="28" class="rounded-circle">
                                     {% else %}
                                         <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
                                     {% endif %}
                                 </a>
-                                <a href="{% url 'study:account_detail' study_time.user.username %}" class="text-decoration-none me-3">@{{ study_time.user.username }}</a>
-                                {% if study_time.user.pk == user.pk %}
+                                <a href="{% url 'study:account_detail' studytime.user.username %}" class="text-decoration-none me-3">@{{ studytime.user.username }}</a>
+                                {% if studytime.user.pk == user.pk %}
                                     <div class="dropdown ms-auto">
                                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-three-dots"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" href="{% url 'study:study_time_update' study_time.pk %}" role="button">編集</a>
+                                                <a class="dropdown-item" href="{% url 'study:studytime_update' studytime.pk %}" role="button">編集</a>
                                             </li>
                                             <li>
-                                                <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ study_time.id }}" data-datetime="{{ study_time.studied_at|date:'n/j G:i' }}" data-subject-color="{{ study_time.subject.color }}" data-subject="{{ study_time.subject }}" data-study-minutes="{{ study_time.minutes }}">削除</button>
+                                                <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal" data-id="{{ studytime.id }}" data-datetime="{{ studytime.studied_at|date:'n/j G:i' }}" data-subject-color="{{ studytime.subject.color }}" data-subject="{{ studytime.subject }}" data-study-minutes="{{ studytime.minutes }}">削除</button>
                                             </li>
                                         </ul>
                                     </div>
                                 {% endif %}
                             </div>
                             <div class="card card-body hstack gap-3 px-md-4">
-                                <span><i class="bi bi-circle-fill me-1" style="color: {{ study_time.subject.color }};"></i>{{ study_time.subject }}</span>
-                                <span class="text-nowrap">{{ study_time.minutes }}</span>
-                                {% if study_time.publication == 'private' %}
+                                <span><i class="bi bi-circle-fill me-1" style="color: {{ studytime.subject.color }};"></i>{{ studytime.subject }}</span>
+                                <span class="text-nowrap">{{ studytime.minutes }}</span>
+                                {% if studytime.publication == 'private' %}
                                     <small class="text-nowrap text-muted">非公開</small>
                                 {% endif %}
-                                <span class="text-nowrap text-muted ms-auto">{{ study_time.studied_at|date:'n/j G:i' }}</span>
+                                <span class="text-nowrap text-muted ms-auto">{{ studytime.studied_at|date:'n/j G:i' }}</span>
                             </div>
                         </li>
                     {% endfor %}
@@ -70,11 +70,11 @@
         </div>
         <div class="col-lg-4 d-none d-lg-block">
             <div class="vstack gap-4" style="position: sticky; top: 5rem;">
-                <button type="button" class="btn btn-primary col-12 gap-3 js-creationBtn" data-bs-toggle="modal" data-bs-target="#creationModal">記録を作成</button>
+                <a class="btn btn-primary col-12 gap-3" href="{% url 'study:studytime_create' %}" role="button">記録を作成</a>
             </div>
         </div>
     </div>
-    <button type="button" class="btn btn-primary rounded-circle d-lg-none position-fixed bottom-0 end-0 m-3 js-creationBtn" style="width: 56px; height: 56px;" data-bs-toggle="modal" data-bs-target="#creationModal"><span class="material-symbols-outlined align-middle">add</span></button>
+    <a class="btn btn-primary rounded-circle d-lg-none position-fixed bottom-0 end-0 m-3 d-flex justify-content-center align-items-center" style=" width: 56px; height: 56px;" href="{% url 'study:studytime_create' %}" role="button"><div class="material-symbols-outlined">add</div></a>
 
     <!-- 記録削除モーダル -->
     <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel">
@@ -104,101 +104,11 @@
             </div>
         </div>
     </div>
-
-    <!-- 記録作成モーダル -->
-    <div class="modal fade" id="creationModal" tabindex="-1" aria-labelledby="creationModalLabel">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="creationModalLabel">記録の作成</h1>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-4">
-                            <div class="hstack mb-2">
-                                <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
-                                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
-                            </div>
-                            {% render_field form.subject class='form-select mb-2' %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ form.studied_at.id_for_label }}">日時<span class="text-danger">*</span></label>
-                            {% render_field form.studied_at class='form-control js-dateTimePicker' %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ form.minutes.id_for_label }}">学習時間（分）<span class="text-danger">*</span></label>
-                            {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ form.publication.id_for_label }}">公開設定<span class="text-danger">*</span></label>
-                            {% render_field form.publication class='form-select' %}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                        <button type="submit" class="btn btn-primary">記録する</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </main>
 {% endblock %}
 
 {% block script %}
-<!-- Popper.js -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-<!-- Tempus Dominus -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/js/tempus-dominus.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
-
 <script>
-    tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
-
-    const dateTimePickerEl = document.querySelector('.js-dateTimePicker');
-    new tempusDominus.TempusDominus(dateTimePickerEl, {
-        display: {
-            buttons: {
-                today: true,
-                clear: true,
-            },
-            components: {
-                decades: false,
-            },
-            theme: 'light',
-        },
-        localization: {
-            today: '今日',
-            clear: 'クリア',
-            selectMonth: '月を選択',
-            previousMonth: '前月',
-            nextMonth: '次月',
-            selectYear: '年を選択',
-            previousYear: '前年',
-            nextYear: '次年',
-            previousDecade: '前期間',
-            nextDecade: '次期間',
-            incrementHour: '1時間増やす',
-            decrementHour: '1時間減らす',
-            incrementMinute: '1分増やす',
-            decrementMinute: '1分減らす',
-            selectTime: '時刻を選択',
-            selectDate: '日付を選択',
-            locale: 'ja',
-            format: 'yyyy-MM-dd HH:mm',
-        },
-    });
-
-    // 日付、時刻フォームに現在の日時を設定
-    document.querySelectorAll('.js-creationBtn').forEach(element => {
-        element.addEventListener('click', () => {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            dateTimePickerEl.value = now.toISOString().slice(0, -8).replace('T', ' ');
-        });
-    });
-
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
         const targetEl = event.relatedTarget;
         document.getElementById('deletionForm').action = 'study-time-delete/' + targetEl.dataset.id;

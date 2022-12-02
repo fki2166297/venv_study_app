@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}Study App{% endblock %}
+
+{% block active_home %}active{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px;">
+    <h5 class="mb-3">記録の作成</h5>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <div class="hstack mb-2">
+                <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
+                <a class="ms-auto" href="{% url 'study:subject' %}">教科を作成する</a>
+            </div>
+            {% render_field form.subject class='form-select mb-2' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.studied_at.id_for_label }}">日時<span class="text-danger">*</span></label>
+            {% render_field form.studied_at class='form-control js-dateTimePicker' %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.minutes.id_for_label }}">学習時間（分）<span class="text-danger">*</span></label>
+            {% render_field form.minutes class='form-control' min='5' max='1440' step='5' %}
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="{{ form.publication.id_for_label }}">公開設定<span class="text-danger">*</span></label>
+            {% render_field form.publication class='form-select' %}
+        </div>
+        <button type="submit" class="btn btn-primary">記録する</button>
+    </form>
+</main>
+{% endblock %}
+
+{% block script %}
+<!-- Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+<!-- Tempus Dominus -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/js/tempus-dominus.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/plugins/customDateFormat.min.js" crossorigin="anonymous"></script>
+
+<script>
+    tempusDominus.extend(window.tempusDominus.plugins.customDateFormat);
+
+    const dateTimePickerEl = document.querySelector('.js-dateTimePicker');
+    new tempusDominus.TempusDominus(dateTimePickerEl, {
+        display: {
+            buttons: {
+                today: true,
+                clear: true,
+            },
+            components: {
+                decades: false,
+            },
+            theme: 'light',
+        },
+        localization: {
+            today: '今日',
+            clear: 'クリア',
+            selectMonth: '月を選択',
+            previousMonth: '前月',
+            nextMonth: '次月',
+            selectYear: '年を選択',
+            previousYear: '前年',
+            nextYear: '次年',
+            previousDecade: '前期間',
+            nextDecade: '次期間',
+            incrementHour: '1時間増やす',
+            decrementHour: '1時間減らす',
+            incrementMinute: '1分増やす',
+            decrementMinute: '1分減らす',
+            selectTime: '時刻を選択',
+            selectDate: '日付を選択',
+            locale: 'ja',
+            format: 'yyyy-MM-dd HH:mm',
+        },
+    });
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dateTimePickerEl.value = now.toISOString().slice(0, -8).replace('T', ' ');
+
+</script>
+{% endblock %}

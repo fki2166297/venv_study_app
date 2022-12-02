@@ -16,42 +16,47 @@ from .helpers import to_time_str, get_bar_chart_week, get_bar_chart_month, get_b
 
 
 # Create your views here.
-class HomeView(LoginRequiredMixin, generic.CreateView):
+class HomeView(LoginRequiredMixin, generic.ListView):
     template_name = 'home.html'
-    form_class = StudyTimeForm
-    success_url = reverse_lazy('study:home')
+
+    def get_queryset(self):
+        # ログインユーザーがフォローしているユーザーを取得
+        following = Connection.objects.filter(follower=self.request.user).values_list('following')
+        # 自分の記録、フォローユーザーの記録（公開設定がfollow）を取得
+        queryset = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).exclude(user__in=following, publication='private').order_by('-studied_at').select_related()
+        tab = self.request.GET.get('tab')
+        if tab == 'my-record':
+            queryset = queryset.filter(user=self.request.user).order_by('-studied_at').select_related()
+        elif tab == 'following':
+            queryset = StudyTime.objects.filter(user__in=following, publication='follow').order_by('-studied_at').select_related()
+        # 時間の表示形式を変更
+        for studytime in queryset:
+            studytime.minutes = to_time_str(studytime.minutes)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # ログインユーザーがフォローしているユーザーを取得
-        following = Connection.objects.filter(follower=self.request.user).values_list('following')
         tab = self.request.GET.get('tab') or 'all'
-        if tab == 'all':
-            # 自分の記録、フォローユーザーの記録（公開設定がfollow）を取得
-            study_times = StudyTime.objects.filter(Q(user=self.request.user)|Q(user__in=following)).exclude(user__in=following, publication='private').order_by('-studied_at').select_related()
-        elif tab == 'my-record':
-            study_times = StudyTime.objects.filter(user=self.request.user).order_by('-studied_at').select_related()
-        elif tab == 'following':
-            study_times = StudyTime.objects.filter(user__in=following, publication='follow').order_by('-studied_at').select_related()
-        # 時間の表示形式を変更
-        for study_time in study_times:
-            study_time.minutes = to_time_str(study_time.minutes)
-
         context['tab'] = tab
-        context['study_time_list'] = study_times
         return context
+
+
+class StudyTimeCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'studytime_create.html'
+    form_class = StudyTimeForm
+    success_url = reverse_lazy('study:home')
 
     # StudyTimeFormにログインユーザーIDを渡す
     def get_form_kwargs(self):
-        kwargs = super(HomeView, self).get_form_kwargs()
+        kwargs = super(StudyTimeCreateView, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
-        study_time = form.save(commit=False)
+        studytime = form.save(commit=False)
         # ログインユーザーのIDを保存
-        study_time.user = self.request.user
-        study_time.save()
+        studytime.user = self.request.user
+        studytime.save()
 
         messages.success(self.request, '記録を作成しました。')
         return super().form_valid(form)
@@ -71,7 +76,7 @@ class StudyTimeDeleteView(LoginRequiredMixin, generic.DeleteView):
 
 
 class StudyTimeUpdateView(LoginRequiredMixin, generic.UpdateView):
-    template_name = 'study_time_update.html'
+    template_name = 'studytime_update.html'
     model = StudyTime
     fields = ['subject', 'studied_at', 'minutes', 'publication']
     success_url = reverse_lazy('study:home')
@@ -90,9 +95,9 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        study_times = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
+        studytimes = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
-        df = read_frame(study_times, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
+        df = read_frame(studytimes, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
 
         today = dt.date.today()
 
