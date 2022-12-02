@@ -126,7 +126,12 @@ class SubjectView(LoginRequiredMixin, generic.TemplateView):
 class SubjectCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'subject_create.html'
     form_class = SubjectCreateForm
-    success_url = reverse_lazy('study:subject')
+
+    def get_success_url(self):
+        via = self.request.GET.get('via')
+        if via == 'studytime-create':
+            return reverse_lazy('study:studytime_create')
+        return reverse_lazy('study:subject')
 
     def form_valid(self, form):
         subject = form.save(commit=False)

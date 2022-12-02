@@ -9,14 +9,14 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-md" style="max-width: 720px;">
+<main class="container-md" style="max-width: 720px; margin-bottom: 10rem;">
     <h5 class="mb-3">記録の作成</h5>
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
             <div class="hstack mb-2">
                 <label for="{{ form.subject.id_for_label }}">教科<span class="text-danger">*</span></label>
-                <a class="ms-auto" href="{% url 'study:subject_create' %}">教科を作成する</a>
+                <a class="ms-auto" href="{% url 'study:subject_create' %}?via=studytime-create">教科を作成する</a>
             </div>
             {% render_field form.subject class='form-select mb-2' %}
         </div>
