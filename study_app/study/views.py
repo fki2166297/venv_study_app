@@ -209,13 +209,9 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
         context['month_sum'] = to_time_str(get_month_sum(df.copy(), today))
         context['total'] = to_time_str(get_total(df.copy(), today))
 
-        tab = self.request.GET.get('tab') or 'question'
-        if tab == 'question':
-            context['question_list'] = Question.objects.filter(user=account)
-        elif tab == 'answer':
-            context['answer_list'] = Answer.objects.filter(user=account)
+        context['question_list'] = Question.objects.filter(user=account)
+        context['answer_list'] = Answer.objects.filter(user=account)
 
-        context['tab'] = tab
         context['subject_select_form'] = SubjectSelectForm
         return context
 

@@ -57,75 +57,106 @@
                 </table>
             </div>
             <div class="card card-body">
-                <h4 class="mb-3">質問・回答</h4>
+                <h4 class="mb-3">Q&ampA</h4>
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link {% if tab == 'question' %}active{% endif %}" {% if tab == 'question' %}aria-current="page"{% endif %} href="?tab=question">質問</a>
+                        <a id="questionTab" class="nav-link active" aria-current="page" role="button">質問</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if tab == 'answer' %}active{% endif %}" {% if tab == 'answer' %}aria-current="page"{% endif %} href="?tab=answer">回答</a>
+                        <a id="answerTab" class="nav-link" role="button">回答</a>
                     </li>
                 </ul>
-                <ul class="list-group list-group-flush border-bottom border-top-0">
-                    {% if tab == 'question' %}
-                        {% if question_list %}
-                            {% for question in question_list %}
-                                <li class="list-group-item position-relative">
-                                    <div class="d-flex align-item-center">
-                                        <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                            <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
-                                            <div class="hstack gap-3">
-                                                <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
-                                                {% if question.is_resolved %}
-                                                    <small class="text-muted">解決済み</small>
-                                                {% else %}
-                                                    <small class="text-muted">回答募集中</small>
-                                                {% endif %}
-                                                <small class="text-muted">{{ question.get_subject_display }}</small>
-                                            </div>
-                                        </div>
-                                        {% if question.image %}
-                                            <div class="ms-auto">
-                                                <img src="/media/{{ question.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-center py-5">Q&ampAが見つかりませんでした。</li>
-                        {% endif %}
-                    {% endif %}
 
-                    {% if tab == 'answer' %}
-                        {% if answer_list %}
-                            {% for answer in answer_list %}
-                                <li class="list-group-item position-relative">
-                                    <div class="d-flex align-item-center">
-                                        <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                            <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' answer.question.id %}">{{ answer.text|truncatechars:100 }}</a>
-                                            <div class="hstack gap-3">
-                                                <small class="text-muted">{{ answer.created_at|date:'n/j G:i' }}</small>
-                                                {% if answer.is_best %}
-                                                    <small class="text-muted">ベストアンサー</small>
-                                                {% endif %}
-                                            </div>
+                <!-- 質問のリストグループ -->
+                <ul id="questionListGroup" class="list-group list-group-flush border-bottom border-top-0">
+                    {% if question_list %}
+                        {% for question in question_list %}
+                            <li class="list-group-item position-relative">
+                                <div class="d-flex align-item-center">
+                                    <div class="d-flex flex-column justify-content-evenly text-truncate">
+                                        <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
+                                        <div class="hstack gap-3">
+                                            <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
+                                            {% if question.is_resolved %}
+                                                <small class="text-muted">解決済み</small>
+                                            {% else %}
+                                                <small class="text-muted">回答募集中</small>
+                                            {% endif %}
+                                            <small class="text-muted">{{ question.get_subject_display }}</small>
                                         </div>
-                                        {% if answer.image %}
-                                            <div class="ms-auto">
-                                                <img src="/media/{{ answer.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
-                                            </div>
-                                        {% endif %}
                                     </div>
-                                </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-center py-5">回答がありません。</li>
-                        {% endif %}
+                                    {% if question.image %}
+                                        <div class="ms-auto">
+                                            <img src="/media/{{ question.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center py-5">Q&ampAが見つかりませんでした。</li>
+                    {% endif %}
+                </ul>
+
+                <!-- 回答のリストグループ -->
+                <ul id="answerListGroup" class="list-group list-group-flush border-bottom border-top-0 d-none">
+                    {% if answer_list %}
+                        {% for answer in answer_list %}
+                            <li class="list-group-item position-relative">
+                                <div class="d-flex align-item-center">
+                                    <div class="d-flex flex-column justify-content-evenly text-truncate">
+                                        <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' answer.question.id %}">{{ answer.text|truncatechars:100 }}</a>
+                                        <div class="hstack gap-3">
+                                            <small class="text-muted">{{ answer.created_at|date:'n/j G:i' }}</small>
+                                            {% if answer.is_best %}
+                                                <small class="text-muted">ベストアンサー</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if answer.image %}
+                                        <div class="ms-auto">
+                                            <img src="/media/{{ answer.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center py-5">回答がありません。</li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </div>
 </main>
+{% endblock %}
+
+{% block script %}
+<script>
+    const questionTab = document.getElementById('questionTab');
+    const answerTab = document.getElementById('answerTab');
+
+    const questionListGroup = document.getElementById('questionListGroup');
+    const answerListGroup = document.getElementById('answerListGroup');
+
+    questionTab.onclick = () => {
+        questionTab.classList.add('active');
+        questionTab.setAttribute("aria-current","page");
+        answerTab.classList.remove('active');
+        answerTab.removeAttribute("aria-current","page");
+
+        answerListGroup.classList.add('d-none');
+        questionListGroup.classList.remove('d-none');
+    }
+
+    answerTab.onclick = () => {
+        answerTab.classList.add('active');
+        answerTab.setAttribute("aria-current","page");
+        questionTab.classList.remove('active');
+        questionTab.removeAttribute("aria-current","page");
+
+        questionListGroup.classList.add('d-none');
+        answerListGroup.classList.remove('d-none');
+    }
+</script>
 {% endblock %}
