@@ -42,9 +42,9 @@
             <tbody class="bg-white">
                 <tr>
                     <td class="text-center">{{ today_sum }}</td>
-                    <td class="text-center"></td>
-                    <td class="text-center"></td>
-                    <td class="text-center"></td>
+                    <td class="text-center">{{ week_sum }}</td>
+                    <td class="text-center">{{ month_sum }}</td>
+                    <td class="text-center">{{ total }}</td>
                 </tr>
             </tbody>
         </table>
@@ -57,6 +57,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
 <script>
+    function toTimeStr(minutes) {
+        if (minutes >= 60)
+            return ~~(minutes / 60) + '時間' + ((minutes % 60) ? (minutes % 60) + '分' : '');
+        else if (minutes != 0)
+            return minutes + '分';
+    }
+
     function drawBarChart(data, title=null) {
         window.barChart = new Chart(document.getElementById('barChart'), {
             type: 'bar',
@@ -69,18 +76,9 @@
                             // ラベルに表示する勉強時間の形式を変更
                             label: (context) => {
                                 let label = context.dataset.label || '';
-
-                                if (label) {
-                                    label += ': ';
-                                }
-
+                                if (label) label += ': ';
                                 if (context.parsed.y !== null) {
-                                    minutes = context.parsed.y;
-                                    if (minutes >= 60) {
-                                        label += ~~(minutes / 60) + '時間' + ((minutes % 60) ? (minutes % 60) + '分' : '');
-                                    } else if (minutes != 0) {
-                                        label += minutes + '分';
-                                    }
+                                    label += toTimeStr(context.parsed.y);
                                 }
                                 return label;
                             },
@@ -119,6 +117,20 @@
             options: {
                 responsive: true,
                 plugins: {
+                    tooltip: {
+                        callbacks: {
+                            // ラベルに表示する勉強時間の形式を変更
+                            label: (context) => {
+                                console.log(context);
+                                let label = context.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed !== null) {
+                                    label += toTimeStr(context.parsed);
+                                }
+                                return label;
+                            },
+                        },
+                    },
                     legend: {
                         position: 'bottom',
                     },

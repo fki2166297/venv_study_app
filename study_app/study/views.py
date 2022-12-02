@@ -97,16 +97,27 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
 
         # studied_atカラムをdatetime型からdate型に変換
         if not df2.empty:
+            df2['month'] = df2['studied_at'].dt.month
+            df2['year'] = df2['studied_at'].dt.year
             df2['studied_at'] = df2['studied_at'].dt.date
-        today = dt.date.today()
-        context['df'] = df2 # 確認用
 
-        today_sum = df2.query('studied_at == @today').sum()['minutes']
+        today = dt.date.today()
+        today_sum = df2.query('studied_at == @today')['minutes'].sum()
+
+        weekday = today.isoweekday() % 7
+        week_start = today + dt.timedelta(days=-weekday)
+        week_end = today + dt.timedelta(days=(6 - weekday))
+        week_sum = df2.query('@week_start <= studied_at <= @week_end')['minutes'].sum()
+
+        month_sum = df2.query('month == @today.month')['minutes'].sum()
+
+        total = df2['minutes'].sum()
 
         context['today_sum'] = to_time_str(today_sum) # 今日の合計
-        # context['week_sum']
-        # context['month_sum']
-        # context['total']
+        context['week_sum'] = to_time_str(week_sum) # 今週の合計
+        context['month_sum'] = to_time_str(month_sum) # 今月の合計
+        context['total'] = to_time_str(total) #全体の合計
+
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)

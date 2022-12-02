@@ -9,11 +9,11 @@ class SubjectChoices(models.TextChoices):
     SCIENCE = 'science', '科学'
     SOCIETY = 'society', '社会'
     ENGLISH = 'english', '英語'
-    HEALTHANDPHYSICALEDUCATION = 'healthandphysicaleducation', '保健体育'
-    TECHNICALHOMEECONOMICS = 'technicalhomeeconomics', '技術家庭科'
+    HEALTH_AND_PHYSICALEDUCATION = 'health_and_physicaleducation', '保健体育'
+    TECHNICAL_HOME_ECONOMICS = 'technical_home_economics', '技術家庭科'
     ART = 'art', '美術'
     MUSIC = 'music', '音楽'
-    ARTSANDCRAFTS = 'artsandcrafts', '図工'
+    ART_SANDCRAFTS = 'art_sandcrafts', '図工'
     INFORMATION = 'information', '情報'
     CALLIGRAPHY = 'calligraphy', '書道'
 
@@ -56,9 +56,3 @@ class Answer(models.Model):
 
     class Meta:
         verbose_name_plural = 'Answer'
-
-# # 回答に対するいいね
-# class LikeForAnswer(models.Model):
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-#     target = models.ForeignKey(Answer, on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(auto_now_add=True)
