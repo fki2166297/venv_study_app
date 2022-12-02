@@ -93,35 +93,33 @@ class ReportView(LoginRequiredMixin, generic.TemplateView):
         study_times = StudyTime.objects.filter(user=self.request.user).order_by('studied_at').select_related()
         # Queryset型からDataFrame型に変換
         df = read_frame(study_times, fieldnames=['subject', 'subject__color', 'studied_at', 'minutes'])
-        df2 = df.copy() # コピー(仮)
-
-        # studied_atカラムをdatetime型からdate型に変換
-        if not df2.empty:
-            df2['month'] = df2['studied_at'].dt.month
-            df2['year'] = df2['studied_at'].dt.year
-            df2['studied_at'] = df2['studied_at'].dt.date
 
         today = dt.date.today()
-        today_sum = df2.query('studied_at == @today')['minutes'].sum()
-
-        weekday = today.isoweekday() % 7
-        week_start = today + dt.timedelta(days=-weekday)
-        week_end = today + dt.timedelta(days=(6 - weekday))
-        week_sum = df2.query('@week_start <= studied_at <= @week_end')['minutes'].sum()
-
-        month_sum = df2.query('month == @today.month')['minutes'].sum()
-
-        total = df2['minutes'].sum()
-
-        context['today_sum'] = to_time_str(today_sum) # 今日の合計
-        context['week_sum'] = to_time_str(week_sum) # 今週の合計
-        context['month_sum'] = to_time_str(month_sum) # 今月の合計
-        context['total'] = to_time_str(total) #全体の合計
 
         context['bar_chart_week'] = get_bar_chart_week(df.copy(), today)
         context['bar_chart_month'] = get_bar_chart_month(df.copy(), today)
         context['bar_chart_year'] = get_bar_chart_year(df.copy(), today)
         context['pie_chart'] = get_pie_chart_data(df.copy())
+        today_sum = week_sum = month_sum = total = 0
+        if not df.empty:
+            df['month'] = df['studied_at'].dt.month
+            df['year'] = df['studied_at'].dt.year
+            df['studied_at'] = df['studied_at'].dt.date
+
+            today_sum = df.query('studied_at == @today')['minutes'].sum()
+
+            weekday = today.isoweekday() % 7
+            week_start = today + dt.timedelta(days=-weekday)
+            week_end = today + dt.timedelta(days=(6 - weekday))
+            week_sum = df.query('@week_start <= studied_at <= @week_end')['minutes'].sum()
+
+            month_sum = df.query('month == @today.month')['minutes'].sum()
+
+            total = df['minutes'].sum()
+        context['today_sum'] = to_time_str(today_sum) # 今日の合計
+        context['week_sum'] = to_time_str(week_sum) # 今週の合計
+        context['month_sum'] = to_time_str(month_sum) # 今月の合計
+        context['total'] = to_time_str(total) # 全体の合計
         return context
 
 
@@ -174,6 +172,16 @@ def subject_delete_view(request, *args, **kwargs):
     messages.success(request, '教科を削除しました。')
     return HttpResponseRedirect(reverse_lazy('study:subject'))
 
+
+class AccountSearchView(LoginRequiredMixin, generic.ListView):
+    template_name = 'accout_search.html'
+
+    def get_queryset(self):
+        queryset = CustomUser.objects.all()
+        query = self.request.GET.get('query')
+        if query:
+            queryset = CustomUser.objects.filter(username__icontains=query)
+        return queryset
 
 class AccountDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = 'account_detail.html'

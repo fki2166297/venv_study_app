@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load widget_tweaks %}
+
+{% block title %}アカウントを探す | Study App{% endblock %}
+
+{% block active_account_search %}active{% endblock %}
+
+{% block contents %}
+<main class="container-md" style="max-width: 720px;">
+    <form method="get">
+        <div class="input-group mb-4">
+            <input type="search" class="form-control" name="query" placeholder="ユーザー名を入力">
+            <button type="submit" class="btn btn-primary"><i class="material-symbols-outlined align-middle">search</i></button>
+        </div>
+    </form>
+    <ul class="list-group">
+        {% for customuser in customuser_list %}
+            <li class="list-group-item">
+                <div class="hstack gap-2">
+                    <a href="{% url 'study:account_detail' customuser.username %}">
+                        {% if customuser.icon %}
+                            <img src="/media/{{ customuser.icon }}" alt="{{ customuser.username }}" width="28" height="28" class="rounded-circle">
+                        {% else %}
+                            <img src="{% static 'images/default_icon.png' %}" alt="{{ user.username }}" width="28" height="28" class="rounded-circle">
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'study:account_detail' customuser.username %}" class="text-decoration-none me-3">@{{ customuser.username }}</a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</main>
+{% endblock %}
