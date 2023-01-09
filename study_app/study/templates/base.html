@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="ja">
+<html class="bg-light" lang="ja">
 
 <head>
     <meta charset="utf-8">
@@ -18,10 +18,10 @@
     <!-- Tempus Dominus -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/6.2.4/css/tempus-dominus.min.css" crossorigin="anonymous">
     <!-- My style -->
-    <link rel="stylesheet" href="{% static 'css/mystyle.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
-<body class="bg-light" style="padding-top: 5rem;">
+<body class="bg-light">
     <header class="navbar navbar-expand-sm navbar-light bg-light shadow-sm fixed-top">
         <div class="container-fluid px-5">
             <a class="navbar-brand fw-bold" href="{% url 'study:home' %}">Study App</a>

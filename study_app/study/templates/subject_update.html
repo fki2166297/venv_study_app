@@ -15,7 +15,7 @@
             <label class="form-label" for="{{ form.name.id_for_label }}">教科名</label>
             {% render_field form.name class='form-control' %}
         </div>
-        <div class="mb-3">
+        <div class="mb-4">
             <label class="form-label" for="{{ form.color.id_for_label }}">色</label>
             {% render_field form.color type='color' class='form-control form-control-color flex-shrink-0' list='color-list' %}
             <datalist id="color-list">
@@ -32,12 +32,6 @@
                 <option value="#ffffa8"></option>
                 <option value="#ffd3a8"></option>
             </datalist>
-        </div>
-        <div class="mb-4">
-            <div class="form-check">
-                {% render_field form.is_learned class='form-check-input' %}
-                <label class="form-check-label" for="{{ form.is_learned.id_for_label }}">{{ form.is_learned.label }}</label>
-            </div>
         </div>
         <button type="submit" class="btn btn-primary">更新</button>
     </form>

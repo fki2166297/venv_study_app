@@ -7,7 +7,6 @@ class Subject(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ユーザー', on_delete=models.CASCADE)
     name = models.CharField(verbose_name='教科', max_length=30)
     color = models.CharField(verbose_name='色', max_length=7, default='#ffa8a8')
-    is_learned = models.BooleanField(verbose_name='学習済み', default=False)
     is_available = models.BooleanField(verbose_name='使用可能', default=True)
     created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
@@ -20,7 +19,7 @@ class Subject(models.Model):
 
 
 class PublicationChoices(models.TextChoices):
-    FOLLOW = 'follow', 'フォローのみに公開'
+    FOLLOW = 'follow', 'フォロワーのみに公開'
     PRIVATE = 'private', '非公開'
 
 

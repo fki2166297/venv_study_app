@@ -9,8 +9,9 @@
 {% block contents %}
 <main class="container-md" style="max-width: 720px; margin-bottom: 10rem;">
     <h4 class="mb-3">回答投稿</h4>
-    <div class="card card-body mb-4">
-        <h5 class="card-title">質問内容</h5>
+    <div class="card card-body mb-4 p-4">
+        <h5 class="card-title">{{ question.title }}</h5>
+        <hr class="mt-1">
         <p class="card-text">{{ question.text|linebreaksbr }}</p>
         {% if question.image %}
             <div class="mb-3">

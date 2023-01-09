@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount'
+    'allauth.socialaccount',
 ]
 
 MIDDLEWARE = [

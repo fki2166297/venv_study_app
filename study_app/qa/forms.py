@@ -9,7 +9,7 @@ class SubjectSelectForm(forms.Form):
 class QuestionCreateForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['subject', 'text', 'image']
+        fields = ['subject', 'title', 'text', 'image']
 
 
 class AnswerCreateForm(forms.ModelForm):

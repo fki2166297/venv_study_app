@@ -1,0 +1,8 @@
+body {
+    font-family: "Meiryo", "メイリオ", sans-serif;
+    padding-top: 5rem;
+}
+
+.list-group-border-bottom {
+    border-bottom: 1px solid #dee2e6;
+}

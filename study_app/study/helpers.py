@@ -60,7 +60,7 @@ def get_bar_chart_month(df, today):
 
         df['studied_at'] = df['studied_at'].dt.date
         for i in range(days):
-            data['labels'].append(i + 1)
+            data['labels'].append(str(i + 1) + '日')
         df = df.query('@start <= studied_at <= @end')
         # 教科名と教科の色をタプルのリストで取得
         subjects = df.groupby(['subject', 'subject__color']).groups.keys()

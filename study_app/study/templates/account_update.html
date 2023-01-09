@@ -10,8 +10,47 @@
 <main class="container-md" style="max-width: 960px; margin-bottom: 10rem;">
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">更新</button>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.username.id_for_label }}">ユーザー名<span class="text-danger">*</span></label>
+            {% render_field form.username class='form-control' %}
+            <div id="usernameHelp" class="form-text">半角アルファベット、半角数字、@/./+/-/_ で150文字以下にしてください。<span id="error"></span></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.icon.id_for_label }}">アイコン</label>
+            {% render_field form.icon class='form-control' %}
+        </div>
+        <button type="submit" class="btn btn-primary" id="updateButton">更新</button>
     </form>
 </main>
+{% endblock %}
+
+{% block script %}
+<script>
+    const updateButton = document.getElementById('updateButton');
+    const usernameInput = document.getElementById('id_username');
+    usernameInput.oninput = (e) => {
+        e.preventDefault();
+        const url = '{% url "study:check_username_exists" %}';
+        fetch(url, {
+            method: 'POST',
+            body: `username=${usernameInput.value}`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        }).then(response => {
+            return response.json();
+        }).then(response => {
+            if (response.is_exist == 'true') {
+                updateButton.setAttribute("disabled", true);
+                document.getElementById('error').innerHTML = 'このユーザー名は既に使用されています。'
+            } else {
+                updateButton.removeAttribute("disabled");
+                document.getElementById('error').innerHTML = ''
+            }
+        }).catch(error => {
+            console.log(error);
+        });
+    };
+</script>
 {% endblock %}

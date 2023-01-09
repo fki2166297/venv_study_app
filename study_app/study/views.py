@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -150,7 +150,7 @@ class SubjectCreateView(LoginRequiredMixin, generic.CreateView):
 class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'subject_update.html'
     model = Subject
-    fields = ['name', 'color', 'is_learned']
+    fields = ['name', 'color']
     success_url = reverse_lazy('study:subject')
 
     def form_valid(self, form):
@@ -224,11 +224,14 @@ class AccountDetailView(LoginRequiredMixin, generic.DetailView):
 class AccountUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'account_update.html'
     model = CustomUser
-    fields = ['icon']
+    fields = ['username', 'icon']
     slug_field = 'username'
     slug_url_kwarg = 'username'
 
     def form_valid(self, form):
+        account = form.save(commit=False)
+        self.request.user.username = account.username
+
         messages.success(self.request, 'プロフィールを更新しました。')
         return super().form_valid(form)
 
@@ -283,3 +286,18 @@ def unfollow_view(request, *args, **kwargs):
         return HttpResponseRedirect(reverse_lazy('study:home'))
     else:
         return HttpResponseRedirect(reverse_lazy('study:account_detail', kwargs={'username': following.username}))
+
+
+@login_required
+def check_username_exists(request, *args, **kwargs):
+    username = request.POST.get('username')
+    username_old = request.user.username
+    context = {
+        'username': username,
+    }
+    print(username)
+    if CustomUser.objects.filter(username=username).exclude(username=username_old).exists():
+        context['is_exist'] = 'true'
+    else:
+        context['is_exist'] = 'false'
+    return JsonResponse(context)

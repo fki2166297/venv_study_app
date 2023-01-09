@@ -29,7 +29,7 @@
                     <a class="nav-link {% if tab == 'resolved' %}active{% endif %}" {% if tab == 'resolved' %}aria-current="page"{% endif %} href="?tab=resolved{% if query %}&query={{ query }}{% endif %}">解決済み</a>
                 </li>
             </ul>
-            <ul class="list-group list-group-flush border-bottom">
+            <ul class="list-group list-group-flush list-group-border-bottom">
                 <li class="list-group-item">
                     <div class="row g-1 align-items-center">
                         <div class="col-auto">
@@ -52,25 +52,20 @@
                 </li>
                 {% if question_list %}
                     {% for question in question_list %}
-                        <li class="list-group-item position-relative" style="height: 88px;">
+                        <li class="list-group-item position-relative" style="height: 90px;">
                             <div class="d-flex align-item-center" style="height: 100%;">
-                                <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                    <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
+                                <div class="d-flex flex-column justify-content-evenly">
+                                    <a class="stretched-link text-decoration-none text-truncate" style="max-width: 100%;" href="{% url 'qa:question_detail' question.id %}">{{ question.title|truncatechars:100 }}</a>
                                     <div class="hstack gap-3">
+                                        <span class="badge bg-white text-muted border">{{ question.get_subject_display }}</span>
                                         <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
                                         {% if question.is_resolved %}
                                             <small class="text-muted">解決済み</small>
                                         {% else %}
                                             <small class="text-muted">回答募集中</small>
                                         {% endif %}
-                                        <small class="text-muted">{{ question.get_subject_display }}</small>
                                     </div>
                                 </div>
-                                {% if question.image %}
-                                    <div class="ms-auto">
-                                        <img src="/media/{{ question.image }}" alt="質問の画像" width="96" height="72" class="rounded ms-3" style="object-fit: cover;"/>
-                                    </div>
-                                {% endif %}
                             </div>
                         </li>
                     {% endfor %}
@@ -115,6 +110,7 @@
             </div>
         </div>
     </div>
+    <a class="btn btn-primary rounded-circle d-lg-none position-fixed bottom-0 end-0 m-3 d-flex justify-content-center align-items-center" style=" width: 56px; height: 56px;" href="{% url 'qa:question_create' %}" role="button"><div class="material-symbols-outlined">add</div></a>
 </main>
 {% endblock %}
 

@@ -9,7 +9,7 @@
 {% block active_home %}active{% endblock %}
 
 {% block contents %}
-<main class="container-lg" style="margin-bottom: 10rem;">
+<main class="container-lg">
     <div class="row">
         <div class="col-lg-8">
             <!-- タブ -->
@@ -24,7 +24,7 @@
                     <a class="nav-link {% if tab == 'following' %}active{% endif %}" {% if tab == 'following' %}aria-current="page"{% endif %} href="?tab=following">フォロー</a>
                 </li>
             </ul>
-            <ul class="list-group list-group-flush border-bottom mb-5">
+            <ul class="list-group list-group-flush list-group-border-bottom mb-5">
                 {% if studytime_list %}
                     {% for studytime in studytime_list %}
                         <li class="list-group-item py-3">
@@ -141,7 +141,7 @@
 <script>
     document.getElementById('deletionModal').addEventListener('show.bs.modal', event => {
         const targetEl = event.relatedTarget;
-        document.getElementById('deletionForm').action = 'study-time-delete/' + targetEl.dataset.id;
+        document.getElementById('deletionForm').action = 'studytime-delete/' + targetEl.dataset.id;
         document.getElementById('datetime').innerHTML = targetEl.dataset.datetime;
         document.getElementById('subjectColor').style.color = targetEl.dataset.subjectColor;
         document.getElementById('subject').innerHTML = targetEl.dataset.subject;

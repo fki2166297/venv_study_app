@@ -19,10 +19,8 @@
                     {% endif %}
                     <span>@{{ question.user.username }}</span>
                 </a>
-                <small class="text-muted">{{ question.get_subject_display }}</small>
                 <small class="text-muted">作成日時：{{ question.created_at|date:'Y/n/j G:i' }}</small>
                 <small class="text-muted">回答締切：{{ question.deadline|date:'Y/n/j G:i' }}</small>
-                <!-- ログインユーザーが質問作成者だった場合に編集ボタンを表示 -->
                 {% if question.user.pk == user.pk %}
                     <div class="dropdown ms-auto">
                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -34,12 +32,22 @@
                                     <a class="dropdown-item" href="{% url 'qa:add_supplement' question.pk %}" role="button">補足説明の追加</a>
                                 </li>
                             {% endif %}
+                            {% if not question.is_resolved and question.user.pk == user.pk %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'qa:self_resolution' question.pk %}" role="button">自己解決に設定する</a>
+                                </li>
+                            {% endif %}
                             <li>
                                 <button class="dropdown-item" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deletionModal">削除</button>
                             </li>
                         </ul>
                     </div>
                 {% endif %}
+            </div>
+            <!-- タイトル -->
+            <h4>{{ question.title }}</h4>
+            <div class="hstack gap-3 mb-3">
+                <span class="badge text-dark bg-white border">{{ question.get_subject_display }}</span>
             </div>
             <p class="card-text">{{ question.text|linebreaksbr }}</p>
             {% if question.image %}
@@ -70,12 +78,8 @@
                 {% endif %}
                 <span id="like-for-question-count">{{ like_for_question_count }}</span>
                 <span>件のイイね</span>
-                {% if not question.is_resolved %}
-                    {% if question.user.pk == user.pk %}
-                        <a class="btn btn-secondary ms-auto" href="{% url 'qa:self_resolution' question.pk %}" role="button">自己解決に設定する</a>
-                    {% else %}
-                        <a class="btn btn-primary ms-auto" href="{% url 'qa:answer-create' question.pk %}" role="button">回答する</a>
-                    {% endif %}
+                {% if not question.is_resolved and question.user.pk != user.pk %}
+                    <a class="btn btn-primary ms-auto" href="{% url 'qa:answer-create' question.pk %}" role="button">回答する</a>
                 {% endif %}
             </div>
             {% if question.comment %}
