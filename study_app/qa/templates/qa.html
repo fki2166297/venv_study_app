@@ -52,11 +52,11 @@
                 </li>
                 {% if question_list %}
                     {% for question in question_list %}
-                        <li class="list-group-item position-relative" style="height: 90px;">
-                            <div class="d-flex align-item-center" style="height: 100%;">
-                                <div class="d-flex flex-column justify-content-evenly">
-                                    <a class="stretched-link text-decoration-none text-truncate" style="max-width: 100%;" href="{% url 'qa:question_detail' question.id %}">{{ question.title|truncatechars:100 }}</a>
-                                    <div class="hstack gap-3">
+                        <li class="list-group-item position-relative">
+                            <div class="d-flex align-item-center">
+                                <div class="d-flex flex-column justify-content-evenly py-2">
+                                    <a class="stretched-link text-decoration-none text-break" style="max-width: 100%;" href="{% url 'qa:question_detail' question.id %}">{{ question.title|truncatechars:100 }}</a>
+                                    <div class="hstack gap-3 mt-1">
                                         <span class="badge bg-white text-muted border">{{ question.get_subject_display }}</span>
                                         <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
                                         {% if question.is_resolved %}
@@ -110,7 +110,7 @@
             </div>
         </div>
     </div>
-    <a class="btn btn-primary rounded-circle d-lg-none position-fixed bottom-0 end-0 m-3 d-flex justify-content-center align-items-center" style=" width: 56px; height: 56px;" href="{% url 'qa:question_create' %}" role="button"><div class="material-symbols-outlined">add</div></a>
+    <a class="btn btn-primary rounded-circle d-md-none position-fixed bottom-0 end-0 m-3 d-flex justify-content-center align-items-center" style=" width: 56px; height: 56px;" href="{% url 'qa:question_create' %}" role="button"><div class="material-symbols-outlined">add</div></a>
 </main>
 {% endblock %}
 
