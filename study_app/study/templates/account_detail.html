@@ -22,11 +22,11 @@
                 {% endif %}
                 <h6 class="mb-3">{{ account.username }}</h6>
                 {% if account.username == user.username %}
-                    <a class="btn btn-outline-primary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:account_update' account.username %}" role="button">プロフィール編集</a>
+                    <a class="btn btn-outline-primary rounded-pill col-8 mx-auto mb-3" href="{% url 'study:account_update' account.username %}" role="button">プロフィール編集</a>
                 {% elif connected %}
-                    <a class="btn btn-secondary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:unfollow' account.username %}" role="button">フォロー解除</a>
+                    <a class="btn btn-secondary rounded-pill col-8 mx-auto mb-3" href="{% url 'study:unfollow' account.username %}" role="button">フォロー解除</a>
                 {% else %}
-                    <a class="btn btn-primary rounded-pill col-6 mx-auto mb-3" href="{% url 'study:follow' account.username %}" role="button">フォロー</a>
+                    <a class="btn btn-primary rounded-pill col-8 mx-auto mb-3" href="{% url 'study:follow' account.username %}" role="button">フォロー</a>
                 {% endif %}
                 <div class="hstack gap-3 mx-auto">
                     <div class="fw-light" style="font-size: 0.9rem;">フォロー : {{ following }}</div>
@@ -73,23 +73,18 @@
                         {% for question in question_list %}
                             <li class="list-group-item position-relative">
                                 <div class="d-flex align-item-center">
-                                    <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                        <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' question.id %}">{{ question.text|truncatechars:100 }}</a>
-                                        <div class="hstack gap-3">
+                                    <div class="d-flex flex-column justify-content-evenly py-2">
+                                        <a class="stretched-link text-decoration-none text-break" href="{% url 'qa:question_detail' question.id %}">{{ question.title|truncatechars:100 }}</a>
+                                        <div class="hstack gap-3 mt-1">
+                                            <span class="badge bg-white text-muted border">{{ question.get_subject_display }}</span>
                                             <small class="text-muted">{{ question.created_at|date:'n/j G:i' }}</small>
                                             {% if question.is_resolved %}
                                                 <small class="text-muted">解決済み</small>
                                             {% else %}
                                                 <small class="text-muted">回答募集中</small>
                                             {% endif %}
-                                            <small class="text-muted">{{ question.get_subject_display }}</small>
                                         </div>
                                     </div>
-                                    {% if question.image %}
-                                        <div class="ms-auto">
-                                            <img src="/media/{{ question.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
-                                        </div>
-                                    {% endif %}
                                 </div>
                             </li>
                         {% endfor %}
@@ -104,20 +99,15 @@
                         {% for answer in answer_list %}
                             <li class="list-group-item position-relative">
                                 <div class="d-flex align-item-center">
-                                    <div class="d-flex flex-column justify-content-evenly text-truncate">
-                                        <a class="stretched-link text-decoration-none" href="{% url 'qa:question_detail' answer.question.id %}">{{ answer.text|truncatechars:100 }}</a>
-                                        <div class="hstack gap-3">
+                                    <div class="d-flex flex-column justify-content-evenly py-2">
+                                        <a class="stretched-link text-decoration-none text-break" href="{% url 'qa:question_detail' answer.question.id %}">{{ answer.text|truncatechars:100 }}</a>
+                                        <div class="hstack gap-3 mt-1">
                                             <small class="text-muted">{{ answer.created_at|date:'n/j G:i' }}</small>
                                             {% if answer.is_best %}
                                                 <small class="text-muted">ベストアンサー</small>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    {% if answer.image %}
-                                        <div class="ms-auto">
-                                            <img src="/media/{{ answer.image }}" alt="質問の画像"  width="104" height="78" class="rounded ms-3" style="object-fit: cover;"/>
-                                        </div>
-                                    {% endif %}
                                 </div>
                             </li>
                         {% endfor %}
